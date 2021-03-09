@@ -132,7 +132,7 @@ function App() {
           setLegendData(legendData.concat(repo));
       }
 
-      fetch(`http://40.73.74.111:8080/contributors?repo=${repo}`)
+      fetch(`http://40.73.96.199:8080/contributors?repo=${repo}`)
           .then(response => response.json())
           .then(myJson => {
               const { contributors = [] } = myJson;
@@ -214,7 +214,7 @@ function App() {
                     onClick={() => setSelectedType("#activity")}
                     disabled
                 >
-                    活跃度曲线
+                    Activity Curve
                 </ListGroup.Item>
             </ListGroup>
         </div>
