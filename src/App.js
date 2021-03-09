@@ -251,6 +251,7 @@ function App() {
                                 onClick={() => {
                                     setLegendData([""]);
                                     setOption(DEFAULT_OPTIONS);
+                                    setDataSource({});
                                 }}
                             >
                                 clear
