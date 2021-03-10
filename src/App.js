@@ -20,29 +20,6 @@ const getMonths = (month = 12) => {
   return result.sort();
 };
 
-function getMonthBetween(start, end) {
-  let result = [];
-  let s = start.split("-");
-  let e = end.split("-");
-  let min = new Date();
-  let max = new Date();
-  min.setFullYear(s[0], s[1]);
-  max.setFullYear(e[0], e[1]);
-
-  let curr = min;
-  let str = "";
-  while (curr <= max) {
-    let month = curr.getMonth();
-    if (month === 0) {
-      str = curr.getFullYear() - 1 + "-" + 12;
-    } else {
-      str = curr.getFullYear() + "-" + (month < 10 ? "0" + month : month);
-    }
-    result.push(str);
-    curr.setMonth(month + 1);
-  }
-  return result;
-}
 
 const DEFAULT_OPTIONS = {
   legend: {
