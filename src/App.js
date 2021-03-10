@@ -74,7 +74,7 @@ function App() {
   // const { host } = '';
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
-  const [activeDate, setActiveDate] = React.useState("1year");
+  const [activeDate, setActiveDate] = React.useState("max");
   const [xAxis, setXAxis] = React.useState([]);
   const [legendData, setLegendData] = React.useState([]);
   const [option, setOption] = React.useState(DEFAULT_OPTIONS);
@@ -82,13 +82,21 @@ function App() {
   // const router = useRouter();
   const updateSeries = (passXAxis) => {
     const newClonedOption = cloneDeep(DEFAULT_OPTIONS);
-    const datasetWithFilters = [["ContributorNum", "Repo", "Date"]];
+    const datasetWithFilters = [
+      ["ContributorNum", "Repo", "Date", "DateValue"],
+    ];
     const legend = [];
+    const limitDate = new Date(passXAxis[0]).getTime();
 
     Object.entries(dataSource).forEach(([key, value]) => {
       legend.push(key);
       value.map((item) => {
-        datasetWithFilters.push([item.contributorNum, item.repo, item.date]);
+        datasetWithFilters.push([
+          item.contributorNum,
+          item.repo,
+          item.date,
+          new Date(item.date).getTime(),
+        ]);
       });
     });
 
@@ -102,7 +110,10 @@ function App() {
       transform: {
         type: "filter",
         config: {
-          and: [{ dimension: "Repo", "=": item }],
+          and: [
+            { dimension: "Repo", "=": item },
+            { dimension: "DateValue", gte: limitDate },
+          ],
         },
       },
     }));
@@ -172,6 +183,9 @@ function App() {
         break;
       case "1year":
         setXAxis(getMonths(12));
+        break;
+        case "max":
+        setXAxis(['1970-01-01']);
         break;
       default:
         break;
@@ -277,48 +291,53 @@ function App() {
                 variant="outline-primary"
                 value="1month"
                 active={activeDate === "1month"}
-                disabled
                 onClick={(e) => {
                   setActiveDate(e.currentTarget.value);
                 }}
               >
-                1 month
+                1 Month
               </Button>{" "}
               <Button
                 variant="outline-primary"
                 value="3months"
                 active={activeDate === "3months"}
-                disabled
                 onClick={(e) => {
                   setActiveDate(e.currentTarget.value);
                 }}
               >
-                3 months
+                3 Months
               </Button>{" "}
               <Button
                 variant="outline-primary"
-                disabled
                 value="6months"
                 active={activeDate === "6months"}
                 onClick={(e) => {
                   setActiveDate(e.currentTarget.value);
                 }}
               >
-                6 months
+                6 Months
               </Button>{" "}
               <Button
                 variant="outline-primary"
                 value="1year"
-                disabled
                 active={activeDate === "1year"}
                 onClick={(e) => {
                   setActiveDate(e.currentTarget.value);
                 }}
               >
-                1 year
+                1 Year
+              </Button>{" "}
+              <Button
+                variant="outline-primary"
+                value="max"
+                active={activeDate === "max"}
+                onClick={(e) => {
+                  setActiveDate(e.currentTarget.value);
+                }}
+              >
+                Max
               </Button>{" "}
             </div>
-            <div>Time view range will be supported later</div>
             <ReactECharts
               option={option}
               style={{ height: 700 }}
