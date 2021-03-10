@@ -48,6 +48,11 @@ const DEFAULT_OPTIONS = {
   legend: {
  data: []
 },
+toolbox: {
+  feature: {
+      saveAsImage: {}
+  }
+},
  dataset: [],
  title: {
      text: 'Contributor Over Time'
