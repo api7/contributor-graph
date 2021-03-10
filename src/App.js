@@ -132,7 +132,7 @@ function App() {
           setLegendData(legendData.concat(repo));
       }
 
-      fetch(`http://40.73.96.199:8080/contributors?repo=${repo}`)
+      fetch(`https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`)
           .then(response => response.json())
           .then(myJson => {
               const { contributors = [] } = myJson;
