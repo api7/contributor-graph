@@ -20,9 +20,33 @@ const getMonths = (month = 12) => {
   return result.sort();
 };
 
+function getMonthBetween(start,end){  
+  let result = [];  
+  let s = start.split("-");  
+  let e = end.split("-");  
+  let min = new Date();  
+  let max = new Date();  
+  min.setFullYear(s[0],s[1]);  
+  max.setFullYear(e[0],e[1]);  
+  
+  let curr = min;  
+  let str = "";
+  while(curr <= max){  
+      let month = curr.getMonth();  
+      if(month===0){
+          str=(curr.getFullYear()-1)+"-"+12;
+      }else{
+          str=curr.getFullYear()+"-"+(month<10?("0"+month):month);
+      }
+      result.push(str);  
+      curr.setMonth(month+1);  
+  }  
+  return result;  
+}  
+
 const DEFAULT_OPTIONS = {
   title: {
-      text: "Contributor Growth Curve",
+      text: "Contributor Over Time",
   },
   tooltip: {
       trigger: "axis",
@@ -68,30 +92,24 @@ function App() {
   const [option, setOption] = React.useState(DEFAULT_OPTIONS);
 
   // const router = useRouter();
-  const updateSeries = (xAxis) => {
+  const updateSeries = (passXAxis) => {
       const newClonedOption = cloneDeep(option);
       const tmpLegendData = [];
+      let xAxis = [];
       Object.keys(dataSource || {}).map(key => {
           const repo = key;
           const filteredData = [];
           const data = dataSource[key] || [];
+
+          xAxis = getMonthBetween(data[0].date,data[data.length-1].date);
+
           if (!tmpLegendData.includes(key)) {
               tmpLegendData.push(key);
           }
 
           xAxis.map(item => {
-              const index = data.findIndex(_item => {
-                  return (
-                      new Date(_item.date).getTime() >
-                      new Date(item).getTime()
-                  );
-              });
-              if (index !== -1 && data[index - 1]) {
-                  filteredData.push({
-                      date: item,
-                      contributorNum: data[index - 1].contributorNum,
-                  });
-              }
+            const obj = data.filter(_item=>_item.date.startsWith(item)).sort((a, b)=> b.contributorNum - a.contributorNum )[0];
+            filteredData.push(obj);
           });
 
           const findIndex = newClonedOption.series.findIndex(
@@ -140,7 +158,6 @@ function App() {
                   contributorNum: item.idx,
                   date: item.date
               }));
-              // 计算当前月份的贡献者人数
               setLoading(false);
 
               const clonedDatasource = cloneDeep(dataSource);
@@ -184,7 +201,7 @@ function App() {
   }, []);
 
   const [selectedType, setSelectedType] = React.useState("#contributor");
-  const [repo, setRepo] = React.useState("");
+  const [repo, setRepo] = React.useState("apache/apisix");
 
   return (
     <>
@@ -206,7 +223,7 @@ function App() {
                     href="#contributor"
                     onClick={() => setSelectedType("#contributor")}
                 >
-                    Contributor Growth Curve
+                    Contributor Over Time
                 </ListGroup.Item>
                 <ListGroup.Item
                     action
