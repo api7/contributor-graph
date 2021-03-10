@@ -45,39 +45,24 @@ function getMonthBetween(start,end){
 }  
 
 const DEFAULT_OPTIONS = {
-  title: {
-      text: "Contributor Over Time",
-  },
-  tooltip: {
-      trigger: "axis",
-  },
   legend: {
-      data: [],
-  },
-  toolbox: {
-      feature: {
-          saveAsImage: {},
-      },
-  },
-  grid: {
-      left: "3%",
-      right: "4%",
-      bottom: "3%",
-      containLabel: true,
-  },
-  xAxis: [
-      {
-          type: "category",
-          boundaryGap: false,
-          data: [],
-      },
-  ],
-  yAxis: [
-      {
-          type: "value",
-      },
-  ],
-  series: [],
+ data: []
+},
+ dataset: [],
+ title: {
+     text: 'Contributor Over Time'
+ },
+ tooltip: {
+     trigger: 'axis'
+ },
+ xAxis: {
+     type: 'time',
+     nameLocation: 'middle'
+ },
+ yAxis: {
+     name: ''
+ },
+ series: []
 };
 
 function App() {
@@ -93,55 +78,56 @@ function App() {
 
   // const router = useRouter();
   const updateSeries = (passXAxis) => {
-      const newClonedOption = cloneDeep(option);
-      const tmpLegendData = [];
-      let xAxis = [];
-      Object.keys(dataSource || {}).map(key => {
-          const repo = key;
-          const filteredData = [];
-          const data = dataSource[key] || [];
 
-          xAxis = getMonthBetween(data[0].date,data[data.length-1].date);
-
-          if (!tmpLegendData.includes(key)) {
-              tmpLegendData.push(key);
-          }
-
-          xAxis.map(item => {
-            const obj = data.filter(_item=>_item.date.startsWith(item)).sort((a, b)=> b.contributorNum - a.contributorNum )[0];
-            filteredData.push(obj);
-          });
-
-          const findIndex = newClonedOption.series.findIndex(
-              (item) => item.name === repo
-          );
-          if (findIndex === -1) {
-              newClonedOption.series = [
-                  ...newClonedOption.series,
-                  {
-                      name: repo,
-                      type: "line",
-                      smooth: true,
-                      data: filteredData.map(item => item.contributorNum),
-                  },
-              ];
-          } else {
-              newClonedOption.series[findIndex] = {
-                  name: repo,
-                  type: "line",
-                  smooth: true,
-                  data: filteredData.map(item => item.contributorNum),
-              };
-          }
+      const newClonedOption = cloneDeep(DEFAULT_OPTIONS);
+      const datasetWithFilters = [['ContributorNum','Repo','Date']];
+      const legend = [];
+      
+      Object.entries(dataSource).forEach(([key,value]) => {
+        legend.push(key);
+        value.map(item=>{
+          datasetWithFilters.push([item.contributorNum,item.repo,item.date,])
+        })
       });
-      newClonedOption.xAxis[0] = {
-          type: "category",
-          boundaryGap: false,
-          data: xAxis,
-      };
-      newClonedOption.legend.data = tmpLegendData;
-      newClonedOption.legend.data = legendData;
-      setOption(newClonedOption);
+
+      const newDateSet =  datasetWithFilters.sort((a,b)=>new Date(a[2])-new Date(b[2]))
+
+    const filterDataset = legend.map(item=>({
+      id: item,
+      fromDatasetId: 'dataset_raw',
+      transform: {
+          type: 'filter',
+          config: {
+              and: [
+                  { dimension: 'Repo', '=': item }
+              ]
+          }
+      }
+    }));
+
+    const series = legend.map(item=>({
+      name:item,
+      type: 'line',
+      datasetId: item,
+      showSymbol: false,
+      encode: {
+          x: 'Date',
+          y: 'ContributorNum',
+          itemName: 'Repo',
+          tooltip: ['Repo','ContributorNum'],
+      },
+    }))
+
+      newClonedOption.dataset = [
+        {
+          id: 'dataset_raw',
+          source: newDateSet
+        }
+    ].concat(filterDataset);
+
+    newClonedOption.series = series;
+      
+    setOption(newClonedOption);
   };
 
   const getData = (repo) => {
@@ -155,6 +141,7 @@ function App() {
           .then(myJson => {
               const { contributors = [] } = myJson;
               const data = contributors.map((item) => ({
+                  repo,
                   contributorNum: item.idx,
                   date: item.date
               }));
@@ -285,21 +272,21 @@ function App() {
             <div id="chart" style={{ marginTop: "5%" }}>
                 <div style={{ marginBottom: "10px" }}>
                     <Button
-                        variant="outline-primary" value="1month" active={activeDate === '1month'} onClick={(e) => {
+                        variant="outline-primary" value="1month" active={activeDate === '1month'} disabled onClick={(e) => {
                             setActiveDate(e.currentTarget.value);
                         }}
                     >
                         1 month
                     </Button>{" "}
                     <Button
-                        variant="outline-primary" value="3months" active={activeDate === '3months'} onClick={(e) => {
+                        variant="outline-primary" value="3months" active={activeDate === '3months'} disabled onClick={(e) => {
                             setActiveDate(e.currentTarget.value);
                         }}
                     >
                         3 months
                     </Button>{" "}
                     <Button
-                        variant="outline-primary" value="6months" active={activeDate === '6months'}
+                        variant="outline-primary" disabled value="6months" active={activeDate === '6months'}
                         onClick={(e) => {
                             setActiveDate(e.currentTarget.value);
                         }}
@@ -307,13 +294,14 @@ function App() {
                     </Button>
                     {' '}
                     <Button
-                        variant="outline-primary" value="1year" active={activeDate === '1year'} onClick={(e) => {
+                        variant="outline-primary" value="1year" disabled active={activeDate === '1year'} onClick={(e) => {
                             setActiveDate(e.currentTarget.value);
                         }}
                     >
                         1 year
                     </Button>{" "}
                 </div>
+                <div>Time view range will be supported later</div>
                 <ReactECharts
                     option={option}
                     style={{ height: 700 }}
