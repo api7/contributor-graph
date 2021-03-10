@@ -114,7 +114,7 @@ function App() {
           x: 'Date',
           y: 'ContributorNum',
           itemName: 'Repo',
-          tooltip: ['Repo','ContributorNum'],
+          tooltip: ['ContributorNum'],
       },
     }))
 
@@ -126,6 +126,7 @@ function App() {
     ].concat(filterDataset);
 
     newClonedOption.series = series;
+    newClonedOption.legend.data = legend;
       
     setOption(newClonedOption);
   };
