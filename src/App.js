@@ -15,7 +15,7 @@ import ReactECharts from "echarts-for-react";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
-import "./App.css";
+// import "./App.css";
 const getMonths = (month = 12) => {
   const d = new Date();
   const result = [];
