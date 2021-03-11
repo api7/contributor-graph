@@ -1,5 +1,4 @@
 import React from "react";
-// import { useEffect, useState } from 'react';
 import { cloneDeep } from "lodash";
 import {
   FormControl,
@@ -11,11 +10,9 @@ import {
   Tab,
 } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
-// import { CopyToClipboard } from "react-copy-to-clipboard";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
-// import "./App.css";
 const getMonths = (month = 12) => {
   const d = new Date();
   const result = [];
@@ -181,16 +178,6 @@ function App() {
     updateSeries(xAxis);
   }, [dataSource, xAxis]);
 
-  React.useEffect(() => {
-    // const { type, repo = "" } = router.query;
-    // const repoArr = repo.split(",");
-    // if (type === "contributor" && repo) {
-    //     repoArr.map(item => {
-    //         getData(item);
-    //     });
-    // }
-  }, []);
-
   const [selectedType, setSelectedType] = React.useState("#contributor");
   const [repo, setRepo] = React.useState("apache/apisix");
 
@@ -218,29 +205,22 @@ function App() {
               <InputGroup.Append>
                 <Button
                   variant="primary"
-                  onClick={async () => {
-                    await getData(repo);
+                  onClick={() => {
+                    getData(repo);
                   }}
                 >
                   Add
                 </Button>
-                <>
-                  <Button
-                    variant="danger"
-                    onClick={() => {
-                      setLegendData([""]);
-                      setOption(DEFAULT_OPTIONS);
-                      setDataSource({});
-                    }}
-                  >
-                    clear
+                <Button
+                  variant="danger"
+                  onClick={() => {
+                    setLegendData([""]);
+                    setOption(DEFAULT_OPTIONS);
+                    setDataSource({});
+                  }}
+                >
+                  clear
                   </Button>
-                  {/* <CopyToClipboard
-                                text={`${host}?type=contributor&repo=${legendData.join(',')}`} onCopy={(_, result) => { }}
-                            >
-                                <Button variant="success">share</Button>
-                            </CopyToClipboard> */}
-                </>
               </InputGroup.Append>
             </InputGroup>
           </div>
