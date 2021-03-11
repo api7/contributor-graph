@@ -133,7 +133,7 @@ function App() {
       .then((response) => response.json())
       .then((myJson) => {
         const { Contributors = [] } = myJson;
-        const data = contributors.map((item) => ({
+        const data = Contributors.map((item) => ({
           repo,
           contributorNum: item.idx,
           date: item.date,
