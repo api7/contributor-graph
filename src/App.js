@@ -1,13 +1,21 @@
 import React from "react";
 // import { useEffect, useState } from 'react';
 import { cloneDeep } from "lodash";
-import { FormControl, InputGroup, ListGroup, Button } from "react-bootstrap";
+import {
+  FormControl,
+  InputGroup,
+  Button,
+  ButtonGroup,
+  Row,
+  Col,
+  Tab,
+} from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
 // import { CopyToClipboard } from "react-copy-to-clipboard";
 
 import "bootstrap/dist/css/bootstrap.min.css";
 
-// import './App.css';
+// import "./App.css";
 const getMonths = (month = 12) => {
   const d = new Date();
   const result = [];
@@ -20,9 +28,9 @@ const getMonths = (month = 12) => {
   return result.sort();
 };
 
-
 const DEFAULT_OPTIONS = {
   legend: {
+    top: "5%",
     data: [],
   },
   toolbox: {
@@ -161,8 +169,8 @@ function App() {
       case "1year":
         setXAxis(getMonths(12));
         break;
-        case "max":
-        setXAxis(['1970-01-01']);
+      case "max":
+        setXAxis(["1970-01-01"]);
         break;
       default:
         break;
@@ -190,35 +198,9 @@ function App() {
     <>
       <div
         className="content"
-        style={{
-          display: "flex",
-          width: "80%",
-          marginLeft: "10%",
-          flexDirection: "row",
-          minHeight: "700px",
-          justifyContent: "space-between",
-        }}
+        style={{ display: "flex", justifyContent: "center" }}
       >
-        <div className="left" style={{ marginTop: "200px" }}>
-          <ListGroup defaultActiveKey={selectedType}>
-            <ListGroup.Item
-              action
-              href="#contributor"
-              onClick={() => setSelectedType("#contributor")}
-            >
-              Contributor Over Time
-            </ListGroup.Item>
-            <ListGroup.Item
-              action
-              href="#activity"
-              onClick={() => setSelectedType("#activity")}
-              disabled
-            >
-              Activity Curve
-            </ListGroup.Item>
-          </ListGroup>
-        </div>
-        <div className="right" style={{ width: "80%", marginTop: "2%" }}>
+        <div className="right" style={{ width: "90%", marginTop: "10px" }}>
           <div
             className="search-container"
             style={{ display: "flex", justifyContent: "center" }}
@@ -262,65 +244,77 @@ function App() {
               </InputGroup.Append>
             </InputGroup>
           </div>
-          <div id="chart" style={{ marginTop: "5%" }}>
-            <div style={{ marginBottom: "10px" }}>
-              <Button
-                variant="outline-primary"
-                value="1month"
-                active={activeDate === "1month"}
-                onClick={(e) => {
-                  setActiveDate(e.currentTarget.value);
-                }}
-              >
-                1 Month
-              </Button>{" "}
-              <Button
-                variant="outline-primary"
-                value="3months"
-                active={activeDate === "3months"}
-                onClick={(e) => {
-                  setActiveDate(e.currentTarget.value);
-                }}
-              >
-                3 Months
-              </Button>{" "}
-              <Button
-                variant="outline-primary"
-                value="6months"
-                active={activeDate === "6months"}
-                onClick={(e) => {
-                  setActiveDate(e.currentTarget.value);
-                }}
-              >
-                6 Months
-              </Button>{" "}
-              <Button
-                variant="outline-primary"
-                value="1year"
-                active={activeDate === "1year"}
-                onClick={(e) => {
-                  setActiveDate(e.currentTarget.value);
-                }}
-              >
-                1 Year
-              </Button>{" "}
-              <Button
-                variant="outline-primary"
-                value="max"
-                active={activeDate === "max"}
-                onClick={(e) => {
-                  setActiveDate(e.currentTarget.value);
-                }}
-              >
-                Max
-              </Button>{" "}
-            </div>
-            <ReactECharts
-              option={option}
-              style={{ height: 700 }}
-              showLoading={loading}
-              notMerge
-            />
+          <div id="chart" style={{ marginTop: "30px" }}>
+            <Tab.Container defaultActiveKey="contributor">
+              <Row>
+                <Col>
+                  <Tab.Content>
+                    <Tab.Pane eventKey="contributor">
+                      <div style={{ marginBottom: "5px" }}>
+                        <ButtonGroup size="sm">
+                          <Button
+                            variant="outline-primary"
+                            value="1month"
+                            active={activeDate === "1month"}
+                            onClick={(e) => {
+                              setActiveDate(e.currentTarget.value);
+                            }}
+                          >
+                            1 Month
+                          </Button>{" "}
+                          <Button
+                            variant="outline-primary"
+                            value="3months"
+                            active={activeDate === "3months"}
+                            onClick={(e) => {
+                              setActiveDate(e.currentTarget.value);
+                            }}
+                          >
+                            3 Months
+                          </Button>{" "}
+                          <Button
+                            variant="outline-primary"
+                            value="6months"
+                            active={activeDate === "6months"}
+                            onClick={(e) => {
+                              setActiveDate(e.currentTarget.value);
+                            }}
+                          >
+                            6 Months
+                          </Button>{" "}
+                          <Button
+                            variant="outline-primary"
+                            value="1year"
+                            active={activeDate === "1year"}
+                            onClick={(e) => {
+                              setActiveDate(e.currentTarget.value);
+                            }}
+                          >
+                            1 Year
+                          </Button>{" "}
+                          <Button
+                            variant="outline-primary"
+                            value="max"
+                            active={activeDate === "max"}
+                            onClick={(e) => {
+                              setActiveDate(e.currentTarget.value);
+                            }}
+                          >
+                            Max
+                          </Button>{" "}
+                        </ButtonGroup>
+                      </div>
+                      <ReactECharts
+                        option={option}
+                        style={{ height: 700, width: "100%" }}
+                        showLoading={loading}
+                        notMerge
+                      />
+                    </Tab.Pane>
+                  </Tab.Content>
+                </Col>
+              </Row>
+            </Tab.Container>
           </div>
         </div>
       </div>
