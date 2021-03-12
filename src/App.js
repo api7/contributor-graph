@@ -11,7 +11,9 @@ import {
 } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
 import { ToastContainer, toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
+import { CopyToClipboard } from "react-copy-to-clipboard";
+
+import "react-toastify/dist/ReactToastify.css";
 
 const getMonths = (month = 12) => {
   const d = new Date();
@@ -23,6 +25,25 @@ const getMonths = (month = 12) => {
     result.push(`${d.getFullYear()}-${month}`);
   }
   return result.sort();
+};
+
+const getParameterByName = (name, url = window.location.href) => {
+  name = name.replace(/[\[\]]/g, "\\$&");
+  var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+    results = regex.exec(url);
+  if (!results) return null;
+  if (!results[2]) return "";
+  return decodeURIComponent(results[2].replace(/\+/g, " "));
+};
+
+const TOAST_CONFIG = {
+  position: "top-center",
+  autoClose: 5000,
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+  progress: undefined,
 };
 
 const DEFAULT_OPTIONS = {
@@ -131,40 +152,36 @@ function App() {
       setLegendData(legendData.concat(repo));
     }
 
-    fetch(
-      `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
-    )
-      .then((response) => {
-        console.log("response: ", response);
-        return response.json();
-      })
-      .then((myJson) => {
-        console.log('myJson: ', myJson);
-        const { Contributors = [] } = myJson;
-        const data = Contributors.map((item) => ({
-          repo,
-          contributorNum: item.idx,
-          date: item.date,
-        }));
-        setLoading(false);
+    return new Promise((resolve, reject) => {
+      fetch(
+        `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
+      )
+        .then((response) => {
+          console.log("response: ", response);
+          return response.json();
+        })
+        .then((myJson) => {
+          console.log("myJson: ", myJson);
+          const { Contributors = [] } = myJson;
+          const data = Contributors.map((item) => ({
+            repo,
+            contributorNum: item.idx,
+            date: item.date,
+          }));
+          setLoading(false);
 
-        const clonedDatasource = cloneDeep(dataSource);
-        if (!clonedDatasource[repo]) {
-          setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
-        }
-      })
-      .catch((e) => {
-        toast.error("Request Error", {
-          position: "top-center",
-          autoClose: 5000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
+          const clonedDatasource = cloneDeep(dataSource);
+          if (!clonedDatasource[repo]) {
+            setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
+          }
+          resolve();
+        })
+        .catch((e) => {
+          toast.error("Request Error", TOAST_CONFIG);
+          setLoading(false);
+          reject();
         });
-        setLoading(false);
-      });
+    });
   };
 
   React.useEffect(() => {
@@ -193,6 +210,16 @@ function App() {
     updateSeries(xAxis);
   }, [dataSource, xAxis]);
 
+  React.useEffect(() => {
+    const repo = getParameterByName("repo");
+    if (repo) {
+      const repoArr = repo.split(",").filter(Boolean);
+      repoArr.forEach((item) => {
+        getData(item);
+      });
+    }
+  }, []);
+
   return (
     <>
       <ToastContainer />
@@ -219,27 +246,39 @@ function App() {
                   setRepo(e.target.value);
                 }}
               />
-              <InputGroup.Append>
-                <Button
-                  variant="primary"
-                  onClick={() => {
-                    getData(repo);
-                  }}
-                >
-                  Add
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() => {
-                    setLegendData([""]);
-                    setOption(DEFAULT_OPTIONS);
-                    setDataSource({});
-                  }}
-                >
-                  Clear
-                </Button>
-              </InputGroup.Append>
+              <InputGroup.Append></InputGroup.Append>
             </InputGroup>
+            <>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  getData(repo);
+                }}
+              >
+                Add
+              </Button>{" "}
+              <Button
+                variant="danger"
+                onClick={() => {
+                  setLegendData([""]);
+                  setOption(DEFAULT_OPTIONS);
+                  setDataSource({});
+                }}
+              >
+                Clear
+              </Button>{" "}
+              <CopyToClipboard
+                text={`${window.location.protocol +
+                  "//" +
+                  window.location.host +
+                  window.location.pathname}?repo=${legendData.join(",")}`}
+                onCopy={(_, result) => {
+                  toast.success("Copy Success", TOAST_CONFIG);
+                }}
+              >
+                <Button variant="success">share</Button>
+              </CopyToClipboard>
+            </>
           </div>
           <div id="chart" style={{ marginTop: "30px" }}>
             <Tab.Container defaultActiveKey="contributor">
