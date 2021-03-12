@@ -169,20 +169,21 @@ function App() {
   };
 
   const updateChart = (repo) => {
-    fetchData(repo)
-      .then((myJson) => {
-        const { Contributors = [] } = myJson;
-        const data = Contributors.map((item) => ({
-          repo,
-          contributorNum: item.idx,
-          date: item.date,
-        }));
+    if (dataSource[repo]) return;
+    
+    fetchData(repo).then((myJson) => {
+      const { Contributors = [] } = myJson;
+      const data = Contributors.map((item) => ({
+        repo,
+        contributorNum: item.idx,
+        date: item.date,
+      }));
 
-        const clonedDatasource = cloneDeep(dataSource);
-        if (!clonedDatasource[repo]) {
-          setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
-        }
-      })
+      const clonedDatasource = cloneDeep(dataSource);
+      if (!clonedDatasource[repo]) {
+        setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
+      }
+    });
   };
 
   React.useEffect(() => {
