@@ -17,7 +17,7 @@ import (
 type returnObj struct {
 	Code         int               `json:"code`
 	ErrorMessage string            `json:"message`
-	Contributors []utils.ReturnCon `json:"Contributors`
+	Contributors []utils.ReturnCon `json:"contributors`
 }
 
 func main() {
