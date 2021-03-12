@@ -44,11 +44,11 @@ func getContributor(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, err.Error(), code)
-		json.NewEncoder(w).Encode(returnObj{Code: code, ErrorMessage: err.Error()})
+		json.NewEncoder(w).Encode(returnObj{code: code, errorMessage: err.Error()})
 		return
 	}
 
-	json.NewEncoder(w).Encode(returnObj{Contributors: conList})
+	json.NewEncoder(w).Encode(returnObj{contributors: conList})
 }
 
 func refreshAll(w http.ResponseWriter, r *http.Request) {
