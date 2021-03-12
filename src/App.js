@@ -298,7 +298,7 @@ function App() {
                   }
                 }}
               >
-                <Button variant="success">share</Button>
+                <Button variant="success">Share</Button>
               </CopyToClipboard>
             </>
           </div>
