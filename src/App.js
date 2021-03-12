@@ -11,8 +11,6 @@ import {
 } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
 
-import "bootstrap/dist/css/bootstrap.min.css";
-
 const getMonths = (month = 12) => {
   const d = new Date();
   const result = [];
@@ -53,15 +51,14 @@ const DEFAULT_OPTIONS = {
 };
 
 function App() {
-  // const { host } = '';
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
   const [xAxis, setXAxis] = React.useState([]);
   const [legendData, setLegendData] = React.useState([]);
   const [option, setOption] = React.useState(DEFAULT_OPTIONS);
+  const [repo, setRepo] = React.useState("apache/apisix");
 
-  // const router = useRouter();
   const updateSeries = (passXAxis) => {
     const newClonedOption = cloneDeep(DEFAULT_OPTIONS);
     const datasetWithFilters = [
@@ -72,7 +69,7 @@ function App() {
 
     Object.entries(dataSource).forEach(([key, value]) => {
       legend.push(key);
-      value.map((item) => {
+      value.forEach((item) => {
         datasetWithFilters.push([
           item.contributorNum,
           item.repo,
@@ -178,11 +175,14 @@ function App() {
     updateSeries(xAxis);
   }, [dataSource, xAxis]);
 
-  const [selectedType, setSelectedType] = React.useState("#contributor");
-  const [repo, setRepo] = React.useState("apache/apisix");
-
   return (
     <>
+      <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+        integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l"
+        crossorigin="anonymous"
+      />
       <div
         className="content"
         style={{ display: "flex", justifyContent: "center" }}
@@ -219,8 +219,8 @@ function App() {
                     setDataSource({});
                   }}
                 >
-                  clear
-                  </Button>
+                  Clear
+                </Button>
               </InputGroup.Append>
             </InputGroup>
           </div>
