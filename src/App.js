@@ -284,12 +284,17 @@ function App() {
                 Clear
               </Button>{" "}
               <CopyToClipboard
-                text={`${window.location.protocol +
-                  "//" +
-                  window.location.host +
-                  window.location.pathname}?repo=${option.legend.data.join(
-                  ","
-                )}`}
+                text={
+                  window.location !== window.parent.location
+                    ? `https://www.apiseven.com/en/contributor-graph?repo=${option.legend.data.join(
+                        ","
+                      )}`
+                    : `${window.location.protocol +
+                        "//" +
+                        window.location.host +
+                        window.location
+                          .pathname}?repo=${option.legend.data.join(",")}`
+                }
                 onCopy={(_, result) => {
                   if (result) {
                     toast.success("Copy Success", TOAST_CONFIG);
