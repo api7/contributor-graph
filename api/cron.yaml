@@ -1,0 +1,4 @@
+cron:
+- description: "daily update all"
+  url: /refreshAll
+  schedule: every 24 hours
