@@ -15,9 +15,9 @@ import (
 // 怎么存token，留token的API
 
 type returnObj struct {
-	code         int               `json:"code`
-	errorMessage string            `json:"message`
-	contributors []utils.ReturnCon `json:"contributors`
+	Code         int               `json:"code`
+	ErrorMessage string            `json:"message`
+	Contributors []utils.ReturnCon `json:"contributors`
 }
 
 func main() {
@@ -44,11 +44,11 @@ func getContributor(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		http.Error(w, err.Error(), code)
-		json.NewEncoder(w).Encode(returnObj{code: code, errorMessage: err.Error()})
+		json.NewEncoder(w).Encode(returnObj{Code: code, ErrorMessage: err.Error()})
 		return
 	}
 
-	json.NewEncoder(w).Encode(returnObj{contributors: conList})
+	json.NewEncoder(w).Encode(returnObj{Contributors: conList})
 }
 
 func refreshAll(w http.ResponseWriter, r *http.Request) {
