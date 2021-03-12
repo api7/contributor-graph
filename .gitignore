@@ -29,4 +29,4 @@ yarn-error.log*
 .env.build
 
 # golang bin
-/api/bin
+/api-go/bin
