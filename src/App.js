@@ -147,6 +147,8 @@ function App() {
   };
 
   const fetchData = (repo) => {
+    setLoading(true);
+
     return new Promise((resolve, reject) => {
       fetch(
         `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
@@ -155,6 +157,7 @@ function App() {
           return response.json();
         })
         .then((myJson) => {
+          setLoading(false);
           resolve({ repo, ...myJson });
         })
         .catch((e) => {
@@ -166,8 +169,6 @@ function App() {
   };
 
   const updateChart = (repo) => {
-    setLoading(true);
-
     fetchData(repo)
       .then((myJson) => {
         const { Contributors = [] } = myJson;
@@ -176,17 +177,12 @@ function App() {
           contributorNum: item.idx,
           date: item.date,
         }));
-        setLoading(false);
 
         const clonedDatasource = cloneDeep(dataSource);
         if (!clonedDatasource[repo]) {
           setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
         }
       })
-      .catch(() => {
-        toast.error("Request Error", TOAST_CONFIG);
-        setLoading(false);
-      });
   };
 
   React.useEffect(() => {
