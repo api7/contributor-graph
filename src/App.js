@@ -10,6 +10,8 @@ import {
   Tab,
 } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
+import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 const getMonths = (month = 12) => {
   const d = new Date();
@@ -132,8 +134,12 @@ function App() {
     fetch(
       `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
     )
-      .then((response) => response.json())
+      .then((response) => {
+        console.log("response: ", response);
+        return response.json();
+      })
       .then((myJson) => {
+        console.log('myJson: ', myJson);
         const { Contributors = [] } = myJson;
         const data = Contributors.map((item) => ({
           repo,
@@ -146,6 +152,18 @@ function App() {
         if (!clonedDatasource[repo]) {
           setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
         }
+      })
+      .catch((e) => {
+        toast.error("Request Error", {
+          position: "top-center",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        setLoading(false);
       });
   };
 
@@ -177,6 +195,7 @@ function App() {
 
   return (
     <>
+      <ToastContainer />
       <link
         rel="stylesheet"
         href="https://static.apiseven.com/bootstrap.min.css"
