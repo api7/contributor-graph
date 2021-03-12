@@ -180,7 +180,6 @@ function App() {
       <link
         rel="stylesheet"
         href="https://static.apiseven.com/bootstrap.min.css"
-        crossorigin="anonymous"
       />
       <div
         className="content"
