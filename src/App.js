@@ -147,6 +147,9 @@ function App() {
   };
 
   const fetchData = (repo) => {
+    if (repo === "null" || repo === null) {
+      repo = "apache/apisix";
+    };
     setLoading(true);
 
     return new Promise((resolve, reject) => {
