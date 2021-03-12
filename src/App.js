@@ -232,6 +232,8 @@ function App() {
         });
         setDataSource(tmpDataSouce);
       });
+    } else {
+      updateChart("apache/apisix");
     }
   }, []);
 
