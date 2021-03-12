@@ -10,6 +10,10 @@ import {
   Tab,
 } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
+import { ToastContainer, toast } from "react-toastify";
+import { CopyToClipboard } from "react-copy-to-clipboard";
+
+import "react-toastify/dist/ReactToastify.css";
 
 const getMonths = (month = 12) => {
   const d = new Date();
@@ -21,6 +25,26 @@ const getMonths = (month = 12) => {
     result.push(`${d.getFullYear()}-${month}`);
   }
   return result.sort();
+};
+
+const getParameterByName = (name, url = window.location.href) => {
+  // eslint-disable-next-line
+  name = name.replace(/[\[\]]/g, "\\$&");
+  var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+    results = regex.exec(url);
+  if (!results) return null;
+  if (!results[2]) return "";
+  return decodeURIComponent(results[2].replace(/\+/g, " "));
+};
+
+const TOAST_CONFIG = {
+  position: "top-center",
+  autoClose: 5000,
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+  progress: undefined,
 };
 
 const DEFAULT_OPTIONS = {
@@ -55,7 +79,6 @@ function App() {
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
   const [xAxis, setXAxis] = React.useState([]);
-  const [legendData, setLegendData] = React.useState([]);
   const [option, setOption] = React.useState(DEFAULT_OPTIONS);
   const [repo, setRepo] = React.useState("apache/apisix");
 
@@ -123,30 +146,44 @@ function App() {
     setOption(newClonedOption);
   };
 
-  const getData = (repo) => {
+  const fetchData = (repo) => {
     setLoading(true);
-    if (!legendData.includes(repo)) {
-      setLegendData(legendData.concat(repo));
-    }
 
-    fetch(
-      `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
-    )
-      .then((response) => response.json())
-      .then((myJson) => {
-        const { contributors = [] } = myJson;
-        const data = contributors.map((item) => ({
-          repo,
-          contributorNum: item.idx,
-          date: item.date,
-        }));
-        setLoading(false);
+    return new Promise((resolve, reject) => {
+      fetch(
+        `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
+      )
+        .then((response) => {
+          return response.json();
+        })
+        .then((myJson) => {
+          setLoading(false);
+          resolve({ repo, ...myJson });
+        })
+        .catch((e) => {
+          toast.error("Request Error", TOAST_CONFIG);
+          setLoading(false);
+          reject();
+        });
+    });
+  };
 
-        const clonedDatasource = cloneDeep(dataSource);
-        if (!clonedDatasource[repo]) {
-          setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
-        }
-      });
+  const updateChart = (repo) => {
+    if (dataSource[repo]) return;
+
+    fetchData(repo).then((myJson) => {
+      const { Contributors = [] } = myJson;
+      const data = Contributors.map((item) => ({
+        repo,
+        contributorNum: item.idx,
+        date: item.date,
+      }));
+
+      const clonedDatasource = cloneDeep(dataSource);
+      if (!clonedDatasource[repo]) {
+        setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
+      }
+    });
   };
 
   React.useEffect(() => {
@@ -175,8 +212,34 @@ function App() {
     updateSeries(xAxis);
   }, [dataSource, xAxis]);
 
+  React.useEffect(() => {
+    const repo = getParameterByName("repo");
+    if (repo) {
+      const repoArr = repo.split(",").filter(Boolean);
+      Promise.all(repoArr.map((item) => fetchData(item))).then((data) => {
+        const tmpDataSouce = {};
+        data.forEach((item) => {
+          const { Contributors = [], repo } = item;
+          const data = Contributors.map((item) => ({
+            repo,
+            contributorNum: item.idx,
+            date: item.date,
+          }));
+
+          if (!tmpDataSouce[item.repo]) {
+            tmpDataSouce[repo] = data;
+          }
+        });
+        setDataSource(tmpDataSouce);
+      });
+    } else {
+      updateChart("apache/apisix");
+    }
+  }, []);
+
   return (
     <>
+      <ToastContainer />
       <link
         rel="stylesheet"
         href="https://static.apiseven.com/bootstrap.min.css"
@@ -200,27 +263,44 @@ function App() {
                   setRepo(e.target.value);
                 }}
               />
-              <InputGroup.Append>
-                <Button
-                  variant="primary"
-                  onClick={() => {
-                    getData(repo);
-                  }}
-                >
-                  Add
-                </Button>
-                <Button
-                  variant="danger"
-                  onClick={() => {
-                    setLegendData([""]);
-                    setOption(DEFAULT_OPTIONS);
-                    setDataSource({});
-                  }}
-                >
-                  Clear
-                </Button>
-              </InputGroup.Append>
+              <InputGroup.Append></InputGroup.Append>
             </InputGroup>
+            <>
+              <Button
+                variant="primary"
+                onClick={() => {
+                  updateChart(repo);
+                }}
+              >
+                Add
+              </Button>{" "}
+              <Button
+                variant="danger"
+                onClick={() => {
+                  setOption(DEFAULT_OPTIONS);
+                  setDataSource({});
+                }}
+              >
+                Clear
+              </Button>{" "}
+              <CopyToClipboard
+                text={`${window.location.protocol +
+                  "//" +
+                  window.location.host +
+                  window.location.pathname}?repo=${option.legend.data.join(
+                  ","
+                )}`}
+                onCopy={(_, result) => {
+                  if (result) {
+                    toast.success("Copy Success", TOAST_CONFIG);
+                  } else {
+                    toast.error("Copy Failed", TOAST_CONFIG);
+                  }
+                }}
+              >
+                <Button variant="success">share</Button>
+              </CopyToClipboard>
+            </>
           </div>
           <div id="chart" style={{ marginTop: "30px" }}>
             <Tab.Container defaultActiveKey="contributor">
