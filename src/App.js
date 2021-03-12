@@ -28,6 +28,7 @@ const getMonths = (month = 12) => {
 };
 
 const getParameterByName = (name, url = window.location.href) => {
+  // eslint-disable-next-line
   name = name.replace(/[\[\]]/g, "\\$&");
   var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
     results = regex.exec(url);
@@ -78,7 +79,6 @@ function App() {
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
   const [xAxis, setXAxis] = React.useState([]);
-  const [legendData, setLegendData] = React.useState([]);
   const [option, setOption] = React.useState(DEFAULT_OPTIONS);
   const [repo, setRepo] = React.useState("apache/apisix");
 
@@ -146,35 +146,16 @@ function App() {
     setOption(newClonedOption);
   };
 
-  const getData = (repo) => {
-    setLoading(true);
-    if (!legendData.includes(repo)) {
-      setLegendData(legendData.concat(repo));
-    }
-
+  const fetchData = (repo) => {
     return new Promise((resolve, reject) => {
       fetch(
         `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
       )
         .then((response) => {
-          console.log("response: ", response);
           return response.json();
         })
         .then((myJson) => {
-          console.log("myJson: ", myJson);
-          const { Contributors = [] } = myJson;
-          const data = Contributors.map((item) => ({
-            repo,
-            contributorNum: item.idx,
-            date: item.date,
-          }));
-          setLoading(false);
-
-          const clonedDatasource = cloneDeep(dataSource);
-          if (!clonedDatasource[repo]) {
-            setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
-          }
-          resolve();
+          resolve({ repo, ...myJson });
         })
         .catch((e) => {
           toast.error("Request Error", TOAST_CONFIG);
@@ -182,6 +163,30 @@ function App() {
           reject();
         });
     });
+  };
+
+  const updateChart = (repo) => {
+    setLoading(true);
+
+    fetchData(repo)
+      .then((myJson) => {
+        const { Contributors = [] } = myJson;
+        const data = Contributors.map((item) => ({
+          repo,
+          contributorNum: item.idx,
+          date: item.date,
+        }));
+        setLoading(false);
+
+        const clonedDatasource = cloneDeep(dataSource);
+        if (!clonedDatasource[repo]) {
+          setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
+        }
+      })
+      .catch(() => {
+        toast.error("Request Error", TOAST_CONFIG);
+        setLoading(false);
+      });
   };
 
   React.useEffect(() => {
@@ -214,8 +219,21 @@ function App() {
     const repo = getParameterByName("repo");
     if (repo) {
       const repoArr = repo.split(",").filter(Boolean);
-      repoArr.forEach((item) => {
-        getData(item);
+      Promise.all(repoArr.map((item) => fetchData(item))).then((data) => {
+        const tmpDataSouce = {};
+        data.forEach((item) => {
+          const { Contributors = [], repo } = item;
+          const data = Contributors.map((item) => ({
+            repo,
+            contributorNum: item.idx,
+            date: item.date,
+          }));
+
+          if (!tmpDataSouce[item.repo]) {
+            tmpDataSouce[repo] = data;
+          }
+        });
+        setDataSource(tmpDataSouce);
       });
     }
   }, []);
@@ -252,7 +270,7 @@ function App() {
               <Button
                 variant="primary"
                 onClick={() => {
-                  getData(repo);
+                  updateChart(repo);
                 }}
               >
                 Add
@@ -260,7 +278,6 @@ function App() {
               <Button
                 variant="danger"
                 onClick={() => {
-                  setLegendData([""]);
                   setOption(DEFAULT_OPTIONS);
                   setDataSource({});
                 }}
@@ -271,9 +288,15 @@ function App() {
                 text={`${window.location.protocol +
                   "//" +
                   window.location.host +
-                  window.location.pathname}?repo=${legendData.join(",")}`}
+                  window.location.pathname}?repo=${option.legend.data.join(
+                  ","
+                )}`}
                 onCopy={(_, result) => {
-                  toast.success("Copy Success", TOAST_CONFIG);
+                  if (result) {
+                    toast.success("Copy Success", TOAST_CONFIG);
+                  } else {
+                    toast.error("Copy Failed", TOAST_CONFIG);
+                  }
                 }}
               >
                 <Button variant="success">share</Button>
