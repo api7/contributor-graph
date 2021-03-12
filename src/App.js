@@ -1,5 +1,5 @@
 import React from "react";
-import { cloneDeep } from "lodash";
+import cloneDeep from "lodash.clonedeep";
 import {
   FormControl,
   InputGroup,
@@ -170,7 +170,7 @@ function App() {
 
   const updateChart = (repo) => {
     if (dataSource[repo]) return;
-    
+
     fetchData(repo).then((myJson) => {
       const { Contributors = [] } = myJson;
       const data = Contributors.map((item) => ({
