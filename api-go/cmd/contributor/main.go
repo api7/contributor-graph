@@ -15,9 +15,9 @@ import (
 // 怎么存token，留token的API
 
 type returnObj struct {
-	Code         int               `json:"code`
-	ErrorMessage string            `json:"message`
-	Contributors []utils.ReturnCon `json:"contributors`
+	code         int               `json:"code`
+	errorMessage string            `json:"message`
+	contributors []utils.ReturnCon `json:"contributors`
 }
 
 func main() {
