@@ -88,7 +88,7 @@ func UpdateDB(dbCli *datastore.Client, repoInput string) ([]utils.ReturnCon, int
 	return nil, http.StatusOK, nil
 }
 
-func getContributorsNumFromGH(ctx context.Context, ghCli *github.Client, repoName string) ([]string, int, error) {
+func getContributorsNumFromGH(ctx context.Context, ghCli *github.Client, repoName string) ([]utils.ConGH, int, error) {
 	owner, repo, err := ghapi.SplitRepo(repoName)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
@@ -115,7 +115,7 @@ func getContributorsNumFromDB(ctx context.Context, cli *datastore.Client, repoNa
 	return repoNum.Num, nil
 }
 
-func updateContributorList(ctx context.Context, dbCli *datastore.Client, ghCli *github.Client, repoName string, newCons []string) ([]*utils.ReturnCon, int, error) {
+func updateContributorList(ctx context.Context, dbCli *datastore.Client, ghCli *github.Client, repoName string, newCons []utils.ConGH) ([]*utils.ReturnCon, int, error) {
 	owner, repo, err := ghapi.SplitRepo(repoName)
 	if err != nil {
 		return nil, http.StatusBadRequest, err

@@ -40,9 +40,9 @@ func GetGithubClient(ctx context.Context, token string) *github.Client {
 	return github.NewClient(tc)
 }
 
-func GetContributors(ctx context.Context, owner string, repo string, client *github.Client) ([]string, int, error) {
-	listConOpts := &github.ListContributorsOptions{ListOptions: listOpts}
-	var contributors []string
+func GetContributors(ctx context.Context, owner string, repo string, client *github.Client) ([]utils.ConGH, int, error) {
+	listConOpts := &github.ListContributorsOptions{ListOptions: listOpts, Anon: "true"}
+	var contributors []utils.ConGH
 	for {
 		cons, resp, err := client.Repositories.ListContributors(ctx, owner, repo, listConOpts)
 		if err != nil {
@@ -58,7 +58,13 @@ func GetContributors(ctx context.Context, owner string, repo string, client *git
 			return nil, resp.StatusCode, err
 		}
 		for _, c := range cons {
-			contributors = append(contributors, *c.Login)
+			var con utils.ConGH
+			if c.Login != nil {
+				con.Author = *c.Login
+			} else if c.Name != nil {
+				con.Name = *c.Name
+				con.Email = *c.Email
+			}
 		}
 		if resp.NextPage == 0 {
 			break
@@ -69,7 +75,7 @@ func GetContributors(ctx context.Context, owner string, repo string, client *git
 	return contributors, http.StatusOK, nil
 }
 
-func GetAndSortCommits(ctx context.Context, owner string, repo string, contributors []string, client *github.Client) ([]*utils.ReturnCon, int, error) {
+func GetAndSortCommits(ctx context.Context, owner string, repo string, contributors []utils.ConGH, client *github.Client) ([]*utils.ReturnCon, int, error) {
 	comLists, code, err := getCommits(ctx, owner, repo, contributors, client)
 	if err != nil {
 		return nil, code, err
@@ -98,7 +104,7 @@ func GetAndSortCommits(ctx context.Context, owner string, repo string, contribut
 	return returnCons, http.StatusOK, nil
 }
 
-func getCommits(ctx context.Context, owner string, repo string, contributors []string, client *github.Client) ([]*comList, int, error) {
+func getCommits(ctx context.Context, owner string, repo string, contributors []utils.ConGH, client *github.Client) ([]*comList, int, error) {
 	var wg sync.WaitGroup
 
 	errCh := make(chan error, len(contributors))
@@ -106,29 +112,14 @@ func getCommits(ctx context.Context, owner string, repo string, contributors []s
 
 	for i, c := range contributors {
 		wg.Add(1)
-		go func(i int, c string) {
+		go func(i int, c utils.ConGH) {
 			defer wg.Done()
-			listCommitOpts := &github.CommitsListOptions{Author: c, ListOptions: listOpts}
-			var commits []*github.RepositoryCommit
-			for {
-				coms, resp, err := client.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
-				if err != nil {
-					if resp == nil {
-						errCh <- err
-					}
-					if _, ok := err.(*github.RateLimitError); ok {
-						errCh <- fmt.Errorf("Hit rate limit")
-					}
-					errCh <- err
-				}
-				commits = coms
-				if resp.NextPage == 0 {
-					break
-				}
-				listCommitOpts.Page = resp.NextPage
-			}
+			commits := iterateCommits(ctx, errCh, c.Author, owner, repo)
 			if len(commits) == 0 {
-				return
+				commits = iterateCommits(ctx, errCh, c.Email, owner, repo)
+				if len(commit) == 0 {
+					return
+				}
 			}
 			firstCommitTime := commits[len(commits)-1].GetCommit().Author.Date
 			conCh <- &comList{c, *firstCommitTime}
@@ -153,6 +144,28 @@ func getCommits(ctx context.Context, owner string, repo string, contributors []s
 	}
 
 	return comLists, http.StatusOK, nil
+}
+
+func iterateCommits(ctx context.Context, errCh chan error, author string, owner string, repo string) []*github.RepositoryCommit {
+	listCommitOpts := &github.CommitsListOptions{Author: author, ListOptions: listOpts}
+	var commits []*github.RepositoryCommit
+	for {
+		coms, resp, err := client.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
+		if err != nil {
+			if resp == nil {
+				errCh <- err
+			}
+			if _, ok := err.(*github.RateLimitError); ok {
+				errCh <- fmt.Errorf("Hit rate limit")
+			}
+			errCh <- err
+		}
+		commits = coms
+		if resp.NextPage == 0 {
+			break
+		}
+		listCommitOpts.Page = resp.NextPage
+	}
 }
 
 func compareSameDay(time1 time.Time, time2 time.Time) bool {

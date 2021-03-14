@@ -16,6 +16,11 @@ type RepoNum struct {
 	Num int
 }
 
+type ConGH struct {
+	Author string
+	Email  string
+}
+
 var (
 	MongoURL     = "mongodb://localhost:27017"
 	DBName       = "contributor"
