@@ -116,10 +116,10 @@ func getCommits(ctx context.Context, owner string, repo string, contributors []u
 			defer wg.Done()
 			var comList comList
 			comList.Author = c.Author
-			commits := iterateCommits(ctx, errCh, c.Author, owner, repo, client)
+			commits := getLastCommit(ctx, errCh, c.Author, owner, repo, client)
 			if len(commits) == 0 {
 				comList.Author = c.Email
-				commits = iterateCommits(ctx, errCh, c.Email, owner, repo, client)
+				commits = getLastCommit(ctx, errCh, c.Email, owner, repo, client)
 				if len(commits) == 0 {
 					return
 				}
@@ -149,7 +149,7 @@ func getCommits(ctx context.Context, owner string, repo string, contributors []u
 	return comLists, http.StatusOK, nil
 }
 
-func iterateCommits(ctx context.Context, errCh chan error, author string, owner string, repo string, client *github.Client) []*github.RepositoryCommit {
+func getLastCommit(ctx context.Context, errCh chan error, author string, owner string, repo string, client *github.Client) []*github.RepositoryCommit {
 	listCommitOpts := &github.CommitsListOptions{Author: author, ListOptions: listOpts}
 	var commits []*github.RepositoryCommit
 	for {
@@ -167,7 +167,7 @@ func iterateCommits(ctx context.Context, errCh chan error, author string, owner 
 		if resp.NextPage == 0 {
 			break
 		}
-		listCommitOpts.Page = resp.NextPage
+		listCommitOpts.Page = resp.LastPage
 	}
 	return commits
 }
