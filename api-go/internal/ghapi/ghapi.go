@@ -62,7 +62,7 @@ func GetContributors(ctx context.Context, owner string, repo string, client *git
 			if c.Login != nil {
 				con.Author = *c.Login
 			} else if c.Name != nil {
-				con.Name = *c.Name
+				con.Author = *c.Name
 				con.Email = *c.Email
 			}
 		}
@@ -114,15 +114,18 @@ func getCommits(ctx context.Context, owner string, repo string, contributors []u
 		wg.Add(1)
 		go func(i int, c utils.ConGH) {
 			defer wg.Done()
-			commits := iterateCommits(ctx, errCh, c.Author, owner, repo)
+			var comList comList
+			comList.Author = c.Author
+			commits := iterateCommits(ctx, errCh, c.Author, owner, repo, client)
 			if len(commits) == 0 {
-				commits = iterateCommits(ctx, errCh, c.Email, owner, repo)
-				if len(commit) == 0 {
+				comList.Author = c.Email
+				commits = iterateCommits(ctx, errCh, c.Email, owner, repo, client)
+				if len(commits) == 0 {
 					return
 				}
 			}
-			firstCommitTime := commits[len(commits)-1].GetCommit().Author.Date
-			conCh <- &comList{c, *firstCommitTime}
+			comList.Date = *commits[len(commits)-1].GetCommit().Author.Date
+			conCh <- &comList
 			log.Printf("fetched commits of %s\n", c)
 		}(i, c)
 	}
@@ -146,7 +149,7 @@ func getCommits(ctx context.Context, owner string, repo string, contributors []u
 	return comLists, http.StatusOK, nil
 }
 
-func iterateCommits(ctx context.Context, errCh chan error, author string, owner string, repo string) []*github.RepositoryCommit {
+func iterateCommits(ctx context.Context, errCh chan error, author string, owner string, repo string, client *github.Client) []*github.RepositoryCommit {
 	listCommitOpts := &github.CommitsListOptions{Author: author, ListOptions: listOpts}
 	var commits []*github.RepositoryCommit
 	for {
@@ -166,6 +169,7 @@ func iterateCommits(ctx context.Context, errCh chan error, author string, owner 
 		}
 		listCommitOpts.Page = resp.NextPage
 	}
+	return commits
 }
 
 func compareSameDay(time1 time.Time, time2 time.Time) bool {
