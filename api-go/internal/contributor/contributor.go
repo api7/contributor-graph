@@ -32,17 +32,9 @@ func GetContributorList(repoName string) ([]utils.ReturnCon, int, error) {
 		return nil, http.StatusBadRequest, fmt.Errorf("Repo format error")
 	}
 
-	var returnCons []utils.ReturnCon
-	if _, err = dbCli.GetAll(ctx, datastore.NewQuery(repoName).Order("Date"), &returnCons); err != nil {
-		return nil, http.StatusInternalServerError, err
-	}
-
-	if len(returnCons) == 0 {
-		var code int
-		returnCons, code, err = gcpdb.UpdateDB(dbCli, repoName)
-		if err != nil {
-			return nil, code, err
-		}
+	returnCons, code, err := gcpdb.UpdateDB(dbCli, repoName)
+	if err != nil {
+		return nil, code, err
 	}
 
 	return returnCons, http.StatusOK, nil

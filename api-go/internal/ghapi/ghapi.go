@@ -17,11 +17,6 @@ import (
 	"github.com/api7/contributor-graph/api/internal/utils"
 )
 
-type comList struct {
-	Author string
-	Date   time.Time
-}
-
 var (
 	listOpts = github.ListOptions{PerPage: 100}
 )
@@ -40,7 +35,12 @@ func GetGithubClient(ctx context.Context, token string) *github.Client {
 	return github.NewClient(tc)
 }
 
-func GetContributors(ctx context.Context, owner string, repo string, client *github.Client) ([]utils.ConGH, int, error) {
+func GetContributors(ctx context.Context, client *github.Client, repoName string) ([]utils.ConGH, int, error) {
+	owner, repo, err := SplitRepo(repoName)
+	if err != nil {
+		return nil, http.StatusBadRequest, err
+	}
+
 	listConOpts := &github.ListContributorsOptions{ListOptions: listOpts, Anon: "true"}
 	var contributors []utils.ConGH
 	for {
@@ -75,20 +75,14 @@ func GetContributors(ctx context.Context, owner string, repo string, client *git
 	return contributors, http.StatusOK, nil
 }
 
-func GetAndSortCommits(ctx context.Context, owner string, repo string, contributors []utils.ConGH, client *github.Client) ([]*utils.ReturnCon, int, error) {
-	comLists, code, err := getCommits(ctx, owner, repo, contributors, client)
-	if err != nil {
-		return nil, code, err
-	}
-
-	sort.SliceStable(comLists, func(i, j int) bool {
-		return comLists[i].Date.Before(comLists[j].Date)
-	})
-
+func FormatCommits(ctx context.Context, comLists []*utils.ConList) ([]*utils.ReturnCon, int, error) {
 	var returnCons []*utils.ReturnCon
 	var authors []string
 	var timeLast time.Time
 	for i, c := range comLists {
+		if c.Date.IsZero() {
+			continue
+		}
 		if compareSameDay(c.Date, timeLast) {
 			authors = append(authors, c.Author)
 		} else {
@@ -104,29 +98,37 @@ func GetAndSortCommits(ctx context.Context, owner string, repo string, contribut
 	return returnCons, http.StatusOK, nil
 }
 
-func getCommits(ctx context.Context, owner string, repo string, contributors []utils.ConGH, client *github.Client) ([]*comList, int, error) {
+func GetCommits(ctx context.Context, client *github.Client, repoName string, contributors []utils.ConGH) ([]*utils.ConList, int, error) {
+	owner, repo, err := SplitRepo(repoName)
+	if err != nil {
+		return nil, http.StatusBadRequest, err
+	}
+
 	var wg sync.WaitGroup
 
 	errCh := make(chan error, len(contributors))
-	conCh := make(chan *comList, len(contributors))
+	conCh := make(chan *utils.ConList, len(contributors))
 
 	for i, c := range contributors {
 		wg.Add(1)
 		go func(i int, c utils.ConGH) {
 			defer wg.Done()
-			var comList comList
+			var comList utils.ConList
 			comList.Author = c.Author
 			commits := getLastCommit(ctx, errCh, c.Author, owner, repo, client)
 			if len(commits) == 0 {
 				comList.Author = c.Email
 				commits = getLastCommit(ctx, errCh, c.Email, owner, repo, client)
 				if len(commits) == 0 {
+					comList.Date = time.Time{}
+					conCh <- &comList
+					log.Printf("commits of %v not exists\n", c)
 					return
 				}
 			}
 			comList.Date = *commits[len(commits)-1].GetCommit().Author.Date
 			conCh <- &comList
-			log.Printf("fetched commits of %s\n", c)
+			log.Printf("fetched commits of %v\n", c)
 		}(i, c)
 	}
 	wg.Wait()
@@ -141,10 +143,14 @@ func getCommits(ctx context.Context, owner string, repo string, contributors []u
 		return nil, http.StatusInternalServerError, multiErr
 	}
 
-	var comLists []*comList
+	var comLists []*utils.ConList
 	for c := range conCh {
 		comLists = append(comLists, c)
 	}
+
+	sort.SliceStable(comLists, func(i, j int) bool {
+		return comLists[i].Date.Before(comLists[j].Date)
+	})
 
 	return comLists, http.StatusOK, nil
 }

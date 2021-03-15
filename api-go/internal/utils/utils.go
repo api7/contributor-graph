@@ -21,6 +21,11 @@ type ConGH struct {
 	Email  string
 }
 
+type ConList struct {
+	Author string
+	Date   time.Time
+}
+
 var (
 	MongoURL     = "mongodb://localhost:27017"
 	DBName       = "contributor"

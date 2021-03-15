@@ -66,8 +66,34 @@ func UpdateDB(dbCli *datastore.Client, repoInput string) ([]utils.ReturnCon, int
 		}
 
 		log.Printf("Repo %s need to update from %d to %d\n", repoName, conNumDB, conNumGH)
-		newCons := conGH[conNumDB:]
-		cons, code, err := updateContributorList(ctx, dbCli, ghCli, repoName, newCons)
+
+		var conLists []*utils.ConList
+		if _, err = dbCli.GetAll(ctx, datastore.NewQuery(repoName).Order("Date"), &conLists); err != nil {
+			return nil, http.StatusInternalServerError, err
+		}
+
+		conExists := make(map[string]bool)
+
+		for _, c := range conLists {
+			conExists[c.Author] = true
+		}
+		var newCons []utils.ConGH
+		for _, c := range conGH {
+			if _, ok := conExists[c.Author]; !ok {
+				if _, ok := conExists[c.Email]; !ok {
+					newCons = append(newCons, c)
+				}
+			}
+		}
+
+		newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, repoName, newCons)
+		if err != nil {
+			return nil, http.StatusInternalServerError, err
+		}
+
+		conLists = append(conLists, newConLists...)
+
+		formattedCons, code, err := ghapi.FormatCommits(ctx, conLists)
 		if err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
@@ -77,9 +103,9 @@ func UpdateDB(dbCli *datastore.Client, repoInput string) ([]utils.ReturnCon, int
 		}
 
 		if repoInput != "" {
-			returnCons := make([]utils.ReturnCon, len(cons))
-			for i := range cons {
-				returnCons[i] = *cons[i]
+			returnCons := make([]utils.ReturnCon, len(formattedCons))
+			for i, c := range formattedCons {
+				returnCons[i] = *c
 			}
 			return returnCons, http.StatusOK, nil
 		}
@@ -89,12 +115,7 @@ func UpdateDB(dbCli *datastore.Client, repoInput string) ([]utils.ReturnCon, int
 }
 
 func getContributorsNumFromGH(ctx context.Context, ghCli *github.Client, repoName string) ([]utils.ConGH, int, error) {
-	owner, repo, err := ghapi.SplitRepo(repoName)
-	if err != nil {
-		return nil, http.StatusBadRequest, err
-	}
-
-	cons, code, err := ghapi.GetContributors(ctx, owner, repo, ghCli)
+	cons, code, err := ghapi.GetContributors(ctx, ghCli, repoName)
 	if err != nil {
 		return nil, code, err
 	}
@@ -115,29 +136,22 @@ func getContributorsNumFromDB(ctx context.Context, cli *datastore.Client, repoNa
 	return repoNum.Num, nil
 }
 
-func updateContributorList(ctx context.Context, dbCli *datastore.Client, ghCli *github.Client, repoName string, newCons []utils.ConGH) ([]*utils.ReturnCon, int, error) {
-	owner, repo, err := ghapi.SplitRepo(repoName)
-	if err != nil {
-		return nil, http.StatusBadRequest, err
-	}
-
-	returnCons, code, err := ghapi.GetAndSortCommits(ctx, owner, repo, newCons, ghCli)
+func updateContributorList(ctx context.Context, dbCli *datastore.Client, ghCli *github.Client, repoName string, newCons []utils.ConGH) ([]*utils.ConList, int, error) {
+	commitLists, code, err := ghapi.GetCommits(ctx, ghCli, repoName, newCons)
 	if err != nil {
 		return nil, code, err
 	}
 
-	keys := make([]*datastore.Key, len(returnCons))
-	inKey := datastore.IncompleteKey(repoName, utils.ConParentKey)
-
-	for i := range returnCons {
-		keys[i] = inKey
+	keys := make([]*datastore.Key, len(commitLists))
+	for i, c := range commitLists {
+		keys[i] = datastore.NameKey(repoName, c.Author, utils.ConParentKey)
 	}
 
-	if _, err := dbCli.PutMulti(ctx, keys, returnCons); err != nil {
+	if _, err := dbCli.PutMulti(ctx, keys, commitLists); err != nil {
 		return nil, http.StatusInternalServerError, err
 	}
 
-	return returnCons, http.StatusOK, nil
+	return commitLists, http.StatusOK, nil
 }
 
 func updateRepoList(ctx context.Context, dbCli *datastore.Client, repoName string, conNumGH int) error {
