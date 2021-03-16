@@ -344,7 +344,7 @@ function App() {
                   <Tab.Content>
                     <Tab.Pane eventKey="contributor">
                       <div style={{ marginBottom: "5px" }}>
-                        <ButtonGroup color="secondary">
+                        <ButtonGroup color="secondary" size="small">
                           <Button
                             variant={
                               activeDate === "1month" ? "contained" : "outlined"

@@ -14,7 +14,6 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export default function OutlinedChips({ list = [], onDelete }) {
-  console.log("list: ", list);
   const classes = useStyles();
 
   return (
