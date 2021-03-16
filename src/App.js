@@ -1,20 +1,22 @@
 import React from "react";
 import cloneDeep from "lodash.clonedeep";
 import omit from "lodash.omit";
+import { Row, Col, Tab } from "react-bootstrap";
+import ReactECharts from "echarts-for-react";
+import { CopyToClipboard } from "react-copy-to-clipboard";
+import MenuIcon from "@material-ui/icons/Menu";
+
 import {
-  FormControl,
-  InputGroup,
   Button,
   ButtonGroup,
-  Row,
-  Col,
-  Tab
-} from "react-bootstrap";
-import ReactECharts from "echarts-for-react";
-import { ToastContainer, toast } from "react-toastify";
-import { CopyToClipboard } from "react-copy-to-clipboard";
-
-import "react-toastify/dist/ReactToastify.css";
+  makeStyles,
+  Paper,
+  Divider
+} from "@material-ui/core";
+import SearchIcon from "@material-ui/icons/Search";
+import IconButton from "@material-ui/core/IconButton";
+import InputBase from "@material-ui/core/InputBase";
+import ShareIcon from "@material-ui/icons/Share";
 
 import Chips from "./components/chip";
 
@@ -38,16 +40,6 @@ const getParameterByName = (name, url = window.location.href) => {
   if (!results) return null;
   if (!results[2]) return "";
   return decodeURIComponent(results[2].replace(/\+/g, " "));
-};
-
-const TOAST_CONFIG = {
-  position: "top-center",
-  autoClose: 5000,
-  hideProgressBar: false,
-  closeOnClick: true,
-  pauseOnHover: true,
-  draggable: true,
-  progress: undefined
 };
 
 const DEFAULT_OPTIONS = {
@@ -77,6 +69,34 @@ const DEFAULT_OPTIONS = {
   series: []
 };
 
+const useStyles = makeStyles(theme => ({
+  button: {
+    margin: theme.spacing(1)
+  },
+  textField: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    width: "50ch"
+  },
+  root: {
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "center",
+    width: 600
+  },
+  input: {
+    marginLeft: theme.spacing(1),
+    flex: 1
+  },
+  iconButton: {
+    padding: 10
+  },
+  divider: {
+    height: 28,
+    margin: 4
+  }
+}));
+
 function App() {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
@@ -84,6 +104,8 @@ function App() {
   const [xAxis, setXAxis] = React.useState([]);
   const [option, setOption] = React.useState(DEFAULT_OPTIONS);
   const [repo, setRepo] = React.useState("apache/apisix");
+
+  const classes = useStyles();
 
   const updateSeries = passXAxis => {
     const newClonedOption = cloneDeep(DEFAULT_OPTIONS);
@@ -167,7 +189,7 @@ function App() {
           resolve({ repo, ...myJson });
         })
         .catch(e => {
-          toast.error("Request Error", TOAST_CONFIG);
+          // toast.error("Request Error", TOAST_CONFIG);
           setLoading(false);
           reject();
         });
@@ -245,11 +267,6 @@ function App() {
 
   return (
     <>
-      <ToastContainer />
-      <link
-        rel="stylesheet"
-        href="https://static.apiseven.com/bootstrap.min.css"
-      />
       <div
         className="content"
         style={{ display: "flex", justifyContent: "center" }}
@@ -259,44 +276,28 @@ function App() {
             className="search-container"
             style={{ display: "flex", justifyContent: "center" }}
           >
-            <InputGroup style={{ marginRight: "20px" }}>
-              <InputGroup.Prepend>
-                <InputGroup.Text id="basic-addon3">
-                  https://github.com/
-                </InputGroup.Text>
-              </InputGroup.Prepend>
-              <FormControl
+            <Paper component="form" className={classes.root}>
+              <IconButton className={classes.iconButton} aria-label="menu">
+                <MenuIcon />
+              </IconButton>
+              <InputBase
+                className={classes.input}
                 placeholder="apache/apisix"
-                aria-label="apache/apisix"
-                aria-describedby="apache/apisix"
                 value={repo}
                 onChange={e => {
                   setRepo(e.target.value);
                 }}
+                inputProps={{ "aria-label": "search repo" }}
               />
-              <InputGroup.Append>
-                <InputGroup.Text>.git</InputGroup.Text>
-              </InputGroup.Append>
-            </InputGroup>
-            <>
-              <Button
-                variant="primary"
-                style={{ marginRight: "5px" }}
-                onClick={() => {
-                  updateChart(repo);
-                }}
-              >
-                Add
-              </Button>{" "}
-              {/* <Button
-                variant="danger"
-                onClick={() => {
-                  setOption(DEFAULT_OPTIONS);
-                  setDataSource({});
-                }}
-              >
-                Clear
-              </Button>{" "} */}
+              <IconButton className={classes.iconButton} aria-label="search">
+                <SearchIcon
+                  onClick={() => {
+                    updateChart(repo);
+                  }}
+                />
+                <Divider className={classes.divider} orientation="vertical" />
+              </IconButton>
+
               <CopyToClipboard
                 text={
                   window.location !== window.parent.location
@@ -311,15 +312,21 @@ function App() {
                 }
                 onCopy={(_, result) => {
                   if (result) {
-                    toast.success("Copy Success", TOAST_CONFIG);
+                    // toast.success("Copy Success", TOAST_CONFIG);
                   } else {
-                    toast.error("Copy Failed", TOAST_CONFIG);
+                    // toast.error("Copy Failed", TOAST_CONFIG);
                   }
                 }}
               >
-                <Button variant="success">Share</Button>
+                <IconButton
+                  color="primary"
+                  className={classes.iconButton}
+                  aria-label="share"
+                >
+                  <ShareIcon />
+                </IconButton>
               </CopyToClipboard>
-            </>
+            </Paper>
           </div>
           <div style={{ marginTop: "10px" }}>
             <Chips
@@ -337,49 +344,59 @@ function App() {
                   <Tab.Content>
                     <Tab.Pane eventKey="contributor">
                       <div style={{ marginBottom: "5px" }}>
-                        <ButtonGroup size="sm">
+                        <ButtonGroup color="secondary">
                           <Button
-                            variant="outline-primary"
+                            variant={
+                              activeDate === "1month" ? "contained" : "outlined"
+                            }
                             value="1month"
-                            active={activeDate === "1month"}
                             onClick={e => {
                               setActiveDate(e.currentTarget.value);
                             }}
                           >
                             1 Month
-                          </Button>{" "}
+                          </Button>
                           <Button
-                            variant="outline-primary"
+                            variant={
+                              activeDate === "3months"
+                                ? "contained"
+                                : "outlined"
+                            }
                             value="3months"
-                            active={activeDate === "3months"}
                             onClick={e => {
                               setActiveDate(e.currentTarget.value);
                             }}
                           >
                             3 Months
-                          </Button>{" "}
+                          </Button>
                           <Button
-                            variant="outline-primary"
+                            variant={
+                              activeDate === "6months"
+                                ? "contained"
+                                : "outlined"
+                            }
                             value="6months"
-                            active={activeDate === "6months"}
                             onClick={e => {
                               setActiveDate(e.currentTarget.value);
                             }}
                           >
                             6 Months
-                          </Button>{" "}
+                          </Button>
                           <Button
-                            variant="outline-primary"
+                            variant={
+                              activeDate === "1year" ? "contained" : "outlined"
+                            }
                             value="1year"
-                            active={activeDate === "1year"}
                             onClick={e => {
                               setActiveDate(e.currentTarget.value);
                             }}
                           >
                             1 Year
-                          </Button>{" "}
+                          </Button>
                           <Button
-                            variant="outline-primary"
+                            variant={
+                              activeDate === "max" ? "contained" : "outlined"
+                            }
                             value="max"
                             active={activeDate === "max"}
                             onClick={e => {
@@ -387,7 +404,7 @@ function App() {
                             }}
                           >
                             Max
-                          </Button>{" "}
+                          </Button>
                         </ButtonGroup>
                       </div>
                       <ReactECharts
