@@ -1,5 +1,6 @@
 import React from "react";
 import cloneDeep from "lodash.clonedeep";
+import omit from "lodash.omit";
 import {
   FormControl,
   InputGroup,
@@ -14,6 +15,8 @@ import { ToastContainer, toast } from "react-toastify";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 
 import "react-toastify/dist/ReactToastify.css";
+
+import Chips from "./components/chip";
 
 const getMonths = (month = 12) => {
   const d = new Date();
@@ -278,13 +281,14 @@ function App() {
             <>
               <Button
                 variant="primary"
+                style={{ marginRight: "5px" }}
                 onClick={() => {
                   updateChart(repo);
                 }}
               >
                 Add
               </Button>{" "}
-              <Button
+              {/* <Button
                 variant="danger"
                 onClick={() => {
                   setOption(DEFAULT_OPTIONS);
@@ -292,7 +296,7 @@ function App() {
                 }}
               >
                 Clear
-              </Button>{" "}
+              </Button>{" "} */}
               <CopyToClipboard
                 text={
                   window.location !== window.parent.location
@@ -316,6 +320,15 @@ function App() {
                 <Button variant="success">Share</Button>
               </CopyToClipboard>
             </>
+          </div>
+          <div style={{ marginTop: "10px" }}>
+            <Chips
+              list={Object.keys(dataSource)}
+              onDelete={e => {
+                const newDataSource = omit(dataSource, [e]);
+                setDataSource(newDataSource);
+              }}
+            />
           </div>
           <div id="chart" style={{ marginTop: "30px" }}>
             <Tab.Container defaultActiveKey="contributor">
