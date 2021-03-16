@@ -7,7 +7,7 @@ import {
   ButtonGroup,
   Row,
   Col,
-  Tab,
+  Tab
 } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
 import { ToastContainer, toast } from "react-toastify";
@@ -44,34 +44,34 @@ const TOAST_CONFIG = {
   closeOnClick: true,
   pauseOnHover: true,
   draggable: true,
-  progress: undefined,
+  progress: undefined
 };
 
 const DEFAULT_OPTIONS = {
   legend: {
     top: "5%",
-    data: [],
+    data: []
   },
   toolbox: {
     feature: {
-      saveAsImage: {},
-    },
+      saveAsImage: {}
+    }
   },
   dataset: [],
   title: {
-    text: "Contributor Over Time",
+    text: "Contributor Over Time"
   },
   tooltip: {
-    trigger: "axis",
+    trigger: "axis"
   },
   xAxis: {
     type: "time",
-    nameLocation: "middle",
+    nameLocation: "middle"
   },
   yAxis: {
-    name: "",
+    name: ""
   },
-  series: [],
+  series: []
 };
 
 function App() {
@@ -82,22 +82,22 @@ function App() {
   const [option, setOption] = React.useState(DEFAULT_OPTIONS);
   const [repo, setRepo] = React.useState("apache/apisix");
 
-  const updateSeries = (passXAxis) => {
+  const updateSeries = passXAxis => {
     const newClonedOption = cloneDeep(DEFAULT_OPTIONS);
     const datasetWithFilters = [
-      ["ContributorNum", "Repo", "Date", "DateValue"],
+      ["ContributorNum", "Repo", "Date", "DateValue"]
     ];
     const legend = [];
     const limitDate = new Date(passXAxis[0]).getTime();
 
     Object.entries(dataSource).forEach(([key, value]) => {
       legend.push(key);
-      value.forEach((item) => {
+      value.forEach(item => {
         datasetWithFilters.push([
           item.contributorNum,
           item.repo,
           item.date,
-          new Date(item.date).getTime(),
+          new Date(item.date).getTime()
         ]);
       });
     });
@@ -106,7 +106,7 @@ function App() {
       (a, b) => new Date(a[2]) - new Date(b[2])
     );
 
-    const filterDataset = legend.map((item) => ({
+    const filterDataset = legend.map(item => ({
       id: item,
       fromDatasetId: "dataset_raw",
       transform: {
@@ -114,13 +114,13 @@ function App() {
         config: {
           and: [
             { dimension: "Repo", "=": item },
-            { dimension: "DateValue", gte: limitDate },
-          ],
-        },
-      },
+            { dimension: "DateValue", gte: limitDate }
+          ]
+        }
+      }
     }));
 
-    const series = legend.map((item) => ({
+    const series = legend.map(item => ({
       name: item,
       type: "line",
       datasetId: item,
@@ -129,15 +129,15 @@ function App() {
         x: "Date",
         y: "ContributorNum",
         itemName: "Repo",
-        tooltip: ["ContributorNum"],
-      },
+        tooltip: ["ContributorNum"]
+      }
     }));
 
     newClonedOption.dataset = [
       {
         id: "dataset_raw",
-        source: newDateSet,
-      },
+        source: newDateSet
+      }
     ].concat(filterDataset);
 
     newClonedOption.series = series;
@@ -146,24 +146,24 @@ function App() {
     setOption(newClonedOption);
   };
 
-  const fetchData = (repo) => {
+  const fetchData = repo => {
     if (repo === "null" || repo === null) {
       repo = "apache/apisix";
-    };
+    }
     setLoading(true);
 
     return new Promise((resolve, reject) => {
       fetch(
         `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
       )
-        .then((response) => {
+        .then(response => {
           return response.json();
         })
-        .then((myJson) => {
+        .then(myJson => {
           setLoading(false);
           resolve({ repo, ...myJson });
         })
-        .catch((e) => {
+        .catch(e => {
           toast.error("Request Error", TOAST_CONFIG);
           setLoading(false);
           reject();
@@ -171,15 +171,15 @@ function App() {
     });
   };
 
-  const updateChart = (repo) => {
+  const updateChart = repo => {
     if (dataSource[repo]) return;
 
-    fetchData(repo).then((myJson) => {
+    fetchData(repo).then(myJson => {
       const { Contributors = [] } = myJson;
-      const data = Contributors.map((item) => ({
+      const data = Contributors.map(item => ({
         repo,
         contributorNum: item.idx,
-        date: item.date,
+        date: item.date
       }));
 
       const clonedDatasource = cloneDeep(dataSource);
@@ -219,14 +219,14 @@ function App() {
     const repo = getParameterByName("repo");
     if (repo) {
       const repoArr = repo.split(",").filter(Boolean);
-      Promise.all(repoArr.map((item) => fetchData(item))).then((data) => {
+      Promise.all(repoArr.map(item => fetchData(item))).then(data => {
         const tmpDataSouce = {};
-        data.forEach((item) => {
+        data.forEach(item => {
           const { Contributors = [], repo } = item;
-          const data = Contributors.map((item) => ({
+          const data = Contributors.map(item => ({
             repo,
             contributorNum: item.idx,
-            date: item.date,
+            date: item.date
           }));
 
           if (!tmpDataSouce[item.repo]) {
@@ -256,17 +256,24 @@ function App() {
             className="search-container"
             style={{ display: "flex", justifyContent: "center" }}
           >
-            <InputGroup>
+            <InputGroup style={{ marginRight: "20px" }}>
+              <InputGroup.Prepend>
+                <InputGroup.Text id="basic-addon3">
+                  https://github.com/
+                </InputGroup.Text>
+              </InputGroup.Prepend>
               <FormControl
                 placeholder="apache/apisix"
                 aria-label="apache/apisix"
                 aria-describedby="apache/apisix"
                 value={repo}
-                onChange={(e) => {
+                onChange={e => {
                   setRepo(e.target.value);
                 }}
               />
-              <InputGroup.Append></InputGroup.Append>
+              <InputGroup.Append>
+                <InputGroup.Text>.git</InputGroup.Text>
+              </InputGroup.Append>
             </InputGroup>
             <>
               <Button
@@ -322,7 +329,7 @@ function App() {
                             variant="outline-primary"
                             value="1month"
                             active={activeDate === "1month"}
-                            onClick={(e) => {
+                            onClick={e => {
                               setActiveDate(e.currentTarget.value);
                             }}
                           >
@@ -332,7 +339,7 @@ function App() {
                             variant="outline-primary"
                             value="3months"
                             active={activeDate === "3months"}
-                            onClick={(e) => {
+                            onClick={e => {
                               setActiveDate(e.currentTarget.value);
                             }}
                           >
@@ -342,7 +349,7 @@ function App() {
                             variant="outline-primary"
                             value="6months"
                             active={activeDate === "6months"}
-                            onClick={(e) => {
+                            onClick={e => {
                               setActiveDate(e.currentTarget.value);
                             }}
                           >
@@ -352,7 +359,7 @@ function App() {
                             variant="outline-primary"
                             value="1year"
                             active={activeDate === "1year"}
-                            onClick={(e) => {
+                            onClick={e => {
                               setActiveDate(e.currentTarget.value);
                             }}
                           >
@@ -362,7 +369,7 @@ function App() {
                             variant="outline-primary"
                             value="max"
                             active={activeDate === "max"}
-                            onClick={(e) => {
+                            onClick={e => {
                               setActiveDate(e.currentTarget.value);
                             }}
                           >
