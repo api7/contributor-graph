@@ -1,19 +1,30 @@
 import React from "react";
 import cloneDeep from "lodash.clonedeep";
-import {
-  FormControl,
-  InputGroup,
-  Button,
-  ButtonGroup,
-  Row,
-  Col,
-  Tab,
-} from "react-bootstrap";
+import omit from "lodash.omit";
+import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
-import { ToastContainer, toast } from "react-toastify";
 import { CopyToClipboard } from "react-copy-to-clipboard";
 
-import "react-toastify/dist/ReactToastify.css";
+import {
+  Button,
+  ButtonGroup,
+  makeStyles,
+  Paper,
+  Divider,
+  IconButton,
+  InputBase,
+  Snackbar
+} from "@material-ui/core";
+import SearchIcon from "@material-ui/icons/Search";
+import MenuIcon from "@material-ui/icons/Menu";
+import ShareIcon from "@material-ui/icons/Share";
+import MuiAlert from "@material-ui/lab/Alert";
+
+import Chips from "./components/chip";
+
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 const getMonths = (month = 12) => {
   const d = new Date();
@@ -37,42 +48,60 @@ const getParameterByName = (name, url = window.location.href) => {
   return decodeURIComponent(results[2].replace(/\+/g, " "));
 };
 
-const TOAST_CONFIG = {
-  position: "top-center",
-  autoClose: 5000,
-  hideProgressBar: false,
-  closeOnClick: true,
-  pauseOnHover: true,
-  draggable: true,
-  progress: undefined,
-};
-
 const DEFAULT_OPTIONS = {
   legend: {
     top: "5%",
-    data: [],
+    data: []
   },
   toolbox: {
     feature: {
-      saveAsImage: {},
-    },
+      saveAsImage: {}
+    }
   },
   dataset: [],
   title: {
-    text: "Contributor Over Time",
+    text: "Contributor Over Time"
   },
   tooltip: {
-    trigger: "axis",
+    trigger: "axis"
   },
   xAxis: {
     type: "time",
-    nameLocation: "middle",
+    nameLocation: "middle"
   },
   yAxis: {
-    name: "",
+    name: ""
   },
-  series: [],
+  series: []
 };
+
+const useStyles = makeStyles(theme => ({
+  button: {
+    margin: theme.spacing(1)
+  },
+  textField: {
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    width: "50ch"
+  },
+  root: {
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "center",
+    width: 600
+  },
+  input: {
+    marginLeft: theme.spacing(1),
+    flex: 1
+  },
+  iconButton: {
+    padding: 10
+  },
+  divider: {
+    height: 28,
+    margin: 4
+  }
+}));
 
 function App() {
   const [loading, setLoading] = React.useState(false);
@@ -81,23 +110,41 @@ function App() {
   const [xAxis, setXAxis] = React.useState([]);
   const [option, setOption] = React.useState(DEFAULT_OPTIONS);
   const [repo, setRepo] = React.useState("apache/apisix");
+  const [message, setMessage] = React.useState("");
+  const [open, setOpen] = React.useState(false);
+  const [alertType, setAlertType] = React.useState("success");
 
-  const updateSeries = (passXAxis) => {
+  const classes = useStyles();
+
+  const showAlert = (message = "", type = "success") => {
+    setMessage(message);
+    setAlertType(type);
+    setOpen(true);
+  };
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  const updateSeries = passXAxis => {
     const newClonedOption = cloneDeep(DEFAULT_OPTIONS);
     const datasetWithFilters = [
-      ["ContributorNum", "Repo", "Date", "DateValue"],
+      ["ContributorNum", "Repo", "Date", "DateValue"]
     ];
     const legend = [];
     const limitDate = new Date(passXAxis[0]).getTime();
 
     Object.entries(dataSource).forEach(([key, value]) => {
       legend.push(key);
-      value.forEach((item) => {
+      value.forEach(item => {
         datasetWithFilters.push([
           item.contributorNum,
           item.repo,
           item.date,
-          new Date(item.date).getTime(),
+          new Date(item.date).getTime()
         ]);
       });
     });
@@ -106,7 +153,7 @@ function App() {
       (a, b) => new Date(a[2]) - new Date(b[2])
     );
 
-    const filterDataset = legend.map((item) => ({
+    const filterDataset = legend.map(item => ({
       id: item,
       fromDatasetId: "dataset_raw",
       transform: {
@@ -114,13 +161,13 @@ function App() {
         config: {
           and: [
             { dimension: "Repo", "=": item },
-            { dimension: "DateValue", gte: limitDate },
-          ],
-        },
-      },
+            { dimension: "DateValue", gte: limitDate }
+          ]
+        }
+      }
     }));
 
-    const series = legend.map((item) => ({
+    const series = legend.map(item => ({
       name: item,
       type: "line",
       datasetId: item,
@@ -129,15 +176,15 @@ function App() {
         x: "Date",
         y: "ContributorNum",
         itemName: "Repo",
-        tooltip: ["ContributorNum"],
-      },
+        tooltip: ["ContributorNum"]
+      }
     }));
 
     newClonedOption.dataset = [
       {
         id: "dataset_raw",
-        source: newDateSet,
-      },
+        source: newDateSet
+      }
     ].concat(filterDataset);
 
     newClonedOption.series = series;
@@ -146,40 +193,40 @@ function App() {
     setOption(newClonedOption);
   };
 
-  const fetchData = (repo) => {
+  const fetchData = repo => {
     if (repo === "null" || repo === null) {
       repo = "apache/apisix";
-    };
+    }
     setLoading(true);
 
     return new Promise((resolve, reject) => {
       fetch(
         `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
       )
-        .then((response) => {
+        .then(response => {
           return response.json();
         })
-        .then((myJson) => {
+        .then(myJson => {
           setLoading(false);
           resolve({ repo, ...myJson });
         })
-        .catch((e) => {
-          toast.error("Request Error", TOAST_CONFIG);
+        .catch(e => {
+          showAlert("Request Error", "error");
           setLoading(false);
           reject();
         });
     });
   };
 
-  const updateChart = (repo) => {
+  const updateChart = repo => {
     if (dataSource[repo]) return;
 
-    fetchData(repo).then((myJson) => {
+    fetchData(repo).then(myJson => {
       const { Contributors = [] } = myJson;
-      const data = Contributors.map((item) => ({
+      const data = Contributors.map(item => ({
         repo,
         contributorNum: item.idx,
-        date: item.date,
+        date: item.date
       }));
 
       const clonedDatasource = cloneDeep(dataSource);
@@ -219,14 +266,14 @@ function App() {
     const repo = getParameterByName("repo");
     if (repo) {
       const repoArr = repo.split(",").filter(Boolean);
-      Promise.all(repoArr.map((item) => fetchData(item))).then((data) => {
+      Promise.all(repoArr.map(item => fetchData(item))).then(data => {
         const tmpDataSouce = {};
-        data.forEach((item) => {
+        data.forEach(item => {
           const { Contributors = [], repo } = item;
-          const data = Contributors.map((item) => ({
+          const data = Contributors.map(item => ({
             repo,
             contributorNum: item.idx,
-            date: item.date,
+            date: item.date
           }));
 
           if (!tmpDataSouce[item.repo]) {
@@ -242,11 +289,17 @@ function App() {
 
   return (
     <>
-      <ToastContainer />
-      <link
-        rel="stylesheet"
-        href="https://static.apiseven.com/bootstrap.min.css"
-      />
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        autoHideDuration={6000}
+        open={open}
+        onClose={handleClose}
+        key={"topcenter"}
+      >
+        <Alert severity={alertType} onClose={handleClose}>
+          {message}
+        </Alert>
+      </Snackbar>
       <div
         className="content"
         style={{ display: "flex", justifyContent: "center" }}
@@ -256,36 +309,36 @@ function App() {
             className="search-container"
             style={{ display: "flex", justifyContent: "center" }}
           >
-            <InputGroup>
-              <FormControl
+            <Paper component="form" className={classes.root}>
+              <IconButton className={classes.iconButton} aria-label="menu">
+                <MenuIcon />
+              </IconButton>
+              <InputBase
+                className={classes.input}
                 placeholder="apache/apisix"
-                aria-label="apache/apisix"
-                aria-describedby="apache/apisix"
                 value={repo}
-                onChange={(e) => {
+                onChange={e => {
                   setRepo(e.target.value);
                 }}
+                onKeyPress={ev => {
+                  if (ev.key === "Enter") {
+                    updateChart(repo);
+                    ev.preventDefault();
+                  }
+                }}
+                inputProps={{ "aria-label": "search repo" }}
               />
-              <InputGroup.Append></InputGroup.Append>
-            </InputGroup>
-            <>
-              <Button
-                variant="primary"
+              <IconButton
+                className={classes.iconButton}
+                aria-label="search"
                 onClick={() => {
                   updateChart(repo);
                 }}
               >
-                Add
-              </Button>{" "}
-              <Button
-                variant="danger"
-                onClick={() => {
-                  setOption(DEFAULT_OPTIONS);
-                  setDataSource({});
-                }}
-              >
-                Clear
-              </Button>{" "}
+                <SearchIcon />
+                <Divider className={classes.divider} orientation="vertical" />
+              </IconButton>
+
               <CopyToClipboard
                 text={
                   window.location !== window.parent.location
@@ -300,15 +353,30 @@ function App() {
                 }
                 onCopy={(_, result) => {
                   if (result) {
-                    toast.success("Copy Success", TOAST_CONFIG);
+                    showAlert("Copy Successfully", "success");
                   } else {
-                    toast.error("Copy Failed", TOAST_CONFIG);
+                    showAlert("Copy Failed", "error");
                   }
                 }}
               >
-                <Button variant="success">Share</Button>
+                <IconButton
+                  color="primary"
+                  className={classes.iconButton}
+                  aria-label="share"
+                >
+                  <ShareIcon />
+                </IconButton>
               </CopyToClipboard>
-            </>
+            </Paper>
+          </div>
+          <div style={{ marginTop: "10px" }}>
+            <Chips
+              list={Object.keys(dataSource)}
+              onDelete={e => {
+                const newDataSource = omit(dataSource, [e]);
+                setDataSource(newDataSource);
+              }}
+            />
           </div>
           <div id="chart" style={{ marginTop: "30px" }}>
             <Tab.Container defaultActiveKey="contributor">
@@ -317,57 +385,66 @@ function App() {
                   <Tab.Content>
                     <Tab.Pane eventKey="contributor">
                       <div style={{ marginBottom: "5px" }}>
-                        <ButtonGroup size="sm">
+                        <ButtonGroup color="secondary" size="small">
                           <Button
-                            variant="outline-primary"
+                            variant={
+                              activeDate === "1month" ? "contained" : "outlined"
+                            }
                             value="1month"
-                            active={activeDate === "1month"}
-                            onClick={(e) => {
+                            onClick={e => {
                               setActiveDate(e.currentTarget.value);
                             }}
                           >
                             1 Month
-                          </Button>{" "}
+                          </Button>
                           <Button
-                            variant="outline-primary"
+                            variant={
+                              activeDate === "3months"
+                                ? "contained"
+                                : "outlined"
+                            }
                             value="3months"
-                            active={activeDate === "3months"}
-                            onClick={(e) => {
+                            onClick={e => {
                               setActiveDate(e.currentTarget.value);
                             }}
                           >
                             3 Months
-                          </Button>{" "}
+                          </Button>
                           <Button
-                            variant="outline-primary"
+                            variant={
+                              activeDate === "6months"
+                                ? "contained"
+                                : "outlined"
+                            }
                             value="6months"
-                            active={activeDate === "6months"}
-                            onClick={(e) => {
+                            onClick={e => {
                               setActiveDate(e.currentTarget.value);
                             }}
                           >
                             6 Months
-                          </Button>{" "}
+                          </Button>
                           <Button
-                            variant="outline-primary"
+                            variant={
+                              activeDate === "1year" ? "contained" : "outlined"
+                            }
                             value="1year"
-                            active={activeDate === "1year"}
-                            onClick={(e) => {
+                            onClick={e => {
                               setActiveDate(e.currentTarget.value);
                             }}
                           >
                             1 Year
-                          </Button>{" "}
+                          </Button>
                           <Button
-                            variant="outline-primary"
+                            variant={
+                              activeDate === "max" ? "contained" : "outlined"
+                            }
                             value="max"
-                            active={activeDate === "max"}
-                            onClick={(e) => {
+                            onClick={e => {
                               setActiveDate(e.currentTarget.value);
                             }}
                           >
                             Max
-                          </Button>{" "}
+                          </Button>
                         </ButtonGroup>
                       </div>
                       <ReactECharts
