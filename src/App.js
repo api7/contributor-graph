@@ -287,6 +287,12 @@ function App() {
                 onChange={e => {
                   setRepo(e.target.value);
                 }}
+                onKeyPress={(ev) => {
+                  if (ev.key === 'Enter') {
+                    updateChart(repo);
+                    ev.preventDefault();
+                  }
+                }}
                 inputProps={{ "aria-label": "search repo" }}
               />
               <IconButton className={classes.iconButton} aria-label="search">
