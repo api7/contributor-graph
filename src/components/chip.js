@@ -22,6 +22,7 @@ export default function OutlinedChips({ list = [], onDelete }) {
         <Chip
           icon={<GitHubIcon />}
           label={item}
+          key={item}
           onDelete={() => onDelete(item)}
           color="primary"
           variant="outlined"

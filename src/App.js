@@ -4,21 +4,27 @@ import omit from "lodash.omit";
 import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
-import MenuIcon from "@material-ui/icons/Menu";
 
 import {
   Button,
   ButtonGroup,
   makeStyles,
   Paper,
-  Divider
+  Divider,
+  IconButton,
+  InputBase,
+  Snackbar
 } from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
-import IconButton from "@material-ui/core/IconButton";
-import InputBase from "@material-ui/core/InputBase";
+import MenuIcon from "@material-ui/icons/Menu";
 import ShareIcon from "@material-ui/icons/Share";
+import MuiAlert from "@material-ui/lab/Alert";
 
 import Chips from "./components/chip";
+
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 const getMonths = (month = 12) => {
   const d = new Date();
@@ -104,8 +110,24 @@ function App() {
   const [xAxis, setXAxis] = React.useState([]);
   const [option, setOption] = React.useState(DEFAULT_OPTIONS);
   const [repo, setRepo] = React.useState("apache/apisix");
+  const [message, setMessage] = React.useState("");
+  const [open, setOpen] = React.useState(false);
+  const [alertType, setAlertType] = React.useState("success");
 
   const classes = useStyles();
+
+  const showAlert = (message = "", type = "success") => {
+    setMessage(message);
+    setAlertType(type);
+    setOpen(true);
+  };
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpen(false);
+  };
 
   const updateSeries = passXAxis => {
     const newClonedOption = cloneDeep(DEFAULT_OPTIONS);
@@ -189,7 +211,7 @@ function App() {
           resolve({ repo, ...myJson });
         })
         .catch(e => {
-          // toast.error("Request Error", TOAST_CONFIG);
+          showAlert("Request Error", "error");
           setLoading(false);
           reject();
         });
@@ -267,6 +289,17 @@ function App() {
 
   return (
     <>
+      <Snackbar
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        autoHideDuration={6000}
+        open={open}
+        onClose={handleClose}
+        key={"topcenter"}
+      >
+        <Alert severity={alertType} onClose={handleClose}>
+          {message}
+        </Alert>
+      </Snackbar>
       <div
         className="content"
         style={{ display: "flex", justifyContent: "center" }}
@@ -287,8 +320,8 @@ function App() {
                 onChange={e => {
                   setRepo(e.target.value);
                 }}
-                onKeyPress={(ev) => {
-                  if (ev.key === 'Enter') {
+                onKeyPress={ev => {
+                  if (ev.key === "Enter") {
                     updateChart(repo);
                     ev.preventDefault();
                   }
@@ -318,9 +351,9 @@ function App() {
                 }
                 onCopy={(_, result) => {
                   if (result) {
-                    // toast.success("Copy Success", TOAST_CONFIG);
+                    showAlert("Copy Successfully", "success");
                   } else {
-                    // toast.error("Copy Failed", TOAST_CONFIG);
+                    showAlert("Copy Failed", "error");
                   }
                 }}
               >
