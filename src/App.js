@@ -328,12 +328,14 @@ function App() {
                 }}
                 inputProps={{ "aria-label": "search repo" }}
               />
-              <IconButton className={classes.iconButton} aria-label="search">
-                <SearchIcon
-                  onClick={() => {
-                    updateChart(repo);
-                  }}
-                />
+              <IconButton
+                className={classes.iconButton}
+                aria-label="search"
+                onClick={() => {
+                  updateChart(repo);
+                }}
+              >
+                <SearchIcon />
                 <Divider className={classes.divider} orientation="vertical" />
               </IconButton>
 
@@ -437,7 +439,6 @@ function App() {
                               activeDate === "max" ? "contained" : "outlined"
                             }
                             value="max"
-                            active={activeDate === "max"}
                             onClick={e => {
                               setActiveDate(e.currentTarget.value);
                             }}
