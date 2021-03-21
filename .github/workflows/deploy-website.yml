@@ -1,0 +1,35 @@
+name: Deploy website
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy-website:
+    name: Deploy website
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 14.x
+
+      - name: Install website dependencies
+        run: yarn install
+
+      - name: Build website
+        run: yarn build
+        
+      - name: Upload files to OSS
+        uses: fangbinwei/aliyun-oss-website-action@v1
+        with:
+            accessKeyId: ${{ secrets.ALIYUN_OSS_ACCESSKEY }}
+            accessKeySecret: ${{ secrets.ALIYUN_OSS_ACCESSKEYSECRET }}
+            bucket: "contributor-graph"
+            endpoint: "http://oss-accelerate.aliyuncs.com/" 
+            folder: "build"
