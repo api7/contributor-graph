@@ -1,4 +1,4 @@
-name: Frontend e2e test
+name: Deploy website
 
 on:
   push:
