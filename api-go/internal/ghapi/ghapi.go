@@ -127,8 +127,11 @@ func GetCommits(ctx context.Context, client *github.Client, repoName string, con
 			guard <- 1
 			defer wg.Done()
 			var comList utils.ConList
-			comList.Author = c.Author
-			commit := getLastCommit(ctx, errCh, c.Author, owner, repo, client)
+			var commit *github.RepositoryCommit
+			if c.Author != "" {
+				comList.Author = c.Author
+				commit = getLastCommit(ctx, errCh, c.Author, owner, repo, client)
+			}
 			if commit == nil && c.Email != "" {
 				comList.Author = c.Email
 				commit = getLastCommit(ctx, errCh, c.Email, owner, repo, client)
