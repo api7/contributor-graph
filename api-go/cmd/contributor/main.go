@@ -22,7 +22,7 @@ type returnObj struct {
 
 func main() {
 	http.HandleFunc("/contributors", getContributor)
-	http.HandleFunc("/refreshAll", getContributor)
+	http.HandleFunc("/refreshAll", refreshAll)
 
 	//port := os.Getenv("PORT")
 	port := "8080"
