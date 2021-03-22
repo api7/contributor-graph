@@ -109,17 +109,19 @@ func UpdateDB(dbCli *datastore.Client, repoInput string) ([]utils.ReturnCon, int
 			conLists = append(conLists, newConLists...)
 		}
 
-		formattedCons, code, err := ghapi.FormatCommits(ctx, conLists)
-		if err != nil {
-			return nil, code, err
-		}
+		if repoInput != "" {
+			formattedCons, code, err := ghapi.FormatCommits(ctx, conLists)
+			if err != nil {
+				return nil, code, err
+			}
 
-		returnCons := make([]utils.ReturnCon, len(formattedCons))
-		for i, c := range formattedCons {
-			returnCons[i] = *c
-			log.Printf("%#v\n", *c)
+			returnCons := make([]utils.ReturnCon, len(formattedCons))
+			for i, c := range formattedCons {
+				returnCons[i] = *c
+				log.Printf("%#v\n", *c)
+			}
+			return returnCons, http.StatusOK, nil
 		}
-		return returnCons, http.StatusOK, nil
 	}
 
 	return nil, http.StatusOK, nil
