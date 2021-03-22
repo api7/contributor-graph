@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"strings"
 
@@ -134,21 +135,27 @@ func getContributorsNumFromDB(ctx context.Context, cli *datastore.Client, repoNa
 }
 
 func updateContributorList(ctx context.Context, dbCli *datastore.Client, ghCli *github.Client, repoName string, newCons []utils.ConGH) ([]*utils.ConList, int, error) {
-	commitLists, code, err := ghapi.GetCommits(ctx, ghCli, repoName, newCons)
+	commitListsAll, code, err := ghapi.GetCommits(ctx, ghCli, repoName, newCons)
 	if err != nil {
 		return nil, code, err
 	}
 
-	keys := make([]*datastore.Key, len(commitLists))
-	for i, c := range commitLists {
-		keys[i] = datastore.NameKey(repoName, c.Author, utils.ConParentKey)
+	// at most write 500 entities in a single call
+	rangeMax := 500
+	rangeNeeded := int(math.Ceil(float64(len(commitListsAll)) / float64(rangeMax)))
+	for i := 0; i < rangeNeeded; i++ {
+		commitLists := commitListsAll[i*rangeMax : minInt((i+1)*rangeMax, len(commitListsAll)-1)]
+		keys := make([]*datastore.Key, len(commitLists))
+		for i, c := range commitLists {
+			keys[i] = datastore.NameKey(repoName, c.Author, utils.ConParentKey)
+		}
+
+		if _, err := dbCli.PutMulti(ctx, keys, commitLists); err != nil {
+			return nil, http.StatusInternalServerError, err
+		}
 	}
 
-	if _, err := dbCli.PutMulti(ctx, keys, commitLists); err != nil {
-		return nil, http.StatusInternalServerError, err
-	}
-
-	return commitLists, http.StatusOK, nil
+	return commitListsAll, http.StatusOK, nil
 }
 
 func updateRepoList(ctx context.Context, dbCli *datastore.Client, repoName string, conNumGH int) error {
@@ -159,4 +166,11 @@ func updateRepoList(ctx context.Context, dbCli *datastore.Client, repoName strin
 	}
 
 	return nil
+}
+
+func minInt(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
 }

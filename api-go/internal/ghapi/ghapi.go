@@ -94,7 +94,7 @@ func FormatCommits(ctx context.Context, comLists []*utils.ConList) ([]*utils.Ret
 			authors = []string{c.Author}
 		}
 	}
-	returnCons[len(returnCons)-1] = &utils.ReturnCon{timeLast, len(comLists), authors}
+	returnCons = append(returnCons, &utils.ReturnCon{timeLast, len(comLists), authors})
 
 	return returnCons, http.StatusOK, nil
 }
@@ -105,12 +105,16 @@ func GetCommits(ctx context.Context, client *github.Client, repoName string, con
 		return nil, http.StatusBadRequest, err
 	}
 
+	maxConcurrency := 500
+	if len(contributors) > 500 {
+		maxConcurrency = 10
+	}
+
 	var wg sync.WaitGroup
 
 	errCh := make(chan error, len(contributors))
 	conCh := make(chan *utils.ConList, len(contributors))
-	MAXCONCURRENCY := 10
-	guard := make(chan int, MAXCONCURRENCY)
+	guard := make(chan int, maxConcurrency)
 
 	for i, c := range contributors {
 		wg.Add(1)
@@ -119,21 +123,18 @@ func GetCommits(ctx context.Context, client *github.Client, repoName string, con
 			defer wg.Done()
 			var comList utils.ConList
 			comList.Author = c.Author
-			commits := getLastCommit(ctx, errCh, c.Author, owner, repo, client)
-			if len(commits) == 0 {
+			commit := getLastCommit(ctx, errCh, c.Author, owner, repo, client)
+			if commit == nil && c.Email != "" {
 				comList.Author = c.Email
-				commits = getLastCommit(ctx, errCh, c.Email, owner, repo, client)
-				if len(commits) == 0 {
-					comList.Date = time.Time{}
-					conCh <- &comList
-					log.Printf("commits of %v not exists\n", c)
-					<-guard
-					return
-				}
+				commit = getLastCommit(ctx, errCh, c.Email, owner, repo, client)
 			}
-			comList.Date = *commits[len(commits)-1].GetCommit().Author.Date
-			conCh <- &comList
-			log.Printf("fetched commits of %v\n", c)
+			if commit == nil {
+				log.Printf("no commits fetched from %v\n", c)
+			} else {
+				comList.Date = *commit.GetCommit().Author.Date
+				conCh <- &comList
+				log.Printf("fetched no.%d commits of %v\n", i, c)
+			}
 			<-guard
 		}(i, c)
 	}
@@ -149,19 +150,32 @@ func GetCommits(ctx context.Context, client *github.Client, repoName string, con
 		return nil, http.StatusInternalServerError, multiErr
 	}
 
-	var comLists []*utils.ConList
+	// filter out duplication
+	conExists := make(map[string]time.Time)
 	for c := range conCh {
-		comLists = append(comLists, c)
+		_, ok := conExists[c.Author]
+		if !ok {
+			conExists[c.Author] = c.Date
+		} else {
+			if conExists[c.Author].After(c.Date) {
+				conExists[c.Author] = c.Date
+			}
+		}
 	}
 
-	sort.SliceStable(comLists, func(i, j int) bool {
-		return comLists[i].Date.Before(comLists[j].Date)
+	var conLists []*utils.ConList
+	for author, date := range conExists {
+		conLists = append(conLists, &utils.ConList{author, date})
+	}
+
+	sort.SliceStable(conLists, func(i, j int) bool {
+		return conLists[i].Date.Before(conLists[j].Date)
 	})
 
-	return comLists, http.StatusOK, nil
+	return conLists, http.StatusOK, nil
 }
 
-func getLastCommit(ctx context.Context, errCh chan error, author string, owner string, repo string, client *github.Client) []*github.RepositoryCommit {
+func getLastCommit(ctx context.Context, errCh chan error, author string, owner string, repo string, client *github.Client) *github.RepositoryCommit {
 	listCommitOpts := &github.CommitsListOptions{Author: author, ListOptions: listOpts}
 	var commits []*github.RepositoryCommit
 	for {
@@ -181,7 +195,10 @@ func getLastCommit(ctx context.Context, errCh chan error, author string, owner s
 		}
 		listCommitOpts.Page = resp.LastPage
 	}
-	return commits
+	if len(commits) == 0 {
+		return nil
+	}
+	return commits[len(commits)-1]
 }
 
 func compareSameDay(time1 time.Time, time2 time.Time) bool {

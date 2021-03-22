@@ -32,6 +32,6 @@ var (
 	ConParentKey = datastore.NameKey("Contributors", "con", nil)
 	ProjectID    = "api7-301102"
 	Token        = "d5cb5a94b6eb03d0518dece280095891a900b6a3"
-	RepoPath     = "./config/repo_list"
-	//Token        = "4be342dc78138f46eb0f17bfd9a192d3142170da"
+	RepoPath     = "/home/shuyang/contributor-graph/api-go/config/repo_list"
+	//Token    = "4be342dc78138f46eb0f17bfd9a192d3142170da"
 )
