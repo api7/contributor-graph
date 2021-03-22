@@ -60,55 +60,53 @@ func UpdateDB(dbCli *datastore.Client, repoInput string) ([]utils.ReturnCon, int
 			return nil, http.StatusInternalServerError, err
 		}
 
-		if conNumDB == conNumGH {
-			log.Printf("Repo no need to update with contributor number %d\n", conNumDB)
-			continue
-		}
-
-		log.Printf("Repo %s need to update from %d to %d\n", repoName, conNumDB, conNumGH)
-
 		var conLists []*utils.ConList
 		if _, err = dbCli.GetAll(ctx, datastore.NewQuery(repoName).Order("Date"), &conLists); err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
 
-		conExists := make(map[string]bool)
+		if conNumDB == conNumGH {
+			log.Printf("Repo no need to update with contributor number %d\n", conNumDB)
+		} else {
+			log.Printf("Repo %s need to update from %d to %d\n", repoName, conNumDB, conNumGH)
 
-		for _, c := range conLists {
-			conExists[c.Author] = true
-		}
-		var newCons []utils.ConGH
-		for _, c := range conGH {
-			if _, ok := conExists[c.Author]; !ok {
-				if _, ok := conExists[c.Email]; !ok {
-					newCons = append(newCons, c)
+			conExists := make(map[string]bool)
+
+			for _, c := range conLists {
+				conExists[c.Author] = true
+			}
+			var newCons []utils.ConGH
+			for _, c := range conGH {
+				if _, ok := conExists[c.Author]; !ok {
+					if _, ok := conExists[c.Email]; !ok {
+						newCons = append(newCons, c)
+					}
 				}
 			}
-		}
 
-		newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, repoName, newCons)
-		if err != nil {
-			return nil, http.StatusInternalServerError, err
-		}
+			newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, repoName, newCons)
+			if err != nil {
+				return nil, code, err
+			}
 
-		conLists = append(conLists, newConLists...)
+			if err := updateRepoList(ctx, dbCli, repoName, conNumGH); err != nil {
+				return nil, http.StatusInternalServerError, err
+			}
+
+			conLists = append(conLists, newConLists...)
+		}
 
 		formattedCons, code, err := ghapi.FormatCommits(ctx, conLists)
 		if err != nil {
-			return nil, http.StatusInternalServerError, err
+			return nil, code, err
 		}
 
-		if err := updateRepoList(ctx, dbCli, repoName, conNumGH); err != nil {
-			return nil, http.StatusInternalServerError, err
+		returnCons := make([]utils.ReturnCon, len(formattedCons))
+		for i, c := range formattedCons {
+			returnCons[i] = *c
+			fmt.Printf("%#v\n", *c)
 		}
-
-		if repoInput != "" {
-			returnCons := make([]utils.ReturnCon, len(formattedCons))
-			for i, c := range formattedCons {
-				returnCons[i] = *c
-			}
-			return returnCons, http.StatusOK, nil
-		}
+		return returnCons, http.StatusOK, nil
 	}
 
 	return nil, http.StatusOK, nil
@@ -124,7 +122,6 @@ func getContributorsNumFromGH(ctx context.Context, ghCli *github.Client, repoNam
 }
 
 func getContributorsNumFromDB(ctx context.Context, cli *datastore.Client, repoName string) (int, error) {
-	return 0, nil
 	repoKey := datastore.NameKey("Repo", repoName, nil)
 	repoNum := utils.RepoNum{}
 	if err := cli.Get(ctx, repoKey, &repoNum); err != nil {

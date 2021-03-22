@@ -65,6 +65,7 @@ func GetContributors(ctx context.Context, client *github.Client, repoName string
 				con.Author = *c.Name
 				con.Email = *c.Email
 			}
+			contributors = append(contributors, con)
 		}
 		if resp.NextPage == 0 {
 			break
@@ -108,10 +109,13 @@ func GetCommits(ctx context.Context, client *github.Client, repoName string, con
 
 	errCh := make(chan error, len(contributors))
 	conCh := make(chan *utils.ConList, len(contributors))
+	MAXCONCURRENCY := 10
+	guard := make(chan int, MAXCONCURRENCY)
 
 	for i, c := range contributors {
 		wg.Add(1)
 		go func(i int, c utils.ConGH) {
+			guard <- 1
 			defer wg.Done()
 			var comList utils.ConList
 			comList.Author = c.Author
@@ -123,12 +127,14 @@ func GetCommits(ctx context.Context, client *github.Client, repoName string, con
 					comList.Date = time.Time{}
 					conCh <- &comList
 					log.Printf("commits of %v not exists\n", c)
+					<-guard
 					return
 				}
 			}
 			comList.Date = *commits[len(commits)-1].GetCommit().Author.Date
 			conCh <- &comList
 			log.Printf("fetched commits of %v\n", c)
+			<-guard
 		}(i, c)
 	}
 	wg.Wait()
