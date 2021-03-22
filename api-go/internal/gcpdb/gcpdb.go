@@ -31,7 +31,14 @@ func UpdateDB(dbCli *datastore.Client, repoInput string) ([]utils.ReturnCon, int
 	}
 	defer dbCli.Close()
 
-	ghCli := ghapi.GetGithubClient(ctx, utils.Token)
+	// Refresh use its own token to do the update
+	var ghToken string
+	if repoInput == "" {
+		ghToken = utils.UpdateToken
+	} else {
+		ghToken = utils.Token
+	}
+	ghCli := ghapi.GetGithubClient(ctx, ghToken)
 
 	var repos []string
 	if repoInput == "" {
@@ -85,7 +92,12 @@ func UpdateDB(dbCli *datastore.Client, repoInput string) ([]utils.ReturnCon, int
 				}
 			}
 
-			newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, repoName, newCons)
+			// for daily update, use parallel get commits to avoid github api abuse
+			var maxConcurrency int
+			if repoInput == "" {
+				maxConcurrency = 1
+			}
+			newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, repoName, newCons, maxConcurrency)
 			if err != nil {
 				return nil, code, err
 			}
@@ -105,7 +117,7 @@ func UpdateDB(dbCli *datastore.Client, repoInput string) ([]utils.ReturnCon, int
 		returnCons := make([]utils.ReturnCon, len(formattedCons))
 		for i, c := range formattedCons {
 			returnCons[i] = *c
-			fmt.Printf("%#v\n", *c)
+			log.Printf("%#v\n", *c)
 		}
 		return returnCons, http.StatusOK, nil
 	}
@@ -134,8 +146,8 @@ func getContributorsNumFromDB(ctx context.Context, cli *datastore.Client, repoNa
 	return repoNum.Num, nil
 }
 
-func updateContributorList(ctx context.Context, dbCli *datastore.Client, ghCli *github.Client, repoName string, newCons []utils.ConGH) ([]*utils.ConList, int, error) {
-	commitListsAll, code, err := ghapi.GetCommits(ctx, ghCli, repoName, newCons)
+func updateContributorList(ctx context.Context, dbCli *datastore.Client, ghCli *github.Client, repoName string, newCons []utils.ConGH, maxConcurrency int) ([]*utils.ConList, int, error) {
+	commitListsAll, code, err := ghapi.GetCommits(ctx, ghCli, repoName, newCons, maxConcurrency)
 	if err != nil {
 		return nil, code, err
 	}

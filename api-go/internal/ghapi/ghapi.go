@@ -80,34 +80,39 @@ func FormatCommits(ctx context.Context, comLists []*utils.ConList) ([]*utils.Ret
 	var returnCons []*utils.ReturnCon
 	var authors []string
 	var timeLast time.Time
+	var numNotCount int
 	for i, c := range comLists {
 		if c.Date.IsZero() {
+			numNotCount++
 			continue
 		}
 		if compareSameDay(c.Date, timeLast) {
 			authors = append(authors, c.Author)
 		} else {
 			if len(authors) > 0 {
-				returnCons = append(returnCons, &utils.ReturnCon{timeLast, i, authors})
+				returnCons = append(returnCons, &utils.ReturnCon{timeLast, i - numNotCount, authors})
 			}
 			timeLast = c.Date
 			authors = []string{c.Author}
 		}
 	}
-	returnCons = append(returnCons, &utils.ReturnCon{timeLast, len(comLists), authors})
+	returnCons = append(returnCons, &utils.ReturnCon{timeLast, len(comLists) - numNotCount, authors})
 
 	return returnCons, http.StatusOK, nil
 }
 
-func GetCommits(ctx context.Context, client *github.Client, repoName string, contributors []utils.ConGH) ([]*utils.ConList, int, error) {
+func GetCommits(ctx context.Context, client *github.Client, repoName string, contributors []utils.ConGH, maxConcurrency int) ([]*utils.ConList, int, error) {
 	owner, repo, err := SplitRepo(repoName)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
 
-	maxConcurrency := 500
-	if len(contributors) > 500 {
-		maxConcurrency = 10
+	if maxConcurrency == 0 {
+		if len(contributors) > 500 {
+			maxConcurrency = 10
+		} else {
+			maxConcurrency = 500
+		}
 	}
 
 	var wg sync.WaitGroup
@@ -129,12 +134,13 @@ func GetCommits(ctx context.Context, client *github.Client, repoName string, con
 				commit = getLastCommit(ctx, errCh, c.Email, owner, repo, client)
 			}
 			if commit == nil {
+				comList.Date = time.Time{}
 				log.Printf("no commits fetched from %v\n", c)
 			} else {
 				comList.Date = *commit.GetCommit().Author.Date
-				conCh <- &comList
-				log.Printf("fetched no.%d commits of %v\n", i, c)
+				log.Printf("fetched No.%d commits of %v\n", i+1, c)
 			}
+			conCh <- &comList
 			<-guard
 		}(i, c)
 	}
