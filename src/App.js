@@ -48,6 +48,14 @@ const getParameterByName = (name, url = window.location.href) => {
   return decodeURIComponent(results[2].replace(/\+/g, " "));
 };
 
+const isSameDay = (d1, d2) => {
+  return (
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate()
+  );
+};
+
 const DEFAULT_OPTIONS = {
   legend: {
     top: "5%",
@@ -228,6 +236,14 @@ function App() {
         contributorNum: item.idx,
         date: item.date
       }));
+
+      if (!isSameDay(new Date(data[data.length - 1].date), new Date())) {
+        data.push({
+          repo,
+          contributorNum: Contributors[Contributors.length - 1].idx,
+          date: new Date()
+        });
+      }
 
       const clonedDatasource = cloneDeep(dataSource);
       if (!clonedDatasource[repo]) {
