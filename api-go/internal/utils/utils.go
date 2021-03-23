@@ -19,7 +19,6 @@ type RepoNum struct {
 
 type ConGH struct {
 	Author string
-	Email  string
 }
 
 type ConList struct {

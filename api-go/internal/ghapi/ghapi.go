@@ -60,9 +60,8 @@ func GetContributors(ctx context.Context, client *github.Client, repoName string
 			var con utils.ConGH
 			if c.Login != nil {
 				con.Author = *c.Login
-			} else if c.Name != nil {
-				con.Author = *c.Name
-				con.Email = *c.Email
+			} else if c.Email != nil {
+				con.Author = *c.Email
 			}
 			contributors = append(contributors, con)
 		}
@@ -184,16 +183,10 @@ func GetCommits(ctx context.Context, client *github.Client, repoName string, con
 }
 
 func getCommit(ctx context.Context, errCh chan error, conCh chan *utils.ConList, c utils.ConGH, i int, owner string, repo string, client *github.Client) {
-	var comList utils.ConList
+	comList := utils.ConList{Author: c.Author}
 	var commit *github.RepositoryCommit
-	if c.Author != "" {
-		comList.Author = c.Author
-		commit = getLastCommit(ctx, errCh, c.Author, owner, repo, client)
-	}
-	if commit == nil && c.Email != "" {
-		comList.Author = c.Email
-		commit = getLastCommit(ctx, errCh, c.Email, owner, repo, client)
-	}
+
+	commit = getLastCommit(ctx, errCh, c.Author, owner, repo, client)
 	if commit == nil {
 		comList.Date = time.Time{}
 		fmt.Printf("no commits fetched from %v\n", c)

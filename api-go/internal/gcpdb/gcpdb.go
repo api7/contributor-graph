@@ -91,9 +91,7 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 				var newCons []utils.ConGH
 				for _, c := range conGH {
 					if _, ok := conExists[c.Author]; !ok {
-						if _, ok := conExists[c.Email]; !ok {
-							newCons = append(newCons, c)
-						}
+						newCons = append(newCons, c)
 					}
 				}
 
