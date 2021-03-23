@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	_, _, err := gcpdb.UpdateDB(nil, "")
+	_, _, err := gcpdb.UpdateDB("")
 	if err != nil {
 		log.Fatal(err)
 	}

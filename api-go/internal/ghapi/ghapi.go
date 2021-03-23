@@ -3,7 +3,6 @@ package ghapi
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"sort"
 	"strings"
@@ -72,7 +71,7 @@ func GetContributors(ctx context.Context, client *github.Client, repoName string
 		}
 		listConOpts.Page = resp.NextPage
 	}
-	log.Printf("Get %d contributors\n", len(contributors))
+	fmt.Printf("Get %d contributors\n", len(contributors))
 	return contributors, http.StatusOK, nil
 }
 
@@ -115,39 +114,34 @@ func GetCommits(ctx context.Context, client *github.Client, repoName string, con
 		}
 	}
 
-	var wg sync.WaitGroup
-
 	errCh := make(chan error, len(contributors))
 	conCh := make(chan *utils.ConList, len(contributors))
-	guard := make(chan int, maxConcurrency)
 
-	for i, c := range contributors {
-		wg.Add(1)
-		go func(i int, c utils.ConGH) {
-			guard <- 1
+	if maxConcurrency == utils.UpdateLimit {
+		// use parallel for update to avoid Github API abuse
+		for i, c := range contributors {
+			getCommit(ctx, errCh, conCh, c, i, owner, repo, client)
+			select {
+			case err := <-errCh:
+				return nil, http.StatusInternalServerError, err
+			default:
+			}
+		}
+	} else {
+		var wg sync.WaitGroup
+		guard := make(chan int, maxConcurrency)
+		for i, c := range contributors {
+			wg.Add(1)
 			defer wg.Done()
-			var comList utils.ConList
-			var commit *github.RepositoryCommit
-			if c.Author != "" {
-				comList.Author = c.Author
-				commit = getLastCommit(ctx, errCh, c.Author, owner, repo, client)
-			}
-			if commit == nil && c.Email != "" {
-				comList.Author = c.Email
-				commit = getLastCommit(ctx, errCh, c.Email, owner, repo, client)
-			}
-			if commit == nil {
-				comList.Date = time.Time{}
-				log.Printf("no commits fetched from %v\n", c)
-			} else {
-				comList.Date = *commit.GetCommit().Author.Date
-				log.Printf("fetched No.%d commits of %v\n", i+1, c)
-			}
-			conCh <- &comList
-			<-guard
-		}(i, c)
+			go func(i int, c utils.ConGH) {
+				guard <- 1
+				getCommit(ctx, errCh, conCh, c, i, owner, repo, client)
+				<-guard
+			}(i, c)
+		}
+		wg.Wait()
 	}
-	wg.Wait()
+
 	close(errCh)
 	close(conCh)
 
@@ -156,7 +150,12 @@ func GetCommits(ctx context.Context, client *github.Client, repoName string, con
 		multiErr = multierror.Append(multiErr, err)
 	}
 	if multiErr != nil {
-		return nil, http.StatusInternalServerError, multiErr
+		//return nil, http.StatusInternalServerError, multiErr
+		fmt.Printf("###################################\n")
+		fmt.Printf("###################################\n")
+		fmt.Printf(multiErr.Error())
+		fmt.Printf("###################################\n")
+		fmt.Printf("###################################\n")
 	}
 
 	// filter out duplication
@@ -184,6 +183,27 @@ func GetCommits(ctx context.Context, client *github.Client, repoName string, con
 	return conLists, http.StatusOK, nil
 }
 
+func getCommit(ctx context.Context, errCh chan error, conCh chan *utils.ConList, c utils.ConGH, i int, owner string, repo string, client *github.Client) {
+	var comList utils.ConList
+	var commit *github.RepositoryCommit
+	if c.Author != "" {
+		comList.Author = c.Author
+		commit = getLastCommit(ctx, errCh, c.Author, owner, repo, client)
+	}
+	if commit == nil && c.Email != "" {
+		comList.Author = c.Email
+		commit = getLastCommit(ctx, errCh, c.Email, owner, repo, client)
+	}
+	if commit == nil {
+		comList.Date = time.Time{}
+		fmt.Printf("no commits fetched from %v\n", c)
+	} else {
+		comList.Date = *commit.GetCommit().Author.Date
+		fmt.Printf("fetched No.%d commits of %v\n", i+1, c)
+	}
+	conCh <- &comList
+}
+
 func getLastCommit(ctx context.Context, errCh chan error, author string, owner string, repo string, client *github.Client) *github.RepositoryCommit {
 	listCommitOpts := &github.CommitsListOptions{Author: author}
 	var commits []*github.RepositoryCommit
@@ -193,25 +213,23 @@ func getLastCommit(ctx context.Context, errCh chan error, author string, owner s
 	// Another bug is for some contributors, ListCommits returns no commits
 	commits, resp, err := client.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
 	if err != nil {
-		if resp == nil {
-			errCh <- err
-		}
 		if _, ok := err.(*github.RateLimitError); ok {
 			errCh <- fmt.Errorf("Hit rate limit")
+			return nil
 		}
 		errCh <- err
+		return nil
 	}
 	if resp.NextPage != 0 {
 		listCommitOpts.Page = resp.LastPage
 		commits, resp, err = client.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
 		if err != nil {
-			if resp == nil {
-				errCh <- err
-			}
 			if _, ok := err.(*github.RateLimitError); ok {
 				errCh <- fmt.Errorf("Hit rate limit")
+				return nil
 			}
 			errCh <- err
+			return nil
 		}
 	}
 

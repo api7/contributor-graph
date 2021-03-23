@@ -52,10 +52,11 @@ func getContributor(w http.ResponseWriter, r *http.Request) {
 }
 
 func refreshAll(w http.ResponseWriter, r *http.Request) {
-	_, code, err := gcpdb.UpdateDB(nil, "")
+	_, code, err := gcpdb.UpdateDB("")
 
 	if err != nil {
 		http.Error(w, err.Error(), code)
+		json.NewEncoder(w).Encode(returnObj{Code: code, ErrorMessage: err.Error()})
 		return
 	}
 }

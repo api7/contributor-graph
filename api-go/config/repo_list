@@ -5,9 +5,9 @@ apache/apisix-helm-chart
 apache/apisix-ingress-controller
 apache/apisix-website
 
+apache/activemq
 apache/dubbo
 apache/incubator-mxnet
-apache/activemq
 apache/kafka
 apache/skywalking
 
@@ -17,3 +17,29 @@ api7/website
 envoyproxy/envoy
 kong/kong
 tyktechnologies/tyk
+
+996icu/996.ICU
+vuejs/vue
+facebook/react
+jwasham/coding-interview-university
+tensorflow/tensorflow
+kamranahmedse/developer-roadmap
+ohmyzsh/ohmyzsh
+donnemartin/system-design-primer
+flutter/flutter
+github/gitignore
+public-apis/public-apis
+torvalds/linux
+airbnb/javascript
+TheAlgorithms/Python
+jackfrued/Python-100-Days
+Snailclimb/JavaGuide
+trekhleb/javascript-algorithms
+d3/d3
+vinta/awesome-python
+facebook/react-native
+facebook/create-react-app
+labuladong/fucking-algorithm
+nodejs/node
+kubernetes/kubernetes
+denoland/deno

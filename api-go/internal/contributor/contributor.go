@@ -1,11 +1,9 @@
 package contributor
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
-	"cloud.google.com/go/datastore"
 	"github.com/google/go-github/v33/github"
 
 	"github.com/api7/contributor-graph/api/internal/gcpdb"
@@ -18,21 +16,12 @@ var (
 )
 
 func GetContributorList(repoName string) ([]utils.ReturnCon, int, error) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	dbCli, err := datastore.NewClient(ctx, utils.ProjectID)
-	if err != nil {
-		return nil, http.StatusInternalServerError, fmt.Errorf("Failed to create client: %v", err)
-	}
-	defer dbCli.Close()
-
-	_, _, err = ghapi.SplitRepo(repoName)
+	_, _, err := ghapi.SplitRepo(repoName)
 	if err != nil {
 		return nil, http.StatusBadRequest, fmt.Errorf("Repo format error")
 	}
 
-	returnCons, code, err := gcpdb.UpdateDB(dbCli, repoName)
+	returnCons, code, err := gcpdb.UpdateDB(repoName)
 	if err != nil {
 		return nil, code, err
 	}
