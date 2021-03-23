@@ -92,10 +92,9 @@ func UpdateDB(dbCli *datastore.Client, repoInput string) ([]utils.ReturnCon, int
 				}
 			}
 
-			// for daily update, use parallel get commits to avoid github api abuse
 			var maxConcurrency int
 			if repoInput == "" {
-				maxConcurrency = 1
+				maxConcurrency = utils.UpdateLimit
 			}
 			newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, repoName, newCons, maxConcurrency)
 			if err != nil {
@@ -158,7 +157,7 @@ func updateContributorList(ctx context.Context, dbCli *datastore.Client, ghCli *
 	rangeMax := 500
 	rangeNeeded := int(math.Ceil(float64(len(commitListsAll)) / float64(rangeMax)))
 	for i := 0; i < rangeNeeded; i++ {
-		commitLists := commitListsAll[i*rangeMax : minInt((i+1)*rangeMax, len(commitListsAll)-1)]
+		commitLists := commitListsAll[i*rangeMax : minInt((i+1)*rangeMax, len(commitListsAll))]
 		keys := make([]*datastore.Key, len(commitLists))
 		for i, c := range commitLists {
 			keys[i] = datastore.NameKey(repoName, c.Author, utils.ConParentKey)

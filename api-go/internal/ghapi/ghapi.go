@@ -109,9 +109,9 @@ func GetCommits(ctx context.Context, client *github.Client, repoName string, con
 
 	if maxConcurrency == 0 {
 		if len(contributors) > 500 {
-			maxConcurrency = 10
+			maxConcurrency = utils.LargeRepoLimit
 		} else {
-			maxConcurrency = 500
+			maxConcurrency = utils.NormalRepoLimit
 		}
 	}
 
@@ -185,10 +185,25 @@ func GetCommits(ctx context.Context, client *github.Client, repoName string, con
 }
 
 func getLastCommit(ctx context.Context, errCh chan error, author string, owner string, repo string, client *github.Client) *github.RepositoryCommit {
-	listCommitOpts := &github.CommitsListOptions{Author: author, ListOptions: listOpts}
+	listCommitOpts := &github.CommitsListOptions{Author: author}
 	var commits []*github.RepositoryCommit
-	for {
-		coms, resp, err := client.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
+
+	// TODO: Currently Github API Linker head has bugs, that NextPage would exceed LastPage
+	// Only ignore this problem in this way. Need to update when receiving Github Support
+	// Another bug is for some contributors, ListCommits returns no commits
+	commits, resp, err := client.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
+	if err != nil {
+		if resp == nil {
+			errCh <- err
+		}
+		if _, ok := err.(*github.RateLimitError); ok {
+			errCh <- fmt.Errorf("Hit rate limit")
+		}
+		errCh <- err
+	}
+	if resp.NextPage != 0 {
+		listCommitOpts.Page = resp.LastPage
+		commits, resp, err = client.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
 		if err != nil {
 			if resp == nil {
 				errCh <- err
@@ -198,12 +213,8 @@ func getLastCommit(ctx context.Context, errCh chan error, author string, owner s
 			}
 			errCh <- err
 		}
-		commits = coms
-		if resp.NextPage == 0 {
-			break
-		}
-		listCommitOpts.Page = resp.LastPage
 	}
+
 	if len(commits) == 0 {
 		return nil
 	}

@@ -34,4 +34,9 @@ var (
 	UpdateToken  = "d5cb5a94b6eb03d0518dece280095891a900b6a3"
 	RepoPath     = "./config/repo_list"
 	Token        = "4be342dc78138f46eb0f17bfd9a192d3142170da"
+
+	//concurrency limit to avoid Github API abuse
+	UpdateLimit     = 1
+	LargeRepoLimit  = 10
+	NormalRepoLimit = 500
 )
