@@ -18,7 +18,7 @@ var (
 func GetContributorList(repoName string) ([]utils.ReturnCon, int, error) {
 	_, _, err := ghapi.SplitRepo(repoName)
 	if err != nil {
-		return nil, http.StatusBadRequest, fmt.Errorf("Repo format error")
+		return nil, http.StatusNotFound, fmt.Errorf("Repo format error")
 	}
 
 	fmt.Printf("New request coming with %s\n", repoName)
