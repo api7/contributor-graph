@@ -465,6 +465,13 @@ function App() {
                       </div>
                       <ReactECharts
                         option={option}
+                        ref={e => {
+                          if (e) {
+                            const echartInstance = e.getEchartsInstance();
+                            // then you can use any API of echarts.
+                            window.echartInstance = echartInstance;
+                          }
+                        }}
                         style={{ height: 700, width: "100%" }}
                         showLoading={loading}
                         notMerge
