@@ -2,12 +2,15 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/api7/contributor-graph/api/internal/contributor"
 	"github.com/api7/contributor-graph/api/internal/gcpdb"
+	"github.com/api7/contributor-graph/api/internal/graph"
 	"github.com/api7/contributor-graph/api/internal/utils"
 )
 
@@ -22,6 +25,7 @@ type returnObj struct {
 
 func main() {
 	http.HandleFunc("/contributors", getContributor)
+	http.HandleFunc("/contributors-svg", getContributorSVG)
 	http.HandleFunc("/refreshAll", refreshAll)
 
 	//port := os.Getenv("PORT")
@@ -49,6 +53,20 @@ func getContributor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(returnObj{Contributors: conList})
+}
+
+func getContributorSVG(w http.ResponseWriter, r *http.Request) {
+	v := r.URL.Query()
+	repo := v.Get("repo")
+	repo = strings.ToLower(repo)
+
+	w.Header().Add("content-type", "image/svg+xml;charset=utf-8")
+	w.Header().Add("date", time.Now().Format(time.RFC1123))
+	w.Header().Add("expires", time.Now().Format(time.RFC1123))
+
+	svg := graph.GetSVG(repo)
+
+	fmt.Fprintf(w, svg)
 }
 
 func refreshAll(w http.ResponseWriter, r *http.Request) {

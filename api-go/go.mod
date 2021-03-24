@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	cloud.google.com/go/datastore v1.5.0
+	github.com/go-rod/rod v0.96.1
 	github.com/google/go-github/v33 v33.0.1-0.20210311004518-0540c33dca8b
 	github.com/hashicorp/go-multierror v1.1.0
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 // indirect
