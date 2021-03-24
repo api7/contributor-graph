@@ -3,10 +3,6 @@ import cloneDeep from "lodash.clonedeep";
 import omit from "lodash.omit";
 import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
-import { Fab, Action } from "react-tiny-fab";
-import copy from "copy-to-clipboard";
-
-import "react-tiny-fab/dist/styles.css";
 
 import {
   Button,
@@ -19,10 +15,7 @@ import {
 } from "@material-ui/core";
 import SearchIcon from "@material-ui/icons/Search";
 import MenuIcon from "@material-ui/icons/Menu";
-import ShareIcon from "@material-ui/icons/Share";
 import MuiAlert from "@material-ui/lab/Alert";
-import TwitterIcon from "@material-ui/icons/Twitter";
-import LinkIcon from "@material-ui/icons/Link";
 
 import Chips from "./components/chip";
 import { getMonths, getParameterByName, isSameDay } from "./utils";
@@ -149,6 +142,7 @@ const App = () => {
     newClonedOption.legend.data = legend;
 
     setOption(newClonedOption);
+    window.parent.postMessage(newClonedOption.legend.data,'*');
   };
 
   const fetchData = repo => {
@@ -270,47 +264,6 @@ const App = () => {
 
   return (
     <>
-      <Fab
-        event="click"
-        mainButtonStyles={{ background: "#1DB954" }}
-        actionButtonStyles={{}}
-        alwaysShowTitle={true}
-        icon={<ShareIcon />}
-      >
-        <Action
-          text="Share on Twitter"
-          style={{ backgroundColor: "rgb(29, 161, 242)" }}
-          onClick={() => {
-            window.location.href = `https://twitter.com/share?text=Amazing tools to view your repo contributor over time!&url=https://www.apiseven.com/zh/contributor-graph?repo=${option.legend.data.join(
-              ","
-            )}`;
-          }}
-        >
-          <TwitterIcon />
-        </Action>
-        <Action
-          text="Copy share link"
-          style={{ backgroundColor: "#1769FF" }}
-          onClick={() => {
-            const text =
-              window.location !== window.parent.location
-                ? `https://www.apiseven.com/en/contributor-graph?repo=${option.legend.data.join(
-                    ","
-                  )}`
-                : `${window.location.protocol +
-                    "//" +
-                    window.location.host +
-                    window.location.pathname}?repo=${option.legend.data.join(
-                    ","
-                  )}`;
-
-            copy(text);
-            showAlert("Copy Successfully", "success");
-          }}
-        >
-          <LinkIcon />
-        </Action>
-      </Fab>
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         autoHideDuration={6000}
