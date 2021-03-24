@@ -162,6 +162,21 @@ const App = () => {
         `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
       )
         .then(response => {
+          if (!response.ok) {
+            let message = "";
+            switch (response.status) {
+              case 403:
+                message = "Hit rate limit";
+                break;
+              case 404:
+                message = "Repo format error / Repo not found";
+                break;
+              default:
+                message = "Request Error";
+                break;
+            }
+            throw message;
+          }
           return response.json();
         })
         .then(myJson => {
@@ -169,7 +184,7 @@ const App = () => {
           resolve({ repo, ...myJson });
         })
         .catch(e => {
-          showAlert("Request Error", "error");
+          showAlert(e, "error");
           setLoading(false);
           reject();
         });
