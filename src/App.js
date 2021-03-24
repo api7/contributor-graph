@@ -3,15 +3,16 @@ import cloneDeep from "lodash.clonedeep";
 import omit from "lodash.omit";
 import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
-import { CopyToClipboard } from "react-copy-to-clipboard";
-import { Menu, MainButton, ChildButton } from "react-mfb";
+import { Fab, Action } from "react-tiny-fab";
+import copy from "copy-to-clipboard";
+
+import "react-tiny-fab/dist/styles.css";
 
 import {
   Button,
   ButtonGroup,
   makeStyles,
   Paper,
-  Divider,
   IconButton,
   InputBase,
   Snackbar
@@ -20,7 +21,8 @@ import SearchIcon from "@material-ui/icons/Search";
 import MenuIcon from "@material-ui/icons/Menu";
 import ShareIcon from "@material-ui/icons/Share";
 import MuiAlert from "@material-ui/lab/Alert";
-import "../node_modules/react-mfb/mfb.css";
+import TwitterIcon from "@material-ui/icons/Twitter";
+import LinkIcon from "@material-ui/icons/Link";
 
 import Chips from "./components/chip";
 import { getMonths, getParameterByName, isSameDay } from "./utils";
@@ -70,25 +72,6 @@ const App = () => {
   const [alertType, setAlertType] = React.useState("success");
 
   const classes = useStyles();
-
-  const RenderMenu = () => {
-    let effect = "zoomin",
-      pos = "br",
-      method = "hover";
-    return (
-      <Menu effect={effect} method={method} position={pos}>
-        <MainButton iconResting="ion-plus-round" iconActive="ion-close-round" />
-        
-        <ChildButton
-          icon="ion-social-twitter"
-          label="Share on Twitter"
-          href={`http://twitter.com/share?text=Amazing tools to view your repo contributor over time!&url=https://www.apiseven.com/zh/contributor-graph?repo=${option.legend.data.join(
-            ","
-          )}`}
-        />
-      </Menu>
-    );
-  };
 
   const showAlert = (message = "", type = "success") => {
     setMessage(message);
@@ -272,20 +255,46 @@ const App = () => {
 
   return (
     <>
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css"
-      />
-      <link
-        rel="stylesheet"
-        href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css"
-      />
-      <link
-        href="http://fonts.googleapis.com/css?family=Raleway:100,200,300,400"
-        rel="stylesheet"
-        type="text/css"
-      />
-      <RenderMenu />
+      <Fab
+        mainButtonStyles={{ background: "#1DB954" }}
+        actionButtonStyles={{}}
+        alwaysShowTitle={true}
+        icon={<ShareIcon />}
+      >
+        <Action
+          text="Share on Twitter"
+          style={{ backgroundColor: "rgb(29, 161, 242)" }}
+          onClick={() => {
+            window.location.href = `http://twitter.com/share?text=Amazing tools to view your repo contributor over time!&url=https://www.apiseven.com/zh/contributor-graph?repo=${option.legend.data.join(
+              ","
+            )}`;
+          }}
+        >
+          <TwitterIcon />
+        </Action>
+        <Action
+          text="Copy share link"
+          style={{ backgroundColor: "#1769FF" }}
+          onClick={() => {
+            const text =
+              window.location !== window.parent.location
+                ? `https://www.apiseven.com/en/contributor-graph?repo=${option.legend.data.join(
+                    ","
+                  )}`
+                : `${window.location.protocol +
+                    "//" +
+                    window.location.host +
+                    window.location.pathname}?repo=${option.legend.data.join(
+                    ","
+                  )}`;
+
+            copy(text);
+            showAlert("Copy Successfully", "success");
+          }}
+        >
+          <LinkIcon />
+        </Action>
+      </Fab>
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         autoHideDuration={6000}
@@ -333,37 +342,7 @@ const App = () => {
                 }}
               >
                 <SearchIcon />
-                <Divider className={classes.divider} orientation="vertical" />
               </IconButton>
-
-              <CopyToClipboard
-                text={
-                  window.location !== window.parent.location
-                    ? `https://www.apiseven.com/en/contributor-graph?repo=${option.legend.data.join(
-                        ","
-                      )}`
-                    : `${window.location.protocol +
-                        "//" +
-                        window.location.host +
-                        window.location
-                          .pathname}?repo=${option.legend.data.join(",")}`
-                }
-                onCopy={(_, result) => {
-                  if (result) {
-                    showAlert("Copy Successfully", "success");
-                  } else {
-                    showAlert("Copy Failed", "error");
-                  }
-                }}
-              >
-                <IconButton
-                  color="primary"
-                  className={classes.iconButton}
-                  aria-label="share"
-                >
-                  <ShareIcon />
-                </IconButton>
-              </CopyToClipboard>
             </Paper>
           </div>
           <div style={{ marginTop: "10px" }}>
