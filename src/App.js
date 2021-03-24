@@ -4,6 +4,7 @@ import omit from "lodash.omit";
 import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
 import { CopyToClipboard } from "react-copy-to-clipboard";
+import { Menu, MainButton, ChildButton } from "react-mfb";
 
 import {
   Button,
@@ -19,6 +20,7 @@ import SearchIcon from "@material-ui/icons/Search";
 import MenuIcon from "@material-ui/icons/Menu";
 import ShareIcon from "@material-ui/icons/Share";
 import MuiAlert from "@material-ui/lab/Alert";
+import "../node_modules/react-mfb/mfb.css";
 
 import Chips from "./components/chip";
 import { getMonths, getParameterByName, isSameDay } from "./utils";
@@ -68,6 +70,25 @@ const App = () => {
   const [alertType, setAlertType] = React.useState("success");
 
   const classes = useStyles();
+
+  const RenderMenu = () => {
+    let effect = "zoomin",
+      pos = "br",
+      method = "hover";
+    return (
+      <Menu effect={effect} method={method} position={pos}>
+        <MainButton iconResting="ion-plus-round" iconActive="ion-close-round" />
+        
+        <ChildButton
+          icon="ion-social-twitter"
+          label="Share on Twitter"
+          href={`http://twitter.com/share?text=Amazing tools to view your repo contributor over time!&url=https://www.apiseven.com/zh/contributor-graph?repo=${option.legend.data.join(
+            ","
+          )}`}
+        />
+      </Menu>
+    );
+  };
 
   const showAlert = (message = "", type = "success") => {
     setMessage(message);
@@ -251,6 +272,20 @@ const App = () => {
 
   return (
     <>
+      <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.1/normalize.min.css"
+      />
+      <link
+        rel="stylesheet"
+        href="http://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css"
+      />
+      <link
+        href="http://fonts.googleapis.com/css?family=Raleway:100,200,300,400"
+        rel="stylesheet"
+        type="text/css"
+      />
+      <RenderMenu />
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         autoHideDuration={6000}
