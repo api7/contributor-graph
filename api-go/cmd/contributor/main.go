@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/api7/contributor-graph/api/internal/contributor"
 	"github.com/api7/contributor-graph/api/internal/gcpdb"
@@ -61,8 +60,7 @@ func getContributorSVG(w http.ResponseWriter, r *http.Request) {
 	repo = strings.ToLower(repo)
 
 	w.Header().Add("content-type", "image/svg+xml;charset=utf-8")
-	w.Header().Add("date", time.Now().Format(time.RFC1123))
-	w.Header().Add("expires", time.Now().Format(time.RFC1123))
+	w.Header().Add("cache-control", "public, max-age=86400")
 
 	svg := graph.GetSVG(repo)
 
