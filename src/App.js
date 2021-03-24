@@ -465,6 +465,7 @@ function App() {
                       </div>
                       <ReactECharts
                         option={option}
+                        opts={{renderer: 'svg'}}
                         ref={e => {
                           if (e) {
                             const echartInstance = e.getEchartsInstance();
