@@ -7,15 +7,16 @@
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.57",
     "bootstrap": "^4.6.0",
+    "copy-to-clipboard": "^3.3.1",
     "echarts": "^5.0.2",
     "echarts-for-react": "^3.0.1",
     "lodash.clonedeep": "^4.5.0",
     "lodash.omit": "^4.5.0",
     "react": "^16.6.1",
     "react-bootstrap": "^1.5.1",
-    "react-copy-to-clipboard": "^5.0.3",
     "react-dom": "^16.6.1",
     "react-scripts": "2.1.1",
+    "react-tiny-fab": "^4.0.2",
     "react-toastify": "^7.0.3"
   },
   "scripts": {

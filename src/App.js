@@ -3,14 +3,16 @@ import cloneDeep from "lodash.clonedeep";
 import omit from "lodash.omit";
 import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
-import { CopyToClipboard } from "react-copy-to-clipboard";
+import { Fab, Action } from "react-tiny-fab";
+import copy from "copy-to-clipboard";
+
+import "react-tiny-fab/dist/styles.css";
 
 import {
   Button,
   ButtonGroup,
   makeStyles,
   Paper,
-  Divider,
   IconButton,
   InputBase,
   Snackbar
@@ -19,68 +21,15 @@ import SearchIcon from "@material-ui/icons/Search";
 import MenuIcon from "@material-ui/icons/Menu";
 import ShareIcon from "@material-ui/icons/Share";
 import MuiAlert from "@material-ui/lab/Alert";
+import TwitterIcon from "@material-ui/icons/Twitter";
+import LinkIcon from "@material-ui/icons/Link";
 
 import Chips from "./components/chip";
+import { getMonths, getParameterByName, isSameDay } from "./utils";
+import { DEFAULT_OPTIONS } from "./constants";
 
-function Alert(props) {
+const Alert = props => {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
-}
-
-const getMonths = (month = 12) => {
-  const d = new Date();
-  const result = [];
-  for (let i = 0; i < month; i++) {
-    d.setMonth(d.getMonth() - 1);
-    const m = d.getMonth() + 1;
-    const month = m < 10 ? `0${m}` : m;
-    result.push(`${d.getFullYear()}-${month}`);
-  }
-  return result.sort();
-};
-
-const getParameterByName = (name, url = window.location.href) => {
-  // eslint-disable-next-line
-  name = name.replace(/[\[\]]/g, "\\$&");
-  var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-    results = regex.exec(url);
-  if (!results) return null;
-  if (!results[2]) return "";
-  return decodeURIComponent(results[2].replace(/\+/g, " "));
-};
-
-const isSameDay = (d1, d2) => {
-  return (
-    d1.getFullYear() === d2.getFullYear() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate()
-  );
-};
-
-const DEFAULT_OPTIONS = {
-  legend: {
-    top: "5%",
-    data: []
-  },
-  toolbox: {
-    feature: {
-      saveAsImage: {}
-    }
-  },
-  dataset: [],
-  title: {
-    text: "Contributor Over Time"
-  },
-  tooltip: {
-    trigger: "axis"
-  },
-  xAxis: {
-    type: "time",
-    nameLocation: "middle"
-  },
-  yAxis: {
-    name: ""
-  },
-  series: []
 };
 
 const useStyles = makeStyles(theme => ({
@@ -111,7 +60,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-function App() {
+const App = () => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
@@ -129,6 +78,7 @@ function App() {
     setAlertType(type);
     setOpen(true);
   };
+
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
@@ -212,6 +162,21 @@ function App() {
         `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
       )
         .then(response => {
+          if (!response.ok) {
+            let message = "";
+            switch (response.status) {
+              case 403:
+                message = "Hit rate limit";
+                break;
+              case 404:
+                message = "Repo format error / Repo not found";
+                break;
+              default:
+                message = "Request Error";
+                break;
+            }
+            throw message;
+          }
           return response.json();
         })
         .then(myJson => {
@@ -219,7 +184,7 @@ function App() {
           resolve({ repo, ...myJson });
         })
         .catch(e => {
-          showAlert("Request Error", "error");
+          showAlert(e, "error");
           setLoading(false);
           reject();
         });
@@ -305,6 +270,47 @@ function App() {
 
   return (
     <>
+      <Fab
+        event="click"
+        mainButtonStyles={{ background: "#1DB954" }}
+        actionButtonStyles={{}}
+        alwaysShowTitle={true}
+        icon={<ShareIcon />}
+      >
+        <Action
+          text="Share on Twitter"
+          style={{ backgroundColor: "rgb(29, 161, 242)" }}
+          onClick={() => {
+            window.location.href = `http://twitter.com/share?text=Amazing tools to view your repo contributor over time!&url=https://www.apiseven.com/zh/contributor-graph?repo=${option.legend.data.join(
+              ","
+            )}`;
+          }}
+        >
+          <TwitterIcon />
+        </Action>
+        <Action
+          text="Copy share link"
+          style={{ backgroundColor: "#1769FF" }}
+          onClick={() => {
+            const text =
+              window.location !== window.parent.location
+                ? `https://www.apiseven.com/en/contributor-graph?repo=${option.legend.data.join(
+                    ","
+                  )}`
+                : `${window.location.protocol +
+                    "//" +
+                    window.location.host +
+                    window.location.pathname}?repo=${option.legend.data.join(
+                    ","
+                  )}`;
+
+            copy(text);
+            showAlert("Copy Successfully", "success");
+          }}
+        >
+          <LinkIcon />
+        </Action>
+      </Fab>
       <Snackbar
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
         autoHideDuration={6000}
@@ -352,37 +358,7 @@ function App() {
                 }}
               >
                 <SearchIcon />
-                <Divider className={classes.divider} orientation="vertical" />
               </IconButton>
-
-              <CopyToClipboard
-                text={
-                  window.location !== window.parent.location
-                    ? `https://www.apiseven.com/en/contributor-graph?repo=${option.legend.data.join(
-                        ","
-                      )}`
-                    : `${window.location.protocol +
-                        "//" +
-                        window.location.host +
-                        window.location
-                          .pathname}?repo=${option.legend.data.join(",")}`
-                }
-                onCopy={(_, result) => {
-                  if (result) {
-                    showAlert("Copy Successfully", "success");
-                  } else {
-                    showAlert("Copy Failed", "error");
-                  }
-                }}
-              >
-                <IconButton
-                  color="primary"
-                  className={classes.iconButton}
-                  aria-label="share"
-                >
-                  <ShareIcon />
-                </IconButton>
-              </CopyToClipboard>
             </Paper>
           </div>
           <div style={{ marginTop: "10px" }}>
@@ -465,7 +441,7 @@ function App() {
                       </div>
                       <ReactECharts
                         option={option}
-                        opts={{renderer: 'svg'}}
+                        opts={{ renderer: "svg" }}
                         ref={e => {
                           if (e) {
                             const echartInstance = e.getEchartsInstance();
@@ -487,6 +463,6 @@ function App() {
       </div>
     </>
   );
-}
+};
 
 export default App;
