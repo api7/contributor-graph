@@ -43,7 +43,6 @@ func getContributor(w http.ResponseWriter, r *http.Request) {
 	conList, code, err := contributor.GetContributorList(repo)
 
 	if err != nil {
-		http.Error(w, err.Error(), code)
 		json.NewEncoder(w).Encode(returnObj{Code: code, ErrorMessage: err.Error()})
 		return
 	}
@@ -55,7 +54,6 @@ func refreshAll(w http.ResponseWriter, r *http.Request) {
 	_, code, err := gcpdb.UpdateDB("")
 
 	if err != nil {
-		http.Error(w, err.Error(), code)
 		json.NewEncoder(w).Encode(returnObj{Code: code, ErrorMessage: err.Error()})
 		return
 	}
