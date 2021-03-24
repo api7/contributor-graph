@@ -142,7 +142,6 @@ const App = () => {
     newClonedOption.legend.data = legend;
 
     setOption(newClonedOption);
-    window.parent.postMessage(newClonedOption.legend.data,'*');
   };
 
   const fetchData = repo => {
@@ -235,6 +234,7 @@ const App = () => {
 
   React.useEffect(() => {
     updateSeries(xAxis);
+    window.parent.postMessage(Object.keys(dataSource), "*");
   }, [dataSource, xAxis]);
 
   React.useEffect(() => {
