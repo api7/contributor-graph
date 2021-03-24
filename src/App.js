@@ -271,6 +271,7 @@ const App = () => {
   return (
     <>
       <Fab
+        event="click"
         mainButtonStyles={{ background: "#1DB954" }}
         actionButtonStyles={{}}
         alwaysShowTitle={true}
