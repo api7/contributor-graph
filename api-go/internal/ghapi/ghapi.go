@@ -45,16 +45,13 @@ func GetContributors(ctx context.Context, client *github.Client, repoName string
 	for {
 		cons, resp, err := client.Repositories.ListContributors(ctx, owner, repo, listConOpts)
 		if err != nil {
-			if resp == nil {
-				if strings.Contains(err.Error(), "404 Not Found") {
-					return nil, http.StatusNotFound, fmt.Errorf("Repo not found")
-				}
-				return nil, http.StatusInternalServerError, err
+			if strings.Contains(err.Error(), "404 Not Found") {
+				return nil, http.StatusNotFound, fmt.Errorf("Repo not found")
 			}
 			if _, ok := err.(*github.RateLimitError); ok {
-				return nil, resp.StatusCode, fmt.Errorf("Hit rate limit")
+				return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
 			}
-			return nil, resp.StatusCode, err
+			return nil, http.StatusInternalServerError, err
 		}
 		for _, c := range cons {
 			var con utils.ConGH
@@ -146,15 +143,22 @@ func GetCommits(ctx context.Context, client *github.Client, repoName string, con
 
 	var multiErr error
 	for err := range errCh {
+		if _, ok := err.(*github.RateLimitError); ok {
+			return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
+		}
 		multiErr = multierror.Append(multiErr, err)
 	}
 	if multiErr != nil {
-		//return nil, http.StatusInternalServerError, multiErr
-		fmt.Printf("###################################\n")
-		fmt.Printf("###################################\n")
-		fmt.Printf(multiErr.Error())
-		fmt.Printf("###################################\n")
-		fmt.Printf("###################################\n")
+		if maxConcurrency != utils.UpdateLimit {
+			return nil, http.StatusInternalServerError, multiErr
+		} else {
+			// if we do the update and some kind of error happened, we just print the error but not stop
+			fmt.Printf("###################################\n")
+			fmt.Printf("###################################\n")
+			fmt.Printf(multiErr.Error())
+			fmt.Printf("###################################\n")
+			fmt.Printf("###################################\n")
+		}
 	}
 
 	// filter out duplication
@@ -206,10 +210,6 @@ func getLastCommit(ctx context.Context, errCh chan error, author string, owner s
 	// Another bug is for some contributors, ListCommits returns no commits
 	commits, resp, err := client.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
 	if err != nil {
-		if _, ok := err.(*github.RateLimitError); ok {
-			errCh <- fmt.Errorf("Hit rate limit")
-			return nil
-		}
 		errCh <- err
 		return nil
 	}
@@ -217,10 +217,6 @@ func getLastCommit(ctx context.Context, errCh chan error, author string, owner s
 		listCommitOpts.Page = resp.LastPage
 		commits, resp, err = client.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
 		if err != nil {
-			if _, ok := err.(*github.RateLimitError); ok {
-				errCh <- fmt.Errorf("Hit rate limit")
-				return nil
-			}
 			errCh <- err
 			return nil
 		}
