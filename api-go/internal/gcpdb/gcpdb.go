@@ -121,7 +121,6 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 			returnCons := make([]utils.ReturnCon, len(formattedCons))
 			for i, c := range formattedCons {
 				returnCons[i] = *c
-				fmt.Printf("%#v\n", *c)
 			}
 			return returnCons, http.StatusOK, nil
 		}
