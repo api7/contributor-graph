@@ -281,7 +281,7 @@ const App = () => {
           text="Share on Twitter"
           style={{ backgroundColor: "rgb(29, 161, 242)" }}
           onClick={() => {
-            window.location.href = `http://twitter.com/share?text=Amazing tools to view your repo contributor over time!&url=https://www.apiseven.com/zh/contributor-graph?repo=${option.legend.data.join(
+            window.location.href = `https://twitter.com/share?text=Amazing tools to view your repo contributor over time!&url=https://www.apiseven.com/zh/contributor-graph?repo=${option.legend.data.join(
               ","
             )}`;
           }}
