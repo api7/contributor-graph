@@ -37,6 +37,7 @@ func getContributor(w http.ResponseWriter, r *http.Request) {
 	v := r.URL.Query()
 	repo := v.Get("repo")
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	repo = strings.ToLower(repo)
 
