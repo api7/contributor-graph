@@ -48,7 +48,7 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 		}
 		ghCli := ghapi.GetGithubClient(ctx, ghToken)
 
-		if repoName == "" {
+		if repoName == "" || repoName[0] == '#' {
 			continue
 		}
 		fmt.Println(repoName)
