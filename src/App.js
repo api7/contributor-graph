@@ -263,7 +263,7 @@ const App = () => {
     }
   }, []);
 
-  const getSearchOptions = (q) => {
+  const getSearchOptions = q => {
     // todo: throttle
     fetch(`https://api.github.com/search/repositories?q=${q}`, {
       method: "GET",
@@ -279,8 +279,9 @@ const App = () => {
           return item.owner.login + "/" + item.name;
         });
         setSearchOption(option);
-      }).catch(e=>{
-        console.log('e: ', e);
+      })
+      .catch(e => {
+        console.log("e: ", e);
       });
   };
   return (
@@ -313,6 +314,12 @@ const App = () => {
                 id="autocomplete"
                 disableClearable
                 options={searchOption}
+                onInputChange={(event, value, reason) => {
+                  if (reason === "reset") {
+                    setRepo(value);
+                    updateChart(value);
+                  }
+                }}
                 renderInput={params => (
                   <TextField
                     {...params}
