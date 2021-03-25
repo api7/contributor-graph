@@ -10,12 +10,12 @@ import {
   makeStyles,
   Paper,
   IconButton,
-  InputBase,
   Snackbar
 } from "@material-ui/core";
+import TextField from "@material-ui/core/TextField";
 import SearchIcon from "@material-ui/icons/Search";
-import MenuIcon from "@material-ui/icons/Menu";
 import MuiAlert from "@material-ui/lab/Alert";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 
 import Chips from "./components/chip";
 import { getMonths, getParameterByName, isSameDay } from "./utils";
@@ -63,6 +63,7 @@ const App = () => {
   const [message, setMessage] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [alertType, setAlertType] = React.useState("success");
+  const [searchOption, setSearchOption] = React.useState([]);
 
   const classes = useStyles();
 
@@ -262,6 +263,26 @@ const App = () => {
     }
   }, []);
 
+  const getSearchOptions = (q) => {
+    // todo: throttle
+    fetch(`https://api.github.com/search/repositories?q=${q}`, {
+      method: "GET",
+      headers: {
+        Accept: "application/vnd.github.v3+json"
+      }
+    })
+      .then(function(response) {
+        return response.json();
+      })
+      .then(data => {
+        const option = data.items.map(item => {
+          return item.owner.login + "/" + item.name;
+        });
+        setSearchOption(option);
+      }).catch(e=>{
+        console.log('e: ', e);
+      });
+  };
   return (
     <>
       <Snackbar
@@ -285,23 +306,32 @@ const App = () => {
             style={{ display: "flex", justifyContent: "center" }}
           >
             <Paper component="form" className={classes.root}>
-              <IconButton className={classes.iconButton} aria-label="menu">
-                <MenuIcon />
-              </IconButton>
-              <InputBase
+              <Autocomplete
+                freeSolo
                 className={classes.input}
-                placeholder="apache/apisix"
-                value={repo}
-                onChange={e => {
-                  setRepo(e.target.value);
-                }}
-                onKeyPress={ev => {
-                  if (ev.key === "Enter") {
-                    updateChart(repo);
-                    ev.preventDefault();
-                  }
-                }}
-                inputProps={{ "aria-label": "search repo" }}
+                size="small"
+                id="autocomplete"
+                disableClearable
+                options={searchOption}
+                renderInput={params => (
+                  <TextField
+                    {...params}
+                    label="Search Github Repository Name"
+                    margin="normal"
+                    variant="outlined"
+                    onChange={e => {
+                      setRepo(e.target.value);
+                      getSearchOptions(e.target.value);
+                    }}
+                    onKeyPress={ev => {
+                      if (ev.key === "Enter") {
+                        updateChart(repo);
+                        ev.preventDefault();
+                      }
+                    }}
+                    InputProps={{ ...params.InputProps, type: "search" }}
+                  />
+                )}
               />
               <IconButton
                 className={classes.iconButton}
