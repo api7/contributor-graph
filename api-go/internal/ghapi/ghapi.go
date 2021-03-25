@@ -128,8 +128,8 @@ func GetCommits(ctx context.Context, client *github.Client, repoName string, con
 		guard := make(chan int, maxConcurrency)
 		for i, c := range contributors {
 			wg.Add(1)
-			defer wg.Done()
 			go func(i int, c utils.ConGH) {
+				defer wg.Done()
 				guard <- 1
 				getCommit(ctx, errCh, conCh, c, i, owner, repo, client)
 				<-guard
