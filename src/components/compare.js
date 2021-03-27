@@ -1,6 +1,5 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
@@ -20,7 +19,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function ComparePaper({ list = [], onDelete, onConfirm }) {
+export default function CompareComponent({ list = [], onDelete, onConfirm }) {
   const classes = useStyles();
   const [inputText, setInputText] = React.useState("");
 

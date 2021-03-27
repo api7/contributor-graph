@@ -17,7 +17,7 @@ import SearchIcon from "@material-ui/icons/Search";
 import MenuIcon from "@material-ui/icons/Menu";
 import MuiAlert from "@material-ui/lab/Alert";
 
-import ComparePaper from "./components/compare";
+import CompareComponent from "./components/compare";
 import { getMonths, getParameterByName, isSameDay } from "./utils";
 import { DEFAULT_OPTIONS } from "./constants";
 
@@ -315,7 +315,7 @@ const App = () => {
             </Paper>
           </div>
           <div style={{ marginTop: "10px" }}>
-            <ComparePaper
+            <CompareComponent
               list={Object.keys(dataSource)}
               onDelete={e => {
                 console.log("e : ", e);
