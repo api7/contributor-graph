@@ -1,4 +1,5 @@
 export const DEFAULT_OPTIONS = {
+  animation: false,
   legend: {
     top: "5%",
     data: []
