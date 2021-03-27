@@ -318,9 +318,13 @@ const App = () => {
             <ComparePaper
               list={Object.keys(dataSource)}
               onDelete={e => {
-                console.log('e : ', e );
+                console.log("e : ", e);
                 const newDataSource = omit(dataSource, [e]);
                 setDataSource(newDataSource);
+              }}
+              onConfirm={e => {
+                if (!e) return;
+                updateChart(e);
               }}
             />
           </div>

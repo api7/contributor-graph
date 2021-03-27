@@ -20,20 +20,13 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function ComparePaper({ list = [], onDelete }) {
+export default function ComparePaper({ list = [], onDelete, onConfirm }) {
   const classes = useStyles();
+  const [inputText, setInputText] = React.useState("");
 
   return (
     <div className={classes.root}>
       <Grid container spacing={1} style={{ height: "100%" }}>
-        <Button
-          variant="contained"
-          color="primary"
-          style={{ marginRight: "10px" }}
-          disabled
-        >
-          多仓库对比
-        </Button>
         <Chips
           list={list}
           onDelete={e => {
@@ -42,14 +35,28 @@ export default function ComparePaper({ list = [], onDelete }) {
         />
         <TextField
           variant="outlined"
-          placeholder="Add to Compare"
+          placeholder="➕ Add to Compare"
           size="small"
           style={{ with: "70px" }}
+          value={inputText}
+          onChange={e => {
+            setInputText(e.currentTarget.value);
+          }}
+          onKeyPress={ev => {
+            if (ev.key === "Enter") {
+              onConfirm(inputText);
+              ev.preventDefault();
+            }
+          }}
         ></TextField>
         <Button
           variant="contained"
+          size="small"
           color="primary"
           style={{ marginLeft: "10px" }}
+          onClick={() => {
+            onConfirm(inputText);
+          }}
         >
           Confirm
         </Button>
