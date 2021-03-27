@@ -39,6 +39,10 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 		repos = []string{repoInput}
 	}
 
+	for i := range repos {
+		repos[i] = strings.ToLower(repos[i])
+	}
+
 	for i, repoName := range repos {
 		var ghToken string
 		if repoInput == "" {

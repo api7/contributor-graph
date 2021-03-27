@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/api7/contributor-graph/api/internal/contributor"
 	"github.com/api7/contributor-graph/api/internal/gcpdb"
@@ -49,8 +48,6 @@ func getContributor(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	repo = strings.ToLower(repo)
-
 	conList, code, err := contributor.GetContributorList(repo)
 
 	if err != nil {
@@ -65,7 +62,6 @@ func getContributor(w http.ResponseWriter, r *http.Request) {
 func getContributorSVG(w http.ResponseWriter, r *http.Request) {
 	v := r.URL.Query()
 	repo := v.Get("repo")
-	repo = strings.ToLower(repo)
 
 	w.Header().Add("content-type", "image/svg+xml;charset=utf-8")
 	w.Header().Add("cache-control", "public, max-age=86400")
