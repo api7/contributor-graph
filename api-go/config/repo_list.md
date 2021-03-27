@@ -1,3 +1,4 @@
+# apisix related
 apache/apisix
 apache/apisix-dashboard
 apache/apisix-docker
@@ -5,13 +6,16 @@ apache/apisix-helm-chart
 apache/apisix-ingress-controller
 apache/apisix-website
 
+# api7 related
 api7/lua-resty-etcd
 api7/website
 
+# api gateway / service mesh related
 envoyproxy/envoy
 kong/kong
 tyktechnologies/tyk
 
+# apache TOP 150 stars
 apache/echarts
 apache/superset
 apache/dubbo
@@ -162,6 +166,7 @@ apache/camel-k
 apache/logging-log4net
 apache/cordova-plugin-file-transfer
 
+# Github TOP 100 stars
 freeCodeCamp/freeCodeCamp
 996icu/996.ICU
 vuejs/vue
@@ -179,7 +184,7 @@ CyC2018/CS-Notes
 flutter/flutter
 github/gitignore
 microsoft/vscode
-torvalds/linux
+# torvalds/linux has more than 5000 contributors so Github API could not deal with that much
 airbnb/javascript
 TheAlgorithms/Python
 danistefanovic/build-your-own-x
@@ -262,4 +267,3 @@ ansible/ansible
 pytorch/pytorch
 gin-gonic/gin
 Genymobile/scrcpy
-

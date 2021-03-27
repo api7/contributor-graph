@@ -17,7 +17,7 @@ import SearchIcon from "@material-ui/icons/Search";
 import MuiAlert from "@material-ui/lab/Alert";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 
-import Chips from "./components/chip";
+import CompareComponent from "./components/compare";
 import { getMonths, getParameterByName, isSameDay } from "./utils";
 import { DEFAULT_OPTIONS } from "./constants";
 
@@ -352,11 +352,16 @@ const App = () => {
             </Paper>
           </div>
           <div style={{ marginTop: "10px" }}>
-            <Chips
+            <CompareComponent
               list={Object.keys(dataSource)}
               onDelete={e => {
+                console.log("e : ", e);
                 const newDataSource = omit(dataSource, [e]);
                 setDataSource(newDataSource);
+              }}
+              onConfirm={e => {
+                if (!e) return;
+                updateChart(e);
               }}
             />
           </div>
@@ -432,11 +437,6 @@ const App = () => {
                       <ReactECharts
                         option={option}
                         opts={{ renderer: "svg" }}
-                        onEvents={{
-                          finished: () => {
-                            window.echartsRenderFinished = true;
-                          }
-                        }}
                         ref={e => {
                           if (e) {
                             const echartInstance = e.getEchartsInstance();

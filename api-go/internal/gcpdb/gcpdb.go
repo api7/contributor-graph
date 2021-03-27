@@ -48,7 +48,7 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 		}
 		ghCli := ghapi.GetGithubClient(ctx, ghToken)
 
-		if repoName == "" {
+		if repoName == "" || repoName[0] == '#' {
 			continue
 		}
 		fmt.Println(repoName)
@@ -185,6 +185,29 @@ func updateRepoList(ctx context.Context, dbCli *datastore.Client, repoName strin
 	}
 
 	return nil
+}
+
+func GetRepoList() ([]string, int, error) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	dbCli, err := datastore.NewClient(ctx, utils.ProjectID)
+	if err != nil {
+		return nil, http.StatusInternalServerError, fmt.Errorf("Failed to create client: %v", err)
+	}
+	defer dbCli.Close()
+
+	keys, err := dbCli.GetAll(ctx, datastore.NewQuery("Repo").KeysOnly(), nil)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	repos := make([]string, len(keys))
+	for i := range keys {
+		repos[i] = keys[i].Name
+	}
+
+	return repos, http.StatusOK, nil
 }
 
 func minInt(x, y int) int {
