@@ -35,7 +35,7 @@ export default function ComparePaper({ list = [], onDelete, onConfirm }) {
         />
         <TextField
           variant="outlined"
-          placeholder="➕ Add to Compare"
+          placeholder="+ Add to Compare"
           size="small"
           style={{ with: "70px" }}
           value={inputText}
@@ -48,12 +48,15 @@ export default function ComparePaper({ list = [], onDelete, onConfirm }) {
               ev.preventDefault();
             }
           }}
+          inputProps={{
+            style: { width: "150px" }
+          }}
         ></TextField>
         <Button
           variant="contained"
           size="small"
           color="primary"
-          style={{ marginLeft: "10px" }}
+          style={{ marginLeft: "10px", textTransform: "none" }}
           onClick={() => {
             onConfirm(inputText);
           }}
