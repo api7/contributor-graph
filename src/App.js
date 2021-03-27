@@ -211,6 +211,24 @@ const App = () => {
     });
   };
 
+  const getSearchOptions = () => {
+    fetch(`https://contributor-graph-api.apiseven.com/repos?`, {
+      method: "GET",
+      headers: {
+        Accept: "application/vnd.github.v3+json"
+      }
+    })
+      .then(function(response) {
+        return response.json();
+      })
+      .then(data => {
+        setSearchOption(data.Repos || []);
+      })
+      .catch(e => {
+        console.log("e: ", e);
+      });
+  };
+
   React.useEffect(() => {
     switch (activeDate) {
       case "1month":
@@ -261,29 +279,10 @@ const App = () => {
     } else {
       updateChart("apache/apisix");
     }
+
+    getSearchOptions();
   }, []);
 
-  const getSearchOptions = q => {
-    // todo: throttle
-    fetch(`https://api.github.com/search/repositories?q=${q}`, {
-      method: "GET",
-      headers: {
-        Accept: "application/vnd.github.v3+json"
-      }
-    })
-      .then(function(response) {
-        return response.json();
-      })
-      .then(data => {
-        const option = data.items.map(item => {
-          return item.owner.login + "/" + item.name;
-        });
-        setSearchOption(option);
-      })
-      .catch(e => {
-        console.log("e: ", e);
-      });
-  };
   return (
     <>
       <Snackbar
@@ -328,7 +327,6 @@ const App = () => {
                     variant="outlined"
                     onChange={e => {
                       setRepo(e.target.value);
-                      getSearchOptions(e.target.value);
                     }}
                     onKeyPress={ev => {
                       if (ev.key === "Enter") {
