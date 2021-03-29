@@ -10,14 +10,14 @@ import {
   makeStyles,
   Paper,
   IconButton,
-  InputBase,
   Snackbar
 } from "@material-ui/core";
+import TextField from "@material-ui/core/TextField";
 import SearchIcon from "@material-ui/icons/Search";
-import MenuIcon from "@material-ui/icons/Menu";
 import MuiAlert from "@material-ui/lab/Alert";
+import Autocomplete from "@material-ui/lab/Autocomplete";
 
-import Chips from "./components/chip";
+import CompareComponent from "./components/compare";
 import { getMonths, getParameterByName, isSameDay } from "./utils";
 import { DEFAULT_OPTIONS } from "./constants";
 
@@ -34,15 +34,18 @@ const useStyles = makeStyles(theme => ({
     marginRight: theme.spacing(1),
     width: "50ch"
   },
+  searchTextField: {
+    margin: 0
+  },
   root: {
     display: "flex",
     flexWrap: "wrap",
     alignItems: "center",
     width: 600
   },
-  input: {
+  autocomplete: {
     marginLeft: theme.spacing(1),
-    flex: 1
+    flex: 1,
   },
   iconButton: {
     padding: 10
@@ -63,6 +66,7 @@ const App = () => {
   const [message, setMessage] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [alertType, setAlertType] = React.useState("success");
+  const [searchOption, setSearchOption] = React.useState([]);
 
   const classes = useStyles();
 
@@ -210,6 +214,24 @@ const App = () => {
     });
   };
 
+  const getSearchOptions = () => {
+    fetch(`https://contributor-graph-api.apiseven.com/repos?`, {
+      method: "GET",
+      headers: {
+        Accept: "application/vnd.github.v3+json"
+      }
+    })
+      .then(function(response) {
+        return response.json();
+      })
+      .then(data => {
+        setSearchOption(data.Repos || []);
+      })
+      .catch(e => {
+        console.log("e: ", e);
+      });
+  };
+
   React.useEffect(() => {
     switch (activeDate) {
       case "1month":
@@ -260,6 +282,8 @@ const App = () => {
     } else {
       updateChart("apache/apisix");
     }
+
+    getSearchOptions();
   }, []);
 
   return (
@@ -284,24 +308,39 @@ const App = () => {
             className="search-container"
             style={{ display: "flex", justifyContent: "center" }}
           >
-            <Paper component="form" className={classes.root}>
-              <IconButton className={classes.iconButton} aria-label="menu">
-                <MenuIcon />
-              </IconButton>
-              <InputBase
-                className={classes.input}
-                placeholder="apache/apisix"
-                value={repo}
-                onChange={e => {
-                  setRepo(e.target.value);
-                }}
-                onKeyPress={ev => {
-                  if (ev.key === "Enter") {
-                    updateChart(repo);
-                    ev.preventDefault();
+            <Paper className={classes.root} elevation>
+              <Autocomplete
+                freeSolo
+                className={classes.autocomplete}
+                size="small"
+                id="autocomplete"
+                disableClearable
+                options={searchOption}
+                onInputChange={(event, value, reason) => {
+                  if (reason === "reset") {
+                    setRepo(value);
+                    updateChart(value);
                   }
                 }}
-                inputProps={{ "aria-label": "search repo" }}
+                renderInput={params => (
+                  <TextField
+                    {...params}
+                    label="Search Github Repository Name"
+                    margin="normal"
+                    variant="outlined"
+                    className={classes.searchTextField}
+                    onChange={e => {
+                      setRepo(e.target.value);
+                    }}
+                    onKeyPress={ev => {
+                      if (ev.key === "Enter") {
+                        updateChart(repo);
+                        ev.preventDefault();
+                      }
+                    }}
+                    InputProps={{ ...params.InputProps, type: "search" }}
+                  />
+                )}
               />
               <IconButton
                 className={classes.iconButton}
@@ -315,11 +354,16 @@ const App = () => {
             </Paper>
           </div>
           <div style={{ marginTop: "10px" }}>
-            <Chips
+            <CompareComponent
               list={Object.keys(dataSource)}
               onDelete={e => {
+                console.log("e : ", e);
                 const newDataSource = omit(dataSource, [e]);
                 setDataSource(newDataSource);
+              }}
+              onConfirm={e => {
+                if (!e) return;
+                updateChart(e);
               }}
             />
           </div>
@@ -395,11 +439,6 @@ const App = () => {
                       <ReactECharts
                         option={option}
                         opts={{ renderer: "svg" }}
-                        onEvents={{
-                          finished: () => {
-                            window.echartsRenderFinished = true;
-                          }
-                        }}
                         ref={e => {
                           if (e) {
                             const echartInstance = e.getEchartsInstance();
