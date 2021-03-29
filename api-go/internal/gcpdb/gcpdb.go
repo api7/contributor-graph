@@ -68,6 +68,7 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 		if _, err = dbCli.GetAll(ctx, datastore.NewQuery(repoName), &conLists); err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
+		conNumDB = len(conLists)
 
 		sort.SliceStable(conLists, func(i, j int) bool {
 			return conLists[i].Date.Before(conLists[j].Date)
@@ -94,9 +95,11 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 				fmt.Printf("Repo %s need to update from %d to %d\n", repoName, conNumDB, conNumGH)
 
 				conExists := make(map[string]bool)
+				dateExists := make(map[time.Time]bool)
 
 				for _, c := range conLists {
 					conExists[c.Author] = true
+					dateExists[c.Date] = true
 				}
 				var newCons []utils.ConGH
 				for _, c := range conGH {
@@ -109,7 +112,7 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 				if repoInput == "" {
 					maxConcurrency = utils.UpdateLimit
 				}
-				newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, repoName, newCons, maxConcurrency)
+				newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, repoName, newCons, maxConcurrency, dateExists)
 				if err != nil {
 					return nil, code, err
 				}
@@ -166,7 +169,16 @@ func getContributorsNumFromDB(ctx context.Context, cli *datastore.Client, repoNa
 	return repoNum.Num, repoNum.LastModifiedTime, nil
 }
 
-func updateContributorList(ctx context.Context, dbCli *datastore.Client, ghCli *github.Client, repoName string, newConsAll []utils.ConGH, maxConcurrency int) ([]*utils.ConList, int, error) {
+func updateContributorList(
+	ctx context.Context,
+	dbCli *datastore.Client,
+	ghCli *github.Client,
+	repoName string,
+	newConsAll []utils.ConGH,
+	maxConcurrency int,
+	dateExists map[time.Time]bool,
+) ([]*utils.ConList, int, error) {
+
 	// at most write 500 entities in a single call
 	var commitListsAll []*utils.ConList
 	rangeMax := 500
@@ -177,6 +189,16 @@ func updateContributorList(ctx context.Context, dbCli *datastore.Client, ghCli *
 		commitLists, code, err := ghapi.GetCommits(ctx, ghCli, repoName, newCons, maxConcurrency)
 		if err != nil {
 			return nil, code, err
+		}
+
+		// problem could happened when contributors got active, s/he would come out of anonymous pool and got her/his id instead of email
+		// so in this situation, we should avoid keep two records for the same person
+		var filteredCommitLists []*utils.ConList
+		for _, c := range filteredCommitLists {
+			if _, ok := dateExists[c.Date]; !ok {
+				filteredCommitLists = append(filteredCommitLists, c)
+				dateExists[c.Date] = true
+			}
 		}
 
 		keys := make([]*datastore.Key, len(commitLists))
