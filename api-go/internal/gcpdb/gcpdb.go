@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"math"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 
@@ -63,13 +64,17 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 		}
 
 		var conLists []*utils.ConList
-		if _, err = dbCli.GetAll(ctx, datastore.NewQuery(repoName).Order("Date"), &conLists); err != nil {
+		if _, err = dbCli.GetAll(ctx, datastore.NewQuery(repoName), &conLists); err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
 
+		sort.SliceStable(conLists, func(i, j int) bool {
+			return conLists[i].Date.Before(conLists[j].Date)
+		})
+
 		// No need to do instant update for recent cached repo
 		// TODO: add argument `force` to force update
-		if lastModifiedTimeDB.Add(23 * time.Hour).After(time.Now()) {
+		if lastModifiedTimeDB.Add(23*time.Hour + 30*time.Minute).After(time.Now()) {
 			fmt.Printf("Repo no need to update since recently update at %v\n", lastModifiedTimeDB)
 		} else {
 			conGH, code, err := getContributorsNumFromGH(ctx, ghCli, repoName)
