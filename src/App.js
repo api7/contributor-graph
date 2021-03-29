@@ -34,15 +34,18 @@ const useStyles = makeStyles(theme => ({
     marginRight: theme.spacing(1),
     width: "50ch"
   },
+  searchTextField: {
+    margin: 0
+  },
   root: {
     display: "flex",
     flexWrap: "wrap",
     alignItems: "center",
     width: 600
   },
-  input: {
+  autocomplete: {
     marginLeft: theme.spacing(1),
-    flex: 1
+    flex: 1,
   },
   iconButton: {
     padding: 10
@@ -305,10 +308,10 @@ const App = () => {
             className="search-container"
             style={{ display: "flex", justifyContent: "center" }}
           >
-            <Paper component="form" className={classes.root}>
+            <Paper className={classes.root} elevation>
               <Autocomplete
                 freeSolo
-                className={classes.input}
+                className={classes.autocomplete}
                 size="small"
                 id="autocomplete"
                 disableClearable
@@ -325,6 +328,7 @@ const App = () => {
                     label="Search Github Repository Name"
                     margin="normal"
                     variant="outlined"
+                    className={classes.searchTextField}
                     onChange={e => {
                       setRepo(e.target.value);
                     }}
