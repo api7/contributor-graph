@@ -75,7 +75,7 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 
 		// No need to do instant update for recent cached repo
 		// TODO: add argument `force` to force update
-		if lastModifiedTimeDB.Add(23 * time.Second).After(time.Now()) {
+		if lastModifiedTimeDB.Add(23*time.Hour + 30*time.Minute).After(time.Now()) {
 			fmt.Printf("Repo no need to update since recently update at %v\n", lastModifiedTimeDB)
 		} else {
 			conGH, code, err := getContributorsNumFromGH(ctx, ghCli, repoName)
