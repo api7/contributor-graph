@@ -190,6 +190,7 @@ func updateContributorList(
 		for _, c := range filteredCommitLists {
 			if _, ok := dateExists[c.Date]; !ok {
 				filteredCommitLists = append(filteredCommitLists, c)
+				dateExists[c.Date] = true
 			}
 		}
 
