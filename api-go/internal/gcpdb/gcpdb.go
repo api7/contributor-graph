@@ -14,6 +14,7 @@ import (
 	"github.com/google/go-github/v33/github"
 
 	"github.com/api7/contributor-graph/api/internal/ghapi"
+	"github.com/api7/contributor-graph/api/internal/graph"
 	"github.com/api7/contributor-graph/api/internal/utils"
 )
 
@@ -118,6 +119,12 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 				}
 
 				conLists = append(conLists, newConLists...)
+			}
+		}
+
+		if repoInput == "" {
+			if err := graph.GenerateAndSaveSVG(ctx, repoInput); err != nil {
+				return nil, http.StatusInternalServerError, err
 			}
 		}
 

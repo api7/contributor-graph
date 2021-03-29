@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"strings"
 	"time"
 
 	"cloud.google.com/go/datastore"
@@ -40,3 +41,19 @@ var (
 	LargeRepoLimit  = 10
 	NormalRepoLimit = 500
 )
+
+func RepoNameToFileName(str string) string {
+	return strings.ReplaceAll(strings.ReplaceAll(str, ",", "+"), "/", "+")
+}
+
+func FileNameToRepoName(str string) string {
+	for {
+		oldStr := str
+		str = strings.Replace(str, "+", "/", 1)
+		str = strings.Replace(str, "+", ",", 1)
+		if oldStr == str {
+			break
+		}
+	}
+	return str
+}
