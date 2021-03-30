@@ -4,6 +4,11 @@ import TextField from "@material-ui/core/TextField";
 import SearchIcon from "@material-ui/icons/Search";
 import MuiAlert from "@material-ui/lab/Alert";
 import Autocomplete from "@material-ui/lab/Autocomplete";
+import Tabs from "@material-ui/core/Tabs";
+import Tab from "@material-ui/core/Tab";
+import PropTypes from "prop-types";
+import Typography from "@material-ui/core/Typography";
+import Box from "@material-ui/core/Box";
 
 import ContirbutorLineChart from "./components/contributor";
 import { getParameterByName } from "./utils";
@@ -43,6 +48,53 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`vertical-tabpanel-${index}`}
+      aria-labelledby={`vertical-tab-${index}`}
+      {...other}
+      style={{ width: "100%" }}
+    >
+      {value === index && (
+        <Box p={6} style={{ padding: 0 }}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
+
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.any.isRequired,
+  value: PropTypes.any.isRequired
+};
+
+function a11yProps(index) {
+  return {
+    id: `vertical-tab-${index}`,
+    "aria-controls": `vertical-tabpanel-${index}`
+  };
+}
+
+const useStylesTable = makeStyles(theme => ({
+  root: {
+    flexGrow: 1,
+    backgroundColor: theme.palette.background.paper,
+    display: "flex",
+    height: 224,
+    marginTop: "2em"
+  },
+  tabs: {
+    borderRight: `1px solid ${theme.palette.divider}`
+  }
+}));
+
 const App = () => {
   const [repo, setRepo] = React.useState("apache/apisix");
   const [message, setMessage] = React.useState("");
@@ -52,6 +104,12 @@ const App = () => {
   const [contributorRepoList, setContributorRepoList] = React.useState([]);
   // TODO: activity line
   const [chartType, setChartType] = React.useState("contributor");
+  const classesTable = useStylesTable();
+  const [value, setValue] = React.useState(0);
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
 
   const classes = useStyles();
 
@@ -173,10 +231,28 @@ const App = () => {
               </IconButton>
             </Paper>
           </div>
-          <ContirbutorLineChart
-            repoList={contributorRepoList}
-            showAlert={showAlert}
-          />
+          <div className={classesTable.root}>
+            <Tabs
+              orientation="vertical"
+              variant="scrollable"
+              value={value}
+              onChange={handleChange}
+              aria-label="Vertical tabs example"
+              className={classesTable.tabs}
+            >
+              <Tab label="Contributor Over Time" {...a11yProps(0)} />
+              <Tab label="活跃度图表" {...a11yProps(1)} />
+            </Tabs>
+            <TabPanel value={value} index={0}>
+              <ContirbutorLineChart
+                repoList={contributorRepoList}
+                showAlert={showAlert}
+              />
+            </TabPanel>
+            <TabPanel value={value} index={1}>
+              活跃度图表
+            </TabPanel>
+          </div>
         </div>
       </div>
     </>
