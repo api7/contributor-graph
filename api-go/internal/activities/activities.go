@@ -17,57 +17,60 @@ var (
 )
 
 type Activities struct {
-	PR            []utils.ConList
-	Issue         []utils.ConList
-	PR_comment    []utils.ConList
-	issue_comment []utils.ConList
+	PR      []utils.ConList
+	Issue   []utils.ConList
+	Comment []utils.ConList
+	Review  []utils.ConList
 }
 
 func GetActivities(repoName string) (Activities, int, error) {
 	ctx := context.Background()
 	ghCli := ghapi.GetGithubClient(ctx, utils.Token)
-	issues, code, err := getIssues(ctx, ghCli, repoName)
+
+	issues, prs, code, err := getIssuesAndPRs(ctx, ghCli, repoName)
 	if err != nil {
 		return Activities{}, code, err
 	}
-	issueComments, code, err := getIssueComments(ctx, ghCli, repoName)
+	comments, code, err := getComments(ctx, ghCli, repoName)
 	if err != nil {
 		return Activities{}, code, err
 	}
-	prs, code, err := getPRs(ctx, ghCli, repoName)
+	reviews, code, err := getReviews(ctx, ghCli, repoName)
 	if err != nil {
 		return Activities{}, code, err
 	}
-	prComments, code, err := getPRComments(ctx, ghCli, repoName)
-	if err != nil {
-		return Activities{}, code, err
-	}
-	return Activities{prs, issues, prComments, issueComments}, http.StatusOK, nil
+
+	return Activities{prs, issues, comments, reviews}, http.StatusOK, nil
 }
 
-func getIssues(ctx context.Context, client *github.Client, repoName string) ([]utils.ConList, int, error) {
+func getIssuesAndPRs(ctx context.Context, client *github.Client, repoName string) ([]utils.ConList, []utils.ConList, int, error) {
 	owner, repo, err := ghapi.SplitRepo(repoName)
 	if err != nil {
-		return nil, http.StatusBadRequest, err
+		return nil, nil, http.StatusBadRequest, err
 	}
 
 	issueListOpts := &github.IssueListByRepoOptions{State: "all", ListOptions: listOpts}
 	var issues []utils.ConList
+	var prs []utils.ConList
 	for {
 		issuesGet, resp, err := client.Issues.ListByRepo(ctx, owner, repo, issueListOpts)
 		if err != nil {
 			if strings.Contains(err.Error(), "404 Not Found") {
-				return nil, http.StatusNotFound, fmt.Errorf("Repo not found")
+				return nil, nil, http.StatusNotFound, fmt.Errorf("Repo not found")
 			}
 			if _, ok := err.(*github.RateLimitError); ok {
-				return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
+				return nil, nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
 			}
-			return nil, http.StatusInternalServerError, err
+			return nil, nil, http.StatusInternalServerError, err
 		}
 		for _, i := range issuesGet {
 			author := *i.User.Login
 			createTime := *i.CreatedAt
-			issues = append(issues, utils.ConList{author, createTime})
+			if i.PullRequestLinks == nil {
+				issues = append(issues, utils.ConList{author, createTime})
+			} else {
+				prs = append(prs, utils.ConList{author, createTime})
+			}
 		}
 		if resp.NextPage == 0 {
 			break
@@ -75,10 +78,11 @@ func getIssues(ctx context.Context, client *github.Client, repoName string) ([]u
 		issueListOpts.Page = resp.NextPage
 	}
 	fmt.Printf("Get %d issues\n", len(issues))
-	return issues, http.StatusOK, nil
+	fmt.Printf("Get %d PRs\n", len(prs))
+	return issues, prs, http.StatusOK, nil
 }
 
-func getIssueComments(ctx context.Context, client *github.Client, repoName string) ([]utils.ConList, int, error) {
+func getComments(ctx context.Context, client *github.Client, repoName string) ([]utils.ConList, int, error) {
 	owner, repo, err := ghapi.SplitRepo(repoName)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
@@ -107,53 +111,20 @@ func getIssueComments(ctx context.Context, client *github.Client, repoName strin
 		}
 		issueListOpts.Page = resp.NextPage
 	}
-	fmt.Printf("Get %d issue comments\n", len(comments))
+	fmt.Printf("Get %d comments\n", len(comments))
 	return comments, http.StatusOK, nil
 }
 
-func getPRs(ctx context.Context, client *github.Client, repoName string) ([]utils.ConList, int, error) {
-	owner, repo, err := ghapi.SplitRepo(repoName)
-	if err != nil {
-		return nil, http.StatusBadRequest, err
-	}
-
-	PRListOpts := &github.PullRequestListOptions{State: "all", ListOptions: listOpts}
-	var PRs []utils.ConList
-	for {
-		issuesGet, resp, err := client.PullRequests.List(ctx, owner, repo, PRListOpts)
-		if err != nil {
-			if strings.Contains(err.Error(), "404 Not Found") {
-				return nil, http.StatusNotFound, fmt.Errorf("Repo not found")
-			}
-			if _, ok := err.(*github.RateLimitError); ok {
-				return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
-			}
-			return nil, http.StatusInternalServerError, err
-		}
-		for _, i := range issuesGet {
-			author := *i.User.Login
-			createTime := *i.CreatedAt
-			PRs = append(PRs, utils.ConList{author, createTime})
-		}
-		if resp.NextPage == 0 {
-			break
-		}
-		PRListOpts.Page = resp.NextPage
-	}
-	fmt.Printf("Get %d PRs\n", len(PRs))
-	return PRs, http.StatusOK, nil
-}
-
-func getPRComments(ctx context.Context, client *github.Client, repoName string) ([]utils.ConList, int, error) {
+func getReviews(ctx context.Context, client *github.Client, repoName string) ([]utils.ConList, int, error) {
 	owner, repo, err := ghapi.SplitRepo(repoName)
 	if err != nil {
 		return nil, http.StatusBadRequest, err
 	}
 
 	PRListOpts := &github.PullRequestListCommentsOptions{ListOptions: listOpts}
-	var PRcomments []utils.ConList
+	var reviews []utils.ConList
 	for {
-		commentsGet, resp, err := client.PullRequests.ListComments(ctx, owner, repo, 0, PRListOpts)
+		reviewsGet, resp, err := client.PullRequests.ListComments(ctx, owner, repo, 0, PRListOpts)
 		if err != nil {
 			if strings.Contains(err.Error(), "404 Not Found") {
 				return nil, http.StatusNotFound, fmt.Errorf("Repo not found")
@@ -163,16 +134,16 @@ func getPRComments(ctx context.Context, client *github.Client, repoName string) 
 			}
 			return nil, http.StatusInternalServerError, err
 		}
-		for _, i := range commentsGet {
+		for _, i := range reviewsGet {
 			author := *i.User.Login
 			createTime := *i.CreatedAt
-			PRcomments = append(PRcomments, utils.ConList{author, createTime})
+			reviews = append(reviews, utils.ConList{author, createTime})
 		}
 		if resp.NextPage == 0 {
 			break
 		}
 		PRListOpts.Page = resp.NextPage
 	}
-	fmt.Printf("Get %d PR commments\n", len(PRcomments))
-	return PRcomments, http.StatusOK, nil
+	fmt.Printf("Get %d reviews\n", len(reviews))
+	return reviews, http.StatusOK, nil
 }
