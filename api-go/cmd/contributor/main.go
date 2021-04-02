@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/api7/contributor-graph/api/internal/activities"
 	"github.com/api7/contributor-graph/api/internal/contributor"
 	"github.com/api7/contributor-graph/api/internal/gcpdb"
 	"github.com/api7/contributor-graph/api/internal/graph"
@@ -35,6 +36,7 @@ func main() {
 	http.HandleFunc("/contributors-svg", getContributorSVG)
 	http.HandleFunc("/refreshAll", refreshAll)
 	http.HandleFunc("/repos", getRepos)
+	http.HandleFunc("/activities", getActivities)
 
 	//port := os.Getenv("PORT")
 	port := "8080"
@@ -107,6 +109,23 @@ func getRepos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(returnRepoObj{Repos: repos})
+}
+
+func getActivities(w http.ResponseWriter, r *http.Request) {
+	v := r.URL.Query()
+	repo := v.Get("repo")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	repos, code, err := activities.GetActivities(repo)
+
+	if err != nil {
+		w.WriteHeader(code)
+		json.NewEncoder(w).Encode(returnRepoObj{Code: code, ErrorMessage: err.Error()})
+		return
+	}
+
+	json.NewEncoder(w).Encode(repos)
 }
 
 func refreshAll(w http.ResponseWriter, r *http.Request) {
