@@ -32,20 +32,17 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 
 	var repos []string
 	if repoInput == "" {
-		fileContent, err := ioutil.ReadFile(utils.RepoPath)
+		repos, err = getUpdateRepoList(ctx, dbCli)
 		if err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
-		repos = strings.Split(string(fileContent), "\n")
 	} else {
-		repos = []string{repoInput}
-	}
-
-	for i := range repos {
-		repos[i] = strings.ToLower(repos[i])
+		repos = []string{strings.ToLower(repoInput)}
 	}
 
 	for i, repoName := range repos {
+		fmt.Println(repoName)
+
 		var ghToken string
 		if repoInput == "" {
 			ghToken = utils.UpdateToken[i%len(utils.UpdateToken)]
@@ -53,11 +50,6 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 			ghToken = utils.Token
 		}
 		ghCli := ghapi.GetGithubClient(ctx, ghToken)
-
-		if repoName == "" || repoName[0] == '#' {
-			continue
-		}
-		fmt.Println(repoName)
 
 		conNumDB, lastModifiedTimeDB, err := getContributorsNumFromDB(ctx, dbCli, repoName)
 		if err != nil {
@@ -78,6 +70,10 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 		// TODO: add argument `force` to force update
 		if lastModifiedTimeDB.Add(23*time.Hour + 30*time.Minute).After(time.Now()) {
 			fmt.Printf("Repo no need to update since recently update at %v\n", lastModifiedTimeDB)
+			updateFlag := true
+			if err := updateRepoList(ctx, dbCli, repoName, conNumDB, updateFlag); err != nil {
+				return nil, http.StatusInternalServerError, err
+			}
 		} else {
 			conGH, code, err := getContributorsNumFromGH(ctx, ghCli, repoName)
 			if err != nil {
@@ -88,7 +84,8 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 			if conNumDB == conNumGH {
 				fmt.Printf("Repo no need to update with contributor number %d\n", conNumDB)
 				// to update LastModifiedTime
-				if err := updateRepoList(ctx, dbCli, repoName, conNumGH); err != nil {
+				updateFlag := true
+				if err := updateRepoList(ctx, dbCli, repoName, conNumGH, updateFlag); err != nil {
 					return nil, http.StatusInternalServerError, err
 				}
 			} else {
@@ -117,7 +114,8 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 					return nil, code, err
 				}
 
-				if err := updateRepoList(ctx, dbCli, repoName, conNumGH); err != nil {
+				updateFlag := maxConcurrency == 1
+				if err := updateRepoList(ctx, dbCli, repoName, conNumGH, updateFlag); err != nil {
 					return nil, http.StatusInternalServerError, err
 				}
 
@@ -215,11 +213,17 @@ func updateContributorList(
 	return commitListsAll, http.StatusOK, nil
 }
 
-func updateRepoList(ctx context.Context, dbCli *datastore.Client, repoName string, conNumGH int) error {
+func updateRepoList(ctx context.Context, dbCli *datastore.Client, repoName string, conNumGH int, updateFlag bool) error {
 	updatedRepo := &utils.RepoNum{conNumGH, time.Now()}
 	key := datastore.NameKey("Repo", repoName, nil)
 	if _, err := dbCli.Put(ctx, key, updatedRepo); err != nil {
 		return err
+	}
+	if updateFlag {
+		key = datastore.NameKey("RepoUpdate", repoName, nil)
+		if _, err := dbCli.Put(ctx, key, updatedRepo); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -246,6 +250,45 @@ func GetRepoList() ([]string, int, error) {
 	}
 
 	return repos, http.StatusOK, nil
+}
+
+func getUpdateRepoList(ctx context.Context, dbCli *datastore.Client) ([]string, error) {
+	var repoReturn []string
+	repoMap := make(map[string]bool)
+
+	// get update list from DB, to filter out recent updated ones in one step
+	var repoLists []*utils.RepoNum
+	keys, err := dbCli.GetAll(ctx, datastore.NewQuery("RepoUpdate"), &repoLists)
+	if err != nil {
+		return nil, err
+	}
+
+	for i, r := range repoLists {
+		repoName := keys[i].Name
+		repoMap[repoName] = true
+		if r.LastModifiedTime.Add(23*time.Hour + 30*time.Minute).Before(time.Now()) {
+			repoReturn = append(repoReturn, repoName)
+		}
+	}
+
+	// get update list from local list
+	fileContent, err := ioutil.ReadFile(utils.RepoPath)
+	if err != nil {
+		return nil, err
+	}
+	repoListAll := strings.Split(string(fileContent), "\n")
+
+	for _, r := range repoListAll {
+		if r == "" || r[0] == '#' {
+			continue
+		}
+		repoName := strings.ToLower(r)
+		if _, ok := repoMap[repoName]; !ok {
+			repoReturn = append(repoReturn, repoName)
+		}
+	}
+
+	return repoReturn, nil
 }
 
 func minInt(x, y int) int {
