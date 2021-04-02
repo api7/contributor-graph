@@ -70,10 +70,6 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 		// TODO: add argument `force` to force update
 		if lastModifiedTimeDB.Add(23*time.Hour + 30*time.Minute).After(time.Now()) {
 			fmt.Printf("Repo no need to update since recently update at %v\n", lastModifiedTimeDB)
-			updateFlag := true
-			if err := updateRepoList(ctx, dbCli, repoName, conNumDB, updateFlag); err != nil {
-				return nil, http.StatusInternalServerError, err
-			}
 		} else {
 			conGH, code, err := getContributorsNumFromGH(ctx, ghCli, repoName)
 			if err != nil {
