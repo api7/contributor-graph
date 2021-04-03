@@ -116,12 +116,12 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 				}
 
 				conLists = append(conLists, newConLists...)
-			}
-		}
 
-		if repoInput == "" {
-			if err := graph.GenerateAndSaveSVG(ctx, repoName); err != nil {
-				return nil, http.StatusInternalServerError, err
+				if repoInput == "" {
+					if err := graph.GenerateAndSaveSVG(ctx, repoName); err != nil {
+						return nil, http.StatusInternalServerError, err
+					}
+				}
 			}
 		}
 
