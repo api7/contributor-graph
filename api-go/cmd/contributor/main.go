@@ -31,12 +31,19 @@ type returnRepoObj struct {
 	Repos        []string `json:"repos`
 }
 
+type returnMonthlyConObj struct {
+	Code         int                    `json:"code`
+	ErrorMessage string                 `json:"message`
+	Contributors []utils.MonthlyConList `json:"contributors`
+}
+
 func main() {
 	http.HandleFunc("/contributors", getContributor)
 	http.HandleFunc("/contributors-svg", getContributorSVG)
 	http.HandleFunc("/refreshAll", refreshAll)
 	http.HandleFunc("/repos", getRepos)
 	http.HandleFunc("/activities", getActivities)
+	http.HandleFunc("/monthly-contributor", getMonthlyContributor)
 
 	//port := os.Getenv("PORT")
 	port := "8080"
@@ -62,6 +69,23 @@ func getContributor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(returnConObj{Contributors: conList})
+}
+
+func getMonthlyContributor(w http.ResponseWriter, r *http.Request) {
+	v := r.URL.Query()
+	repo := v.Get("repo")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	monthlyConLists, code, err := contributor.GetContributorMonthly(repo)
+
+	if err != nil {
+		w.WriteHeader(code)
+		json.NewEncoder(w).Encode(returnMonthlyConObj{Code: code, ErrorMessage: err.Error()})
+		return
+	}
+
+	json.NewEncoder(w).Encode(returnMonthlyConObj{Contributors: monthlyConLists})
 }
 
 // TODO: authentication, so GCF would not be abused

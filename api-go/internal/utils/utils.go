@@ -27,6 +27,11 @@ type ConList struct {
 	Date   time.Time
 }
 
+type MonthlyConList struct {
+	Month time.Time
+	Num   int
+}
+
 var (
 	DBName       = "contributor"
 	RepoDBName   = "Repo"
