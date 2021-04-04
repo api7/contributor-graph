@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"sort"
 	"strings"
@@ -55,7 +56,7 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 		repos = []string{strings.ToLower(repoInput)}
 	}
 
-	for _, repoName := range repos {
+	for i, repoName := range repos {
 		fmt.Println(repoName)
 		owner, repo, err := ghapi.SplitRepo(repoName)
 		if err != nil {
@@ -74,19 +75,45 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 		})
 
 		if len(monthlyConLists) == 0 || monthlyConLists[len(monthlyConLists)-1].Month.AddDate(0, 2, 0).Before(time.Now()) {
-			ghCli := ghapi.GetGithubClient(ctx, utils.Token)
+			ghCli := ghapi.GetGithubClient(ctx, utils.UpdateToken[i%len(utils.UpdateToken)])
 
 			// get first commit of the repo and use it as the start
 			listCommitOpts := &github.CommitsListOptions{}
 			commits, resp, err := ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
 			if err != nil {
-				return nil, http.StatusInternalServerError, err
+				if strings.Contains(err.Error(), "404 Not Found") {
+					return nil, http.StatusNotFound, fmt.Errorf("Repo not found")
+				}
+				if _, ok := err.(*github.RateLimitError); ok || strings.Contains(err.Error(), "403 API rate limit exceeded") {
+					// give it another random chance to see if magic happens
+					ghCli = ghapi.GetGithubClient(ctx, utils.UpdateToken[rand.Intn(len(utils.UpdateToken))])
+					commits, resp, err = ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
+					if err != nil {
+						return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
+					}
+					fmt.Println("MAGIC happens and let's rolling again!")
+				} else {
+					return nil, http.StatusInternalServerError, err
+				}
 			}
 			if resp.NextPage != 0 {
 				listCommitOpts.Page = resp.LastPage
 				commits, resp, err = ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
 				if err != nil {
-					return nil, http.StatusInternalServerError, err
+					if strings.Contains(err.Error(), "404 Not Found") {
+						return nil, http.StatusNotFound, fmt.Errorf("Repo not found")
+					}
+					if _, ok := err.(*github.RateLimitError); ok || strings.Contains(err.Error(), "403 API rate limit exceeded") {
+						// give it another random chance to see if magic happens
+						ghCli = ghapi.GetGithubClient(ctx, utils.UpdateToken[rand.Intn(len(utils.UpdateToken))])
+						commits, resp, err = ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
+						if err != nil {
+							return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
+						}
+						fmt.Println("MAGIC happens and let's rolling again!")
+					} else {
+						return nil, http.StatusInternalServerError, err
+					}
 				}
 			}
 
@@ -115,10 +142,17 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 						if strings.Contains(err.Error(), "404 Not Found") {
 							return nil, http.StatusNotFound, fmt.Errorf("Repo not found")
 						}
-						if _, ok := err.(*github.RateLimitError); ok {
-							return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
+						if _, ok := err.(*github.RateLimitError); ok || strings.Contains(err.Error(), "403 API rate limit exceeded") {
+							// give it another random chance to see if magic happens
+							ghCli = ghapi.GetGithubClient(ctx, utils.UpdateToken[rand.Intn(len(utils.UpdateToken))])
+							coms, resp, err = ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
+							if err != nil {
+								return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
+							}
+							fmt.Println("MAGIC happens and let's rolling again!")
+						} else {
+							return nil, http.StatusInternalServerError, err
 						}
-						return nil, http.StatusInternalServerError, err
 					}
 					for _, c := range coms {
 						comLists[c.Author.GetLogin()] = true
@@ -152,12 +186,33 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 		if repoInput != "" {
 			return retMonthlyConLists, http.StatusOK, nil
 		}
+
+		key := datastore.NameKey("Monthly-Repo", repoName, nil)
+		if _, err := dbCli.Put(ctx, key, &utils.LastModifiedTime{time.Now()}); err != nil {
+			return nil, http.StatusInternalServerError, err
+		}
 	}
 	return nil, http.StatusOK, nil
 }
 
 func getUpdateRepoList(ctx context.Context, dbCli *datastore.Client) ([]string, error) {
 	var repoReturn []string
+	repoMap := make(map[string]bool)
+
+	// get update list from DB, to filter out recent updated ones in one step
+	var timeLists []*utils.LastModifiedTime
+	keys, err := dbCli.GetAll(ctx, datastore.NewQuery("Monthly-Repo"), &timeLists)
+	if err != nil {
+		return nil, err
+	}
+
+	for i, t := range timeLists {
+		repoName := keys[i].Name
+		repoMap[repoName] = true
+		if t.LastModifiedTime.AddDate(0, 1, 0).Before(time.Now()) {
+			repoReturn = append(repoReturn, repoName)
+		}
+	}
 
 	// get update list from local list
 	fileContent, err := ioutil.ReadFile(utils.RepoPath)
@@ -171,7 +226,9 @@ func getUpdateRepoList(ctx context.Context, dbCli *datastore.Client) ([]string, 
 			continue
 		}
 		repoName := strings.ToLower(r)
-		repoReturn = append(repoReturn, repoName)
+		if _, ok := repoMap[repoName]; !ok {
+			repoReturn = append(repoReturn, repoName)
+		}
 	}
 
 	return repoReturn, nil

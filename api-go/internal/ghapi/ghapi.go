@@ -3,6 +3,7 @@ package ghapi
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"sort"
 	"strings"
@@ -48,10 +49,17 @@ func GetContributors(ctx context.Context, client *github.Client, repoName string
 			if strings.Contains(err.Error(), "404 Not Found") {
 				return nil, http.StatusNotFound, fmt.Errorf("Repo not found")
 			}
-			if _, ok := err.(*github.RateLimitError); ok {
-				return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
+			if _, ok := err.(*github.RateLimitError); ok || strings.Contains(err.Error(), "403 API rate limit exceeded") {
+				// give it another random chance to see if magic happens
+				client = GetGithubClient(ctx, utils.UpdateToken[rand.Intn(len(utils.UpdateToken))])
+				cons, resp, err = client.Repositories.ListContributors(ctx, owner, repo, listConOpts)
+				if err != nil {
+					return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
+				}
+				fmt.Println("MAGIC happens and let's rolling again!")
+			} else {
+				return nil, http.StatusInternalServerError, err
 			}
-			return nil, http.StatusInternalServerError, err
 		}
 		for _, c := range cons {
 			var con utils.ConGH
