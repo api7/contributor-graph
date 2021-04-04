@@ -92,7 +92,8 @@ const useStylesTable = makeStyles(theme => ({
     marginTop: "2em"
   },
   tabs: {
-    borderRight: `1px solid ${theme.palette.divider}`
+    borderRight: `1px solid ${theme.palette.divider}`,
+    display: window.innerWidth > 555 ? "unset" : "none"
   }
 }));
 
