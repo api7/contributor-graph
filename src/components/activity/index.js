@@ -6,7 +6,7 @@ import omit from "lodash.omit";
 
 import CompareComponent from "../compare";
 import { Button, ButtonGroup } from "@material-ui/core";
-import { getMonths, isSameDay } from "../../utils";
+import { getMonths } from "../../utils";
 import { DEFAULT_ACTIVITY_OPTIONS } from "../../constants";
 
 const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
@@ -131,14 +131,6 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
         date: item.Month
       }));
 
-      if (!isSameDay(new Date(data[data.length - 1].date), new Date())) {
-        data.push({
-          repo,
-          contributorNum: Contributors[Contributors.length - 1].Num,
-          date: new Date()
-        });
-      }
-
       const clonedDatasource = cloneDeep(dataSource);
       if (!clonedDatasource[repo]) {
         setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
@@ -198,14 +190,6 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
           contributorNum: item.Num,
           date: item.Month
         }));
-
-        if (!isSameDay(new Date(data[data.length - 1].date), new Date())) {
-          data.push({
-            repo,
-            contributorNum: Contributors[Contributors.length - 1].idx,
-            date: new Date()
-          });
-        }
 
         if (!tmpDataSouce[item.repo]) {
           tmpDataSouce[repo] = data;
