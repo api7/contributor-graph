@@ -37,7 +37,7 @@ export const DEFAULT_ACTIVITY_OPTIONS = {
   },
   dataset: [],
   title: {
-    text: "Activity Over Time"
+    text: "Contributor Monthly Activity"
   },
   tooltip: {
     trigger: "axis"

@@ -103,10 +103,8 @@ const App = () => {
   const [alertType, setAlertType] = React.useState("success");
   const [searchOption, setSearchOption] = React.useState([]);
   const [contributorRepoList, setContributorRepoList] = React.useState([]);
-  // TODO: activity line
-  const [chartType, setChartType] = React.useState("contributor");
   const classesTable = useStylesTable();
-  const [value, setValue] = React.useState(1);
+  const [value, setValue] = React.useState(0);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -129,10 +127,8 @@ const App = () => {
   };
 
   const updateChart = repo => {
-    if (chartType === "contributor") {
-      if (!contributorRepoList.includes(repo)) {
-        setContributorRepoList([...contributorRepoList, repo]);
-      }
+    if (!contributorRepoList.includes(repo)) {
+      setContributorRepoList([...contributorRepoList, repo]);
     }
   };
 
@@ -156,6 +152,12 @@ const App = () => {
 
   React.useEffect(() => {
     const repo = getParameterByName("repo");
+    const hash = window.location.hash;
+    if (hash === "#ContributorMonthlyActivity") {
+      setValue(1);
+    } else {
+      window.location.hash = "#ContributorOverTime";
+    }
     if (repo) {
       const repoArr = repo.split(",").filter(Boolean);
       setContributorRepoList(repoArr);
@@ -241,8 +243,18 @@ const App = () => {
               aria-label="Vertical tabs example"
               className={classesTable.tabs}
             >
-              <Tab label="Contributor Over Time" {...a11yProps(0)} />
-              <Tab label="活跃度图表" {...a11yProps(1)} />
+              <Tab
+                label={<a href="#ContributorOverTime">Contributor Over Time</a>}
+                {...a11yProps(0)}
+              />
+              <Tab
+                label={
+                  <a href="#ContributorMonthlyActivity">
+                    Contributor Monthly Activitye
+                  </a>
+                }
+                {...a11yProps(1)}
+              />
             </Tabs>
             <TabPanel value={value} index={0}>
               <ContirbutorLineChart
