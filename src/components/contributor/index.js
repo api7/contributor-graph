@@ -170,7 +170,9 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert }) => {
 
   React.useEffect(() => {
     updateSeries(xAxis);
-    window.parent.postMessage(Object.keys(dataSource), "*");
+    window.parent.postMessage({
+      legend: Object.keys(dataSource)
+    }, "*");
   }, [dataSource, xAxis]);
 
   React.useEffect(() => {

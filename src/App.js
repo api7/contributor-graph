@@ -93,7 +93,7 @@ const useStylesTable = makeStyles(theme => ({
   },
   tabs: {
     borderRight: `1px solid ${theme.palette.divider}`,
-    display: window.innerWidth > 555 ? "unset" : "none"
+    // display: window.innerWidth > 555 ? "" : "none"
   }
 }));
 
@@ -153,8 +153,8 @@ const App = () => {
 
   React.useEffect(() => {
     const repo = getParameterByName("repo");
-    const hash = window.location.hash;
-    if (hash === "#ContributorMonthlyActivity") {
+    const chart = getParameterByName("chart");
+    if (chart === "contributorMonthlyActivity") {
       setValue(1);
     }
     if (repo) {
@@ -165,6 +165,12 @@ const App = () => {
     }
     getSearchOptions();
   }, []);
+
+  React.useEffect(()=> {
+    window.parent.postMessage({
+      chartType: value === 0 ? 'contributorOverTime':'contributorMonthlyActivity'
+    }, "*");
+  },[value])
 
   return (
     <>
@@ -243,25 +249,17 @@ const App = () => {
               className={classesTable.tabs}
             >
               <Tab
-                label={
-                  <a
-                    style={{ textTransform: "none" }}
-                    href="#ContributorOverTime"
-                  >
-                    Contributor Over Time
-                  </a>
-                }
+                style={{
+                  textTransform:"none"
+                }}
+                label="Contributor Over Time"
                 {...a11yProps(0)}
               />
               <Tab
-                label={
-                  <a
-                    href="#ContributorMonthlyActivity"
-                    style={{ textTransform: "none" }}
-                  >
-                    Contributor Monthly Activity
-                  </a>
-                }
+               style={{
+                textTransform:"none"
+              }}
+                label="Contributor Monthly Activity"
                 {...a11yProps(1)}
               />
             </Tabs>
