@@ -155,8 +155,6 @@ const App = () => {
     const hash = window.location.hash;
     if (hash === "#ContributorMonthlyActivity") {
       setValue(1);
-    } else {
-      window.location.hash = "#ContributorOverTime";
     }
     if (repo) {
       const repoArr = repo.split(",").filter(Boolean);
