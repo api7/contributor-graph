@@ -11,6 +11,7 @@ import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
 
 import ContirbutorLineChart from "./components/contributor";
+import ActivityChart from "./components/activity";
 import { getParameterByName } from "./utils";
 
 const Alert = props => {
@@ -105,7 +106,7 @@ const App = () => {
   // TODO: activity line
   const [chartType, setChartType] = React.useState("contributor");
   const classesTable = useStylesTable();
-  const [value, setValue] = React.useState(0);
+  const [value, setValue] = React.useState(1);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -250,7 +251,10 @@ const App = () => {
               />
             </TabPanel>
             <TabPanel value={value} index={1}>
-              活跃度图表
+              <ActivityChart
+                repoList={contributorRepoList}
+                showAlert={showAlert}
+              />
             </TabPanel>
           </div>
         </div>
