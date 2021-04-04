@@ -243,13 +243,23 @@ const App = () => {
               className={classesTable.tabs}
             >
               <Tab
-                label={<a href="#ContributorOverTime">Contributor Over Time</a>}
+                label={
+                  <a
+                    style={{ textTransform: "none" }}
+                    href="#ContributorOverTime"
+                  >
+                    Contributor Over Time
+                  </a>
+                }
                 {...a11yProps(0)}
               />
               <Tab
                 label={
-                  <a href="#ContributorMonthlyActivity">
-                    Contributor Monthly Activitye
+                  <a
+                    href="#ContributorMonthlyActivity"
+                    style={{ textTransform: "none" }}
+                  >
+                    Contributor Monthly Activity
                   </a>
                 }
                 {...a11yProps(1)}
