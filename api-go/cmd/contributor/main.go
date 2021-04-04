@@ -41,6 +41,7 @@ func main() {
 	http.HandleFunc("/contributors", getContributor)
 	http.HandleFunc("/contributors-svg", getContributorSVG)
 	http.HandleFunc("/refreshAll", refreshAll)
+	http.HandleFunc("/refreshMonthly", refreshMonthly)
 	http.HandleFunc("/repos", getRepos)
 	http.HandleFunc("/activities", getActivities)
 	http.HandleFunc("/monthly-contributor", getMonthlyContributor)
@@ -154,6 +155,16 @@ func getActivities(w http.ResponseWriter, r *http.Request) {
 
 func refreshAll(w http.ResponseWriter, r *http.Request) {
 	_, code, err := gcpdb.UpdateDB("")
+
+	if err != nil {
+		w.WriteHeader(code)
+		json.NewEncoder(w).Encode(returnConObj{Code: code, ErrorMessage: err.Error()})
+		return
+	}
+}
+
+func refreshMonthly(w http.ResponseWriter, r *http.Request) {
+	_, code, err := contributor.GetContributorMonthly("")
 
 	if err != nil {
 		w.WriteHeader(code)
