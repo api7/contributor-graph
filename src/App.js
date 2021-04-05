@@ -259,7 +259,7 @@ const App = () => {
                style={{
                 textTransform:"none"
               }}
-                label="Contributor Monthly Activity"
+                label="Monthly Active Contributors"
                 {...a11yProps(1)}
               />
             </Tabs>
