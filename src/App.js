@@ -56,13 +56,12 @@ function TabPanel(props) {
     <div
       role="tabpanel"
       hidden={value !== index}
-      id={`vertical-tabpanel-${index}`}
-      aria-labelledby={`vertical-tab-${index}`}
+      id={`scrollable-force-tabpanel-${index}`}
+      aria-labelledby={`scrollable-force-tab-${index}`}
       {...other}
-      style={{ width: "100%" }}
     >
       {value === index && (
-        <Box p={6} style={{ padding: 0 }}>
+        <Box p={3} style={{ padding: 0 }}>
           <Typography>{children}</Typography>
         </Box>
       )}
@@ -78,22 +77,16 @@ TabPanel.propTypes = {
 
 function a11yProps(index) {
   return {
-    id: `vertical-tab-${index}`,
-    "aria-controls": `vertical-tabpanel-${index}`
+    id: `scrollable-force-tab-${index}`,
+    "aria-controls": `scrollable-force-tabpanel-${index}`
   };
 }
 
-const useStylesTable = makeStyles(theme => ({
+const useTabStyles = makeStyles(theme => ({
   root: {
     flexGrow: 1,
-    backgroundColor: theme.palette.background.paper,
-    display: "flex",
-    height: 224,
-    marginTop: "2em"
-  },
-  tabs: {
-    borderRight: `1px solid ${theme.palette.divider}`,
-    // display: window.innerWidth > 555 ? "" : "none"
+    width: "100%",
+    backgroundColor: theme.palette.background.paper
   }
 }));
 
@@ -104,7 +97,7 @@ const App = () => {
   const [alertType, setAlertType] = React.useState("success");
   const [searchOption, setSearchOption] = React.useState([]);
   const [contributorRepoList, setContributorRepoList] = React.useState([]);
-  const classesTable = useStylesTable();
+  const classesTable = useTabStyles();
   const [value, setValue] = React.useState(0);
 
   const handleChange = (event, newValue) => {
@@ -166,11 +159,15 @@ const App = () => {
     getSearchOptions();
   }, []);
 
-  React.useEffect(()=> {
-    window.parent.postMessage({
-      chartType: value === 0 ? 'contributorOverTime':'contributorMonthlyActivity'
-    }, "*");
-  },[value])
+  React.useEffect(() => {
+    window.parent.postMessage(
+      {
+        chartType:
+          value === 0 ? "contributorOverTime" : "contributorMonthlyActivity"
+      },
+      "*"
+    );
+  }, [value]);
 
   return (
     <>
@@ -239,30 +236,39 @@ const App = () => {
               </IconButton>
             </Paper>
           </div>
-          <div className={classesTable.root}>
-            <Tabs
-              orientation="vertical"
-              variant="scrollable"
-              value={value}
-              onChange={handleChange}
-              aria-label="Vertical tabs example"
-              className={classesTable.tabs}
-            >
-              <Tab
-                style={{
-                  textTransform:"none"
-                }}
-                label="Contributor Over Time"
-                {...a11yProps(0)}
-              />
-              <Tab
-               style={{
-                textTransform:"none"
+
+          <div className={classesTable.root} style={{ marginTop: "20px" }}>
+            <div
+              style={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "center"
               }}
-                label="Monthly Active Contributors"
-                {...a11yProps(1)}
-              />
-            </Tabs>
+            >
+              <Paper color="default" elevation>
+                <Tabs
+                  value={value}
+                  onChange={handleChange}
+                  variant="scrollable"
+                  scrollButtons="on"
+                  indicatorColor="primary"
+                  textColor="primary"
+                  aria-label="scrollable force tabs example"
+                  centered
+                >
+                  <Tab
+                    style={{ textTransform: "none" }}
+                    label="Contributor Over Time"
+                    {...a11yProps(0)}
+                  />
+                  <Tab
+                    style={{ textTransform: "none" }}
+                    label="Monthly Active Contributors"
+                    {...a11yProps(1)}
+                  />
+                </Tabs>
+              </Paper>
+            </div>
             <TabPanel value={value} index={0}>
               <ContirbutorLineChart
                 repoList={contributorRepoList}
