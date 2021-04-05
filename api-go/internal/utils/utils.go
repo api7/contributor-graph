@@ -44,11 +44,7 @@ var (
 	UpdateToken  = []string{
 		"d5cb5a94b6eb03d0518dece280095891a900b6a3",
 		"4be342dc78138f46eb0f17bfd9a192d3142170da",
-		"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",
-		"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",
-		"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",
-		"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",
-		"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",
+		"794b296a221cf6b9c08ddcc41de5ef33f45d46d7",
 	}
 	RepoPath = "./config/repo_list.md"
 	Token    = "794b296a221cf6b9c08ddcc41de5ef33f45d46d7"
