@@ -37,7 +37,8 @@ export const DEFAULT_ACTIVITY_OPTIONS = {
   },
   dataset: [],
   title: {
-    text: "Contributor Monthly Activity"
+    text: "Monthly Active Contributors",
+    subtext: 'The value represents the contributors who submitted commits in the month'
   },
   tooltip: {
     trigger: "axis"
