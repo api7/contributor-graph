@@ -6,15 +6,12 @@ import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
 
 import CompareComponent from "../compare";
-import { Button, ButtonGroup } from "@material-ui/core";
-import { getMonths } from "../../utils";
 import { DEFAULT_ACTIVITY_OPTIONS } from "../../constants";
 
 const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
-  const [activeDate, setActiveDate] = React.useState("max");
-  const [xAxis, setXAxis] = React.useState([]);
+  const [xAxis,] = React.useState(["1970-01-01"]);
   const [option, setOption] = React.useState(DEFAULT_ACTIVITY_OPTIONS);
 
   const updateSeries = passXAxis => {
@@ -155,28 +152,6 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
   };
 
   React.useEffect(() => {
-    switch (activeDate) {
-      case "1month":
-        setXAxis(getMonths(1));
-        break;
-      case "3months":
-        setXAxis(getMonths(3));
-        break;
-      case "6months":
-        setXAxis(getMonths(6));
-        break;
-      case "1year":
-        setXAxis(getMonths(12));
-        break;
-      case "max":
-        setXAxis(["1970-01-01"]);
-        break;
-      default:
-        break;
-    }
-  }, [activeDate]);
-
-  React.useEffect(() => {
     updateSeries(xAxis);
     window.parent.postMessage({ legend: Object.keys(dataSource) }, "*");
   }, [dataSource, xAxis]);
@@ -254,73 +229,6 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
                           alignItems: "center"
                         }}
                       >
-                        <div>
-                          <ButtonGroup color="secondary" size="small">
-                            <Button
-                              variant={
-                                activeDate === "1month"
-                                  ? "contained"
-                                  : "outlined"
-                              }
-                              value="1month"
-                              onClick={e => {
-                                setActiveDate(e.currentTarget.value);
-                              }}
-                            >
-                              1 Month
-                            </Button>
-                            <Button
-                              variant={
-                                activeDate === "3months"
-                                  ? "contained"
-                                  : "outlined"
-                              }
-                              value="3months"
-                              onClick={e => {
-                                setActiveDate(e.currentTarget.value);
-                              }}
-                            >
-                              3 Months
-                            </Button>
-                            <Button
-                              variant={
-                                activeDate === "6months"
-                                  ? "contained"
-                                  : "outlined"
-                              }
-                              value="6months"
-                              onClick={e => {
-                                setActiveDate(e.currentTarget.value);
-                              }}
-                            >
-                              6 Months
-                            </Button>
-                            <Button
-                              variant={
-                                activeDate === "1year"
-                                  ? "contained"
-                                  : "outlined"
-                              }
-                              value="1year"
-                              onClick={e => {
-                                setActiveDate(e.currentTarget.value);
-                              }}
-                            >
-                              1 Year
-                            </Button>
-                            <Button
-                              variant={
-                                activeDate === "max" ? "contained" : "outlined"
-                              }
-                              value="max"
-                              onClick={e => {
-                                setActiveDate(e.currentTarget.value);
-                              }}
-                            >
-                              Max
-                            </Button>
-                          </ButtonGroup>
-                        </div>
                       </div>
                       <ReactECharts
                         option={option}
