@@ -1,6 +1,7 @@
 import React from "react";
 import cloneDeep from "lodash.clonedeep";
 import { Row, Col, Tab } from "react-bootstrap";
+import * as echarts from "echarts";
 import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
 
@@ -66,6 +67,21 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
         tooltip: ["ContributorNum"]
       }
     }));
+
+    if (series.length === 1) {
+      series[0].areaStyle = {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          {
+            offset: 0,
+            color: "rgba(58,77,233,0.8)"
+          },
+          {
+            offset: 1,
+            color: "rgba(58,77,233,0.1)"
+          }
+        ])
+      };
+    }
 
     newClonedOption.dataset = [
       {
