@@ -11,11 +11,39 @@ import { DEFAULT_ACTIVITY_OPTIONS } from "../../constants";
 const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
-  const [xAxis,] = React.useState(["1970-01-01"]);
-  const [option, setOption] = React.useState(DEFAULT_ACTIVITY_OPTIONS);
+  const [xAxis] = React.useState(["1970-01-01"]);
+  const [option, setOption] = React.useState({
+    ...DEFAULT_ACTIVITY_OPTIONS,
+    tooltip: {
+      trigger: "axis",
+      formatter: params => {
+        const text = params.map(item => {
+          return `<span>${item.marker}${item.seriesName}&nbsp&nbsp <b>${item.value[0]}</b></span><br>`;
+        });
+
+        return [params[0].value[2].substring(0, 7), text]
+          .join("</br>")
+          .replace(",", "");
+      }
+    }
+  });
 
   const updateSeries = passXAxis => {
-    const newClonedOption = cloneDeep(DEFAULT_ACTIVITY_OPTIONS);
+    const newClonedOption = cloneDeep({
+      ...DEFAULT_ACTIVITY_OPTIONS,
+      tooltip: {
+        trigger: "axis",
+        formatter: params => {
+          const text = params.map(item => {
+            return `<span>${item.marker}${item.seriesName}&nbsp&nbsp <b>${item.value[0]}</b></span><br>`;
+          });
+
+          return [params[0].value[2].substring(0, 7), text]
+            .join("</br>")
+            .replace(",", "");
+        }
+      }
+    });
     const datasetWithFilters = [
       ["ContributorNum", "Repo", "Date", "DateValue"]
     ];
@@ -221,15 +249,6 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
                 <Col>
                   <Tab.Content>
                     <Tab.Pane eventKey="contributor">
-                      <div
-                        style={{
-                          display: "flex",
-                          marginBottom: "5px",
-                          justifyContent: "space-between",
-                          alignItems: "center"
-                        }}
-                      >
-                      </div>
                       <ReactECharts
                         option={option}
                         opts={{ renderer: "svg" }}
