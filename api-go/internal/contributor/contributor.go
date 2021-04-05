@@ -64,7 +64,8 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 		}
 
 		var monthlyConLists []*utils.MonthlyConList
-		if _, err = dbCli.GetAll(ctx, datastore.NewQuery("Monthly-"+repoName), &monthlyConLists); err != nil {
+		keys, err := dbCli.GetAll(ctx, datastore.NewQuery("Monthly-"+repoName), &monthlyConLists)
+		if err != nil {
 			if err != datastore.ErrInvalidEntityType {
 				return nil, http.StatusInternalServerError, err
 			}
@@ -74,50 +75,62 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 			return monthlyConLists[i].Month.Before(monthlyConLists[j].Month)
 		})
 
+		if err := dbCli.DeleteMulti(ctx, keys); err != nil {
+			if err != datastore.ErrInvalidEntityType {
+				return nil, http.StatusInternalServerError, err
+			}
+		}
+
+		monthlyConLists = []*utils.MonthlyConList{}
+
 		if len(monthlyConLists) == 0 || monthlyConLists[len(monthlyConLists)-1].Month.AddDate(0, 2, 0).Before(time.Now()) {
 			ghCli := ghapi.GetGithubClient(ctx, utils.UpdateToken[i%len(utils.UpdateToken)])
 
 			// get first commit of the repo and use it as the start
 			listCommitOpts := &github.CommitsListOptions{}
-			commits, resp, err := ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
+			var firstCommitTime *time.Time
+			commits, resp, statusCode, err := getCommits(ctx, ghCli, owner, repo, listCommitOpts)
 			if err != nil {
-				if strings.Contains(err.Error(), "404 Not Found") {
-					return nil, http.StatusNotFound, fmt.Errorf("Repo not found")
-				}
-				if _, ok := err.(*github.RateLimitError); ok || strings.Contains(err.Error(), "403 API rate limit exceeded") {
-					// give it another random chance to see if magic happens
-					ghCli = ghapi.GetGithubClient(ctx, utils.UpdateToken[rand.Intn(len(utils.UpdateToken))])
-					commits, resp, err = ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
-					if err != nil {
-						return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
-					}
-					fmt.Println("MAGIC happens and let's rolling again!")
-				} else {
-					return nil, http.StatusInternalServerError, err
-				}
+				return nil, statusCode, err
 			}
 			if resp.NextPage != 0 {
 				listCommitOpts.Page = resp.LastPage
-				commits, resp, err = ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
+				commits, resp, statusCode, err = getCommits(ctx, ghCli, owner, repo, listCommitOpts)
 				if err != nil {
-					if strings.Contains(err.Error(), "404 Not Found") {
-						return nil, http.StatusNotFound, fmt.Errorf("Repo not found")
-					}
-					if _, ok := err.(*github.RateLimitError); ok || strings.Contains(err.Error(), "403 API rate limit exceeded") {
-						// give it another random chance to see if magic happens
-						ghCli = ghapi.GetGithubClient(ctx, utils.UpdateToken[rand.Intn(len(utils.UpdateToken))])
-						commits, resp, err = ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
-						if err != nil {
-							return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
-						}
-						fmt.Println("MAGIC happens and let's rolling again!")
-					} else {
-						return nil, http.StatusInternalServerError, err
+					return nil, statusCode, err
+				}
+
+				// to jump over commits with tricked date
+				// don't know the reason but those author of those commits would be empty
+				// example:
+				//		curl -u username:$token -H "Accept: application/vnd.github.v3+json" 'https://api.github.com/repos/angular/angular.js/commits?author=git5@invalid'
+				//		https://github.com/golang/go/commit/7d7c6a97f815e9279d08cfaea7d5efb5e90695a8
+				// also this seems what Github is doing when presenting `insights - contributors`
+				// example:
+				//		the earliest commits of apache kafka happened at 2011-08-01, but it has the author `null`.
+				//		So on `insights - contributors`, it says the first commit is at 2012-12-16, which is the first commit whose author is not `null`
+				for i := range commits {
+					if commits[len(commits)-i-1].Author != nil {
+						firstCommitTime = commits[len(commits)-i-1].Commit.Author.Date
+						break
 					}
 				}
 			}
 
-			firstCommitTime := commits[len(commits)-1].Commit.Author.Date
+			for firstCommitTime == nil {
+				listCommitOpts.Page = resp.PrevPage
+				commits, resp, statusCode, err = getCommits(ctx, ghCli, owner, repo, listCommitOpts)
+				if err != nil {
+					return nil, statusCode, err
+				}
+
+				for i := range commits {
+					if commits[len(commits)-i-1].Author != nil {
+						firstCommitTime = commits[len(commits)-i-1].Commit.Author.Date
+						break
+					}
+				}
+			}
 
 			year, month, _ := firstCommitTime.Date()
 			loc := firstCommitTime.Location()
@@ -137,24 +150,11 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 				comLists := make(map[string]bool)
 				listCommitOpts := &github.CommitsListOptions{Since: firstDay, Until: firstDay.AddDate(0, 1, 0), ListOptions: listOpts}
 				for {
-					coms, resp, err := ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
+					commits, resp, statusCode, err = getCommits(ctx, ghCli, owner, repo, listCommitOpts)
 					if err != nil {
-						if strings.Contains(err.Error(), "404 Not Found") {
-							return nil, http.StatusNotFound, fmt.Errorf("Repo not found")
-						}
-						if _, ok := err.(*github.RateLimitError); ok || strings.Contains(err.Error(), "403 API rate limit exceeded") {
-							// give it another random chance to see if magic happens
-							ghCli = ghapi.GetGithubClient(ctx, utils.UpdateToken[rand.Intn(len(utils.UpdateToken))])
-							coms, resp, err = ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
-							if err != nil {
-								return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
-							}
-							fmt.Println("MAGIC happens and let's rolling again!")
-						} else {
-							return nil, http.StatusInternalServerError, err
-						}
+						return nil, statusCode, err
 					}
-					for _, c := range coms {
+					for _, c := range commits {
 						comLists[c.Author.GetLogin()] = true
 					}
 					if resp.NextPage == 0 {
@@ -232,4 +232,25 @@ func getUpdateRepoList(ctx context.Context, dbCli *datastore.Client) ([]string, 
 	}
 
 	return repoReturn, nil
+}
+
+func getCommits(ctx context.Context, ghCli *github.Client, owner string, repo string, listCommitOpts *github.CommitsListOptions) ([]*github.RepositoryCommit, *github.Response, int, error) {
+	commits, resp, err := ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
+	if err != nil {
+		if strings.Contains(err.Error(), "404 Not Found") {
+			return nil, nil, http.StatusNotFound, fmt.Errorf("Repo not found")
+		}
+		if _, ok := err.(*github.RateLimitError); ok || strings.Contains(err.Error(), "403 API rate limit exceeded") {
+			// give it another random chance to see if magic happens
+			*ghCli = *ghapi.GetGithubClient(ctx, utils.UpdateToken[rand.Intn(len(utils.UpdateToken))])
+			commits, resp, err = ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
+			if err != nil {
+				return nil, nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
+			}
+			fmt.Println("MAGIC happens and let's rolling again!")
+		} else {
+			return nil, nil, http.StatusInternalServerError, err
+		}
+	}
+	return commits, resp, http.StatusOK, nil
 }
