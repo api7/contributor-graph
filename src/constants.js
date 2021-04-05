@@ -27,7 +27,7 @@ export const DEFAULT_OPTIONS = {
 
 export const DEFAULT_ACTIVITY_OPTIONS = {
   legend: {
-    top: "5%",
+    top: "7%",
     data: []
   },
   toolbox: {
@@ -38,7 +38,7 @@ export const DEFAULT_ACTIVITY_OPTIONS = {
   dataset: [],
   title: {
     text: "Monthly Active Contributors",
-    subtext: 'The value represents the contributors who submitted commits in the month'
+    subtext: 'The value represents the number of contributors who submitted code contributions during the month'
   },
   tooltip: {
     trigger: "axis"

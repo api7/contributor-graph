@@ -102,7 +102,7 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
           },
           {
             offset: 1,
-            color: "rgba(58,77,233,0.1)"
+            color: "rgba(58,77,233,0)"
           }
         ])
       };
