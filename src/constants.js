@@ -1,4 +1,5 @@
 export const DEFAULT_OPTIONS = {
+  color: ['#39a85a', '#4385ee', '#fabc37', '#2dc1dd', '#f972cf', '#8331c8'],
   legend: {
     top: "5%",
     data: []
@@ -26,6 +27,7 @@ export const DEFAULT_OPTIONS = {
 };
 
 export const DEFAULT_ACTIVITY_OPTIONS = {
+  color: ['#39a85a', '#4385ee', '#fabc37', '#2dc1dd', '#f972cf', '#8331c8'],
   legend: {
     top: "7%",
     data: []
@@ -52,3 +54,5 @@ export const DEFAULT_ACTIVITY_OPTIONS = {
   },
   series: []
 };
+
+export const DEFAULT_COLOR = '#39a85a';

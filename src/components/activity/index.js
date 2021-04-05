@@ -6,7 +6,10 @@ import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
 
 import CompareComponent from "../compare";
-import { DEFAULT_ACTIVITY_OPTIONS } from "../../constants";
+import {
+  DEFAULT_ACTIVITY_OPTIONS,
+  DEFAULT_COLOR,
+} from "../../constants";
 
 const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
   const [loading, setLoading] = React.useState(false);
@@ -23,7 +26,7 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
 
         return [params[0].value[2].substring(0, 7), text]
           .join("</br>")
-          .replace(",", "");
+          .replace(/,/g, "");
       }
     }
   });
@@ -40,7 +43,7 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
 
           return [params[0].value[2].substring(0, 7), text]
             .join("</br>")
-            .replace(",", "");
+            .replace(/,/g, "");
         }
       }
     });
@@ -98,13 +101,21 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
         color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
           {
             offset: 0,
-            color: "rgba(58,77,233,0.8)"
+            color: DEFAULT_COLOR + "80"
           },
           {
             offset: 1,
-            color: "rgba(58,77,233,0)"
+            color: DEFAULT_COLOR + "00"
           }
         ])
+      };
+      series[0].itemStyle = {
+        normal: {
+          color: DEFAULT_COLOR,
+          lineStyle: {
+            color: DEFAULT_COLOR
+          }
+        }
       };
     }
 
