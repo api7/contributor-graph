@@ -9,7 +9,7 @@ import { Button, ButtonGroup } from "@material-ui/core";
 import { getMonths, isSameDay } from "../../utils";
 import { DEFAULT_OPTIONS } from "../../constants";
 
-const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert }) => {
+const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelete }) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
@@ -233,8 +233,10 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert }) => {
             <CompareComponent
               list={Object.keys(dataSource)}
               onDelete={e => {
-                const newDataSource = omit(dataSource, [e]);
+                const clonedDataSource = cloneDeep(dataSource);
+                const newDataSource = omit(clonedDataSource, [e]);
                 setDataSource(newDataSource);
+                onDelete(e);
               }}
               onConfirm={e => {
                 if (!e) return;

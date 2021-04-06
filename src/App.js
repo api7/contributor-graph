@@ -211,6 +211,7 @@ const App = () => {
                     label="Search Github Repository Name"
                     margin="normal"
                     variant="outlined"
+                    helperText="Keep searching to complete the comparison"
                     className={classes.searchTextField}
                     onChange={e => {
                       setRepo(e.target.value);
@@ -273,12 +274,22 @@ const App = () => {
               <ContirbutorLineChart
                 repoList={contributorRepoList}
                 showAlert={showAlert}
+                onDelete={e => {
+                  setContributorRepoList(
+                    contributorRepoList.filter(item => item !== e)
+                  );
+                }}
               />
             </TabPanel>
             <TabPanel value={value} index={1}>
               <ActivityChart
                 repoList={contributorRepoList}
                 showAlert={showAlert}
+                onDelete={e => {
+                  setContributorRepoList(
+                    contributorRepoList.filter(item => item !== e)
+                  );
+                }}
               />
             </TabPanel>
           </div>

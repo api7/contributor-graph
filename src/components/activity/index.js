@@ -11,7 +11,7 @@ import {
   DEFAULT_COLOR,
 } from "../../constants";
 
-const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
+const ActivityChart = ({ repoList = ["apache/apisix"], showAlert,onDelete }) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [xAxis] = React.useState(["1970-01-01"]);
@@ -245,8 +245,10 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert }) => {
             <CompareComponent
               list={Object.keys(dataSource)}
               onDelete={e => {
-                const newDataSource = omit(dataSource, [e]);
+                const clonedDataSource = cloneDeep(dataSource);
+                const newDataSource = omit(clonedDataSource, [e]);
                 setDataSource(newDataSource);
+                onDelete(e);
               }}
               onConfirm={e => {
                 if (!e) return;
