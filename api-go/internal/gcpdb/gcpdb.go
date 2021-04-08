@@ -12,6 +12,7 @@ import (
 
 	"cloud.google.com/go/datastore"
 	"github.com/google/go-github/v33/github"
+	"github.com/schollz/progressbar/v3"
 
 	"github.com/api7/contributor-graph/api/internal/ghapi"
 	"github.com/api7/contributor-graph/api/internal/graph"
@@ -51,16 +52,16 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 		}
 		ghCli := ghapi.GetGithubClient(ctx, ghToken)
 
-		conNumDB, lastModifiedTimeDB, err := getContributorsNumFromDB(ctx, dbCli, repoName)
+		lastModifiedTimeDB, err := getConFromDB(ctx, dbCli, repoName)
 		if err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
 
 		var conLists []*utils.ConList
-		if _, err = dbCli.GetAll(ctx, datastore.NewQuery(repoName), &conLists); err != nil {
+		_, err = dbCli.GetAll(ctx, datastore.NewQuery(repoName), &conLists)
+		if err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
-		conNumDB = len(conLists)
 
 		sort.SliceStable(conLists, func(i, j int) bool {
 			return conLists[i].Date.Before(conLists[j].Date)
@@ -71,58 +72,39 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 		if lastModifiedTimeDB.Add(23*time.Hour + 30*time.Minute).After(time.Now()) {
 			fmt.Printf("Repo no need to update since recently update at %v\n", lastModifiedTimeDB)
 		} else {
-			conGH, code, err := getContributorsNumFromGH(ctx, ghCli, repoName)
+			conMap := make(map[string]time.Time)
+			for _, c := range conLists {
+				conMap[c.Author] = c.Date
+			}
+
+			// get last page
+			lastPage := 0
+			listCommitOpts := &github.CommitsListOptions{Since: lastModifiedTimeDB, ListOptions: ghapi.ListOpts}
+			_, resp, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
+			if err != nil {
+				return nil, statusCode, err
+			}
+			if resp.LastPage != 0 {
+				lastPage = resp.LastPage
+			}
+
+			newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, conMap, repoName, lastPage, listCommitOpts)
 			if err != nil {
 				return nil, code, err
 			}
-			conNumGH := len(conGH)
+			conLists = append(conLists, newConLists...)
 
-			if conNumDB == conNumGH {
-				fmt.Printf("Repo no need to update with contributor number %d\n", conNumDB)
-				// to update LastModifiedTime
-				updateFlag := true
-				if err := updateRepoList(ctx, dbCli, repoName, conNumGH, updateFlag); err != nil {
+			updateFlag := repoInput == ""
+			if err := updateRepoList(ctx, dbCli, repoName, len(conLists), updateFlag); err != nil {
+				return nil, http.StatusInternalServerError, err
+			}
+
+			if repoInput == "" {
+				if err := graph.GenerateAndSaveSVG(ctx, repoName); err != nil {
 					return nil, http.StatusInternalServerError, err
-				}
-			} else {
-				fmt.Printf("Repo %s need to update from %d to %d\n", repoName, conNumDB, conNumGH)
-
-				conExists := make(map[string]bool)
-				dateExists := make(map[time.Time]bool)
-
-				for _, c := range conLists {
-					conExists[c.Author] = true
-					dateExists[c.Date] = true
-				}
-				var newCons []utils.ConGH
-				for _, c := range conGH {
-					if _, ok := conExists[c.Author]; !ok {
-						newCons = append(newCons, c)
-					}
-				}
-
-				var maxConcurrency int
-				if repoInput == "" {
-					maxConcurrency = utils.UpdateLimit
-				}
-				newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, repoName, newCons, maxConcurrency, dateExists)
-				if err != nil {
-					return nil, code, err
-				}
-
-				updateFlag := maxConcurrency == 1
-				if err := updateRepoList(ctx, dbCli, repoName, conNumGH, updateFlag); err != nil {
-					return nil, http.StatusInternalServerError, err
-				}
-
-				conLists = append(conLists, newConLists...)
-
-				if repoInput == "" {
-					if err := graph.GenerateAndSaveSVG(ctx, repoName); err != nil {
-						return nil, http.StatusInternalServerError, err
-					}
 				}
 			}
+
 		}
 
 		if repoInput != "" {
@@ -142,71 +124,65 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 	return nil, http.StatusOK, nil
 }
 
-func getContributorsNumFromGH(ctx context.Context, ghCli *github.Client, repoName string) ([]utils.ConGH, int, error) {
-	cons, code, err := ghapi.GetContributors(ctx, ghCli, repoName)
-	if err != nil {
-		return nil, code, err
-	}
-
-	return cons, http.StatusOK, err
-}
-
-func getContributorsNumFromDB(ctx context.Context, cli *datastore.Client, repoName string) (int, time.Time, error) {
+func getConFromDB(ctx context.Context, cli *datastore.Client, repoName string) (time.Time, error) {
 	repoKey := datastore.NameKey("Repo", repoName, nil)
 	repoNum := utils.RepoNum{}
 	if err := cli.Get(ctx, repoKey, &repoNum); err != nil {
 		if err == datastore.ErrNoSuchEntity {
-			return 0, time.Time{}, nil
+			return time.Time{}, nil
 		}
-		return 0, time.Time{}, err
+		return time.Time{}, err
 	}
-	return repoNum.Num, repoNum.LastModifiedTime, nil
+	return repoNum.LastModifiedTime, nil
 }
 
 func updateContributorList(
 	ctx context.Context,
 	dbCli *datastore.Client,
 	ghCli *github.Client,
+	conMap map[string]time.Time,
 	repoName string,
-	newConsAll []utils.ConGH,
-	maxConcurrency int,
-	dateExists map[time.Time]bool,
+	lastPage int,
+	listCommitOpts *github.CommitsListOptions,
 ) ([]*utils.ConList, int, error) {
+	bar := progressbar.Default(int64(lastPage + 1))
 
-	// at most write 500 entities in a single call
-	var commitListsAll []*utils.ConList
-	rangeMax := 500
-	rangeNeeded := int(math.Ceil(float64(len(newConsAll)) / float64(rangeMax)))
-	for i := 0; i < rangeNeeded; i++ {
-		newCons := newConsAll[i*rangeMax : minInt((i+1)*rangeMax, len(newConsAll))]
-
-		commitLists, code, err := ghapi.GetCommits(ctx, ghCli, repoName, newCons, maxConcurrency)
+	var commitLists []*utils.ConList
+	for i := lastPage; i >= 0; i-- {
+		listCommitOpts.Page = i
+		commits, _, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
 		if err != nil {
-			return nil, code, err
+			return nil, statusCode, err
 		}
-
-		// problem could happened when contributors got active, s/he would come out of anonymous pool and got her/his id instead of email
-		// so in this situation, we should avoid keep two records for the same person
-		var filteredCommitLists []*utils.ConList
-		for _, c := range filteredCommitLists {
-			if _, ok := dateExists[c.Date]; !ok {
-				filteredCommitLists = append(filteredCommitLists, c)
-				dateExists[c.Date] = true
+		for j := len(commits) - 1; j >= 0; j-- {
+			if commits[j].GetAuthor() != nil {
+				commitAuthor := commits[j].GetAuthor().GetLogin()
+				commitTime := commits[j].GetCommit().GetAuthor().GetDate()
+				if _, ok := conMap[commitAuthor]; !ok {
+					conMap[commitAuthor] = commitTime
+					commitLists = append(commitLists, &utils.ConList{commitAuthor, commitTime})
+				}
 			}
 		}
+		bar.Add(1)
+	}
 
-		keys := make([]*datastore.Key, len(commitLists))
-		for i, c := range commitLists {
+	// at most write 500 entities in a single call
+	rangeMax := 500
+	rangeNeeded := int(math.Ceil(float64(len(commitLists)) / float64(rangeMax)))
+	for i := 0; i < rangeNeeded; i++ {
+		tmpList := commitLists[i*rangeMax : minInt((i+1)*rangeMax, len(commitLists))]
+		keys := make([]*datastore.Key, len(tmpList))
+		for i, c := range tmpList {
 			keys[i] = datastore.NameKey(repoName, c.Author, utils.ConParentKey)
 		}
 
-		if _, err := dbCli.PutMulti(ctx, keys, commitLists); err != nil {
+		if _, err := dbCli.PutMulti(ctx, keys, tmpList); err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
-		commitListsAll = append(commitListsAll, commitLists...)
 	}
 
-	return commitListsAll, http.StatusOK, nil
+	return commitLists, http.StatusOK, nil
 }
 
 func updateRepoList(ctx context.Context, dbCli *datastore.Client, repoName string, conNumGH int, updateFlag bool) error {
@@ -215,13 +191,15 @@ func updateRepoList(ctx context.Context, dbCli *datastore.Client, repoName strin
 	if _, err := dbCli.Put(ctx, key, updatedRepo); err != nil {
 		return err
 	}
-	if updateFlag {
-		key = datastore.NameKey("RepoUpdate", repoName, nil)
-		if _, err := dbCli.Put(ctx, key, updatedRepo); err != nil {
-			return err
+	// currently update all, not only the list maintained by ourselves
+	/*
+		if updateFlag {
+			key = datastore.NameKey("RepoUpdate", repoName, nil)
+			if _, err := dbCli.Put(ctx, key, updatedRepo); err != nil {
+				return err
+			}
 		}
-	}
-
+	*/
 	return nil
 }
 
@@ -254,7 +232,10 @@ func getUpdateRepoList(ctx context.Context, dbCli *datastore.Client) ([]string, 
 
 	// get update list from DB, to filter out recent updated ones in one step
 	var repoLists []*utils.RepoNum
-	keys, err := dbCli.GetAll(ctx, datastore.NewQuery("RepoUpdate"), &repoLists)
+
+	// since right now we do not have much repos other than us, it might be a good idea to update them all
+	// keys, err := dbCli.GetAll(ctx, datastore.NewQuery("RepoUpdate"), &repoLists)
+	keys, err := dbCli.GetAll(ctx, datastore.NewQuery("Repo"), &repoLists)
 	if err != nil {
 		return nil, err
 	}

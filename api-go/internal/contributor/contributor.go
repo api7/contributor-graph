@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"net/http"
 	"sort"
 	"strings"
@@ -16,10 +15,6 @@ import (
 	"github.com/api7/contributor-graph/api/internal/gcpdb"
 	"github.com/api7/contributor-graph/api/internal/ghapi"
 	"github.com/api7/contributor-graph/api/internal/utils"
-)
-
-var (
-	listOpts = github.ListOptions{PerPage: 100}
 )
 
 func GetContributorList(repoName string) ([]utils.ReturnCon, int, error) {
@@ -58,13 +53,9 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 
 	for i, repoName := range repos {
 		fmt.Println(repoName)
-		owner, repo, err := ghapi.SplitRepo(repoName)
-		if err != nil {
-			return nil, http.StatusNotFound, fmt.Errorf("Repo format error: %s", repoName)
-		}
 
 		var monthlyConLists []*utils.MonthlyConList
-		keys, err := dbCli.GetAll(ctx, datastore.NewQuery("Monthly-"+repoName), &monthlyConLists)
+		_, err = dbCli.GetAll(ctx, datastore.NewQuery("Monthly-"+repoName), &monthlyConLists)
 		if err != nil {
 			if err != datastore.ErrInvalidEntityType {
 				return nil, http.StatusInternalServerError, err
@@ -75,68 +66,64 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 			return monthlyConLists[i].Month.Before(monthlyConLists[j].Month)
 		})
 
-		if err := dbCli.DeleteMulti(ctx, keys); err != nil {
-			if err != datastore.ErrInvalidEntityType {
-				return nil, http.StatusInternalServerError, err
-			}
-		}
-
-		monthlyConLists = []*utils.MonthlyConList{}
-
 		if len(monthlyConLists) == 0 || monthlyConLists[len(monthlyConLists)-1].Month.AddDate(0, 2, 0).Before(time.Now()) {
 			ghCli := ghapi.GetGithubClient(ctx, utils.UpdateToken[i%len(utils.UpdateToken)])
 
-			// get first commit of the repo and use it as the start
-			listCommitOpts := &github.CommitsListOptions{}
-			var firstCommitTime *time.Time
-			commits, resp, statusCode, err := getCommits(ctx, ghCli, owner, repo, listCommitOpts)
-			if err != nil {
-				return nil, statusCode, err
-			}
-			if resp.NextPage != 0 {
-				listCommitOpts.Page = resp.LastPage
-				commits, resp, statusCode, err = getCommits(ctx, ghCli, owner, repo, listCommitOpts)
+			var firstDay time.Time
+			if len(monthlyConLists) == 0 {
+				// get first commit of the repo and use it as the start
+				listCommitOpts := &github.CommitsListOptions{}
+				var firstCommitTime *time.Time
+				commits, resp, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
 				if err != nil {
 					return nil, statusCode, err
 				}
+				if resp.NextPage != 0 {
+					listCommitOpts.Page = resp.LastPage
+					commits, resp, statusCode, err = ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
+					if err != nil {
+						return nil, statusCode, err
+					}
 
-				// to jump over commits with tricked date
-				// don't know the reason but those author of those commits would be empty
-				// example:
-				//		curl -u username:$token -H "Accept: application/vnd.github.v3+json" 'https://api.github.com/repos/angular/angular.js/commits?author=git5@invalid'
-				//		https://github.com/golang/go/commit/7d7c6a97f815e9279d08cfaea7d5efb5e90695a8
-				// also this seems what Github is doing when presenting `insights - contributors`
-				// example:
-				//		the earliest commits of apache kafka happened at 2011-08-01, but it has the author `null`.
-				//		So on `insights - contributors`, it says the first commit is at 2012-12-16, which is the first commit whose author is not `null`
-				for i := range commits {
-					if commits[len(commits)-i-1].Author != nil {
-						firstCommitTime = commits[len(commits)-i-1].Commit.Author.Date
-						break
+					// to jump over commits with tricked date
+					// don't know the reason but those author of those commits would be empty
+					// example:
+					//		curl -u username:$token -H "Accept: application/vnd.github.v3+json" 'https://api.github.com/repos/angular/angular.js/commits?author=git5@invalid'
+					//		https://github.com/golang/go/commit/7d7c6a97f815e9279d08cfaea7d5efb5e90695a8
+					// also this seems what Github is doing when presenting `insights - contributors`
+					// example:
+					//		the earliest commits of apache kafka happened at 2011-08-01, but it has the author `null`.
+					//		So on `insights - contributors`, it says the first commit is at 2012-12-16, which is the first commit whose author is not `null`
+					for i := range commits {
+						if commits[len(commits)-i-1].Author != nil {
+							firstCommitTime = commits[len(commits)-i-1].Commit.Author.Date
+							break
+						}
 					}
 				}
-			}
 
-			for firstCommitTime == nil {
-				listCommitOpts.Page = resp.PrevPage
-				commits, resp, statusCode, err = getCommits(ctx, ghCli, owner, repo, listCommitOpts)
-				if err != nil {
-					return nil, statusCode, err
-				}
+				for firstCommitTime == nil {
+					listCommitOpts.Page = resp.PrevPage
+					commits, resp, statusCode, err = ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
+					if err != nil {
+						return nil, statusCode, err
+					}
 
-				for i := range commits {
-					if commits[len(commits)-i-1].Author != nil {
-						firstCommitTime = commits[len(commits)-i-1].Commit.Author.Date
-						break
+					for i := range commits {
+						if commits[len(commits)-i-1].Author != nil {
+							firstCommitTime = commits[len(commits)-i-1].Commit.Author.Date
+							break
+						}
 					}
 				}
+
+				year, month, _ := firstCommitTime.Date()
+				loc := firstCommitTime.Location()
+				// use the first second of this month as start
+				firstDay = time.Date(year, month, 1, 0, 0, 0, 0, loc)
+			} else {
+				firstDay = monthlyConLists[len(monthlyConLists)-1].Month.AddDate(0, 1, 0)
 			}
-
-			year, month, _ := firstCommitTime.Date()
-			loc := firstCommitTime.Location()
-
-			//try to filter commits of each month
-			firstDay := time.Date(year, month, 1, 0, 0, 0, 0, loc)
 
 			var newMonthlyConLists []*utils.MonthlyConList
 
@@ -145,34 +132,34 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 				if firstDay.AddDate(0, 1, 0).After(time.Now()) {
 					break
 				}
-				fmt.Println(repoName + " " + firstDay.String())
 
 				comLists := make(map[string]bool)
-				listCommitOpts := &github.CommitsListOptions{Since: firstDay, Until: firstDay.AddDate(0, 1, 0), ListOptions: listOpts}
+				listCommitOpts := &github.CommitsListOptions{Since: firstDay, Until: firstDay.AddDate(0, 1, 0), ListOptions: ghapi.ListOpts}
 				for {
-					commits, resp, statusCode, err = getCommits(ctx, ghCli, owner, repo, listCommitOpts)
+					commits, resp, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
 					if err != nil {
 						return nil, statusCode, err
 					}
 					for _, c := range commits {
-						comLists[c.Author.GetLogin()] = true
+						if c.Author != nil {
+							comLists[c.Author.GetLogin()] = true
+						}
 					}
 					if resp.NextPage == 0 {
 						break
 					}
 					listCommitOpts.Page = resp.NextPage
 				}
+				keys := datastore.NameKey("Monthly-"+repoName, firstDay.String(), nil)
+
+				if _, err := dbCli.Put(ctx, keys, &utils.MonthlyConList{firstDay, len(comLists)}); err != nil {
+					return nil, http.StatusInternalServerError, err
+				}
+
 				newMonthlyConLists = append(newMonthlyConLists, &utils.MonthlyConList{firstDay, len(comLists)})
 
+				fmt.Println(repoName + " " + firstDay.String())
 				firstDay = firstDay.AddDate(0, 1, 0)
-			}
-
-			keys := make([]*datastore.Key, len(newMonthlyConLists))
-			for i, c := range newMonthlyConLists {
-				keys[i] = datastore.NameKey("Monthly-"+repoName, c.Month.String(), nil)
-			}
-			if _, err := dbCli.PutMulti(ctx, keys, newMonthlyConLists); err != nil {
-				return nil, http.StatusInternalServerError, err
 			}
 
 			monthlyConLists = append(monthlyConLists, newMonthlyConLists...)
@@ -232,25 +219,4 @@ func getUpdateRepoList(ctx context.Context, dbCli *datastore.Client) ([]string, 
 	}
 
 	return repoReturn, nil
-}
-
-func getCommits(ctx context.Context, ghCli *github.Client, owner string, repo string, listCommitOpts *github.CommitsListOptions) ([]*github.RepositoryCommit, *github.Response, int, error) {
-	commits, resp, err := ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
-	if err != nil {
-		if strings.Contains(err.Error(), "404 Not Found") {
-			return nil, nil, http.StatusNotFound, fmt.Errorf("Repo not found")
-		}
-		if _, ok := err.(*github.RateLimitError); ok || strings.Contains(err.Error(), "403 API rate limit exceeded") {
-			// give it another random chance to see if magic happens
-			*ghCli = *ghapi.GetGithubClient(ctx, utils.UpdateToken[rand.Intn(len(utils.UpdateToken))])
-			commits, resp, err = ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
-			if err != nil {
-				return nil, nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
-			}
-			fmt.Println("MAGIC happens and let's rolling again!")
-		} else {
-			return nil, nil, http.StatusInternalServerError, err
-		}
-	}
-	return commits, resp, http.StatusOK, nil
 }
