@@ -184,7 +184,7 @@ CyC2018/CS-Notes
 flutter/flutter
 github/gitignore
 microsoft/vscode
-# torvalds/linux has more than 5000 contributors so Github API could not deal with that much
+torvalds/linux
 airbnb/javascript
 TheAlgorithms/Python
 danistefanovic/build-your-own-x

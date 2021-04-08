@@ -50,9 +50,9 @@ var (
 	Token    = "794b296a221cf6b9c08ddcc41de5ef33f45d46d7"
 
 	//concurrency limit to avoid Github API abuse
-	UpdateLimit     = 1
-	LargeRepoLimit  = 10
-	NormalRepoLimit = 500
+	// UpdateLimit     = 1
+	// LargeRepoLimit  = 10
+	// NormalRepoLimit = 100
 )
 
 func RepoNameToFileName(str string) string {
