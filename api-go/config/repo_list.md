@@ -15,6 +15,7 @@ envoyproxy/envoy
 kong/kong
 tyktechnologies/tyk
 
+# data coming from https://gitstar-ranking.com/repositories
 # apache TOP 150 stars
 apache/echarts
 apache/superset

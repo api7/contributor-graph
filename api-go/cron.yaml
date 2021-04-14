@@ -1,7 +1,7 @@
 cron:
 - description: "daily update all"
   url: /refreshAll
-  schedule: every 6 hours
+  schedule: every 3 hours
   retry_parameters:
     min_backoff_seconds: 5
 - description: "Monthly update for monthly"
