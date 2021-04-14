@@ -32,8 +32,8 @@ func GetGithubClient(ctx context.Context, token string) *github.Client {
 	return github.NewClient(tc)
 }
 
-func FormatCommits(ctx context.Context, comLists []*utils.ConList) ([]*utils.ReturnCon, int, error) {
-	var returnCons []*utils.ReturnCon
+func FormatCommits(ctx context.Context, comLists []*utils.ConList) ([]utils.ReturnCon, int, error) {
+	var returnCons []utils.ReturnCon
 	var authors []string
 	var timeLast time.Time
 	var numNotCount int
@@ -46,13 +46,13 @@ func FormatCommits(ctx context.Context, comLists []*utils.ConList) ([]*utils.Ret
 			authors = append(authors, c.Author)
 		} else {
 			if len(authors) > 0 {
-				returnCons = append(returnCons, &utils.ReturnCon{timeLast, i - numNotCount, authors})
+				returnCons = append(returnCons, utils.ReturnCon{timeLast, i - numNotCount, authors})
 			}
 			timeLast = c.Date
 			authors = []string{c.Author}
 		}
 	}
-	returnCons = append(returnCons, &utils.ReturnCon{timeLast, len(comLists) - numNotCount, authors})
+	returnCons = append(returnCons, utils.ReturnCon{timeLast, len(comLists) - numNotCount, authors})
 
 	return returnCons, http.StatusOK, nil
 }
