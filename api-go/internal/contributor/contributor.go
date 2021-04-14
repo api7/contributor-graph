@@ -24,7 +24,7 @@ func GetContributorList(repoName string) ([]utils.ReturnCon, int, error) {
 	}
 
 	fmt.Printf("New request coming with %s\n", repoName)
-	returnCons, code, err := gcpdb.UpdateDB(repoName)
+	returnCons, code, err := gcpdb.SingleCon(repoName)
 	if err != nil {
 		return nil, code, err
 	}

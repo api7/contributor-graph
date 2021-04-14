@@ -21,7 +21,7 @@ import (
 
 // if repoInput is not empty, fetch single repo and store it in db
 // else, use repo list to do daily update for all repos
-func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
+func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -41,8 +41,10 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 		repos = []string{strings.ToLower(repoInput)}
 	}
 
+	var conLists []*utils.ConList
 	for i, repoName := range repos {
 		fmt.Println(repoName)
+		conLists = []*utils.ConList{}
 
 		var ghToken string
 		if repoInput == "" {
@@ -57,7 +59,6 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 			return nil, http.StatusInternalServerError, err
 		}
 
-		var conLists []*utils.ConList
 		_, err = dbCli.GetAll(ctx, datastore.NewQuery(repoName), &conLists)
 		if err != nil {
 			return nil, http.StatusInternalServerError, err
@@ -104,24 +105,53 @@ func UpdateDB(repoInput string) ([]utils.ReturnCon, int, error) {
 					return nil, http.StatusInternalServerError, err
 				}
 			}
-
-		}
-
-		if repoInput != "" {
-			formattedCons, code, err := ghapi.FormatCommits(ctx, conLists)
-			if err != nil {
-				return nil, code, err
-			}
-
-			returnCons := make([]utils.ReturnCon, len(formattedCons))
-			for i, c := range formattedCons {
-				returnCons[i] = *c
-			}
-			return returnCons, http.StatusOK, nil
 		}
 	}
 
-	return nil, http.StatusOK, nil
+	return conLists, http.StatusOK, nil
+}
+
+func SingleCon(repoInput string) ([]utils.ReturnCon, int, error) {
+	conLists, code, err := UpdateDB(repoInput)
+	if err != nil {
+		return nil, code, err
+	}
+	formattedCons, code, err := ghapi.FormatCommits(context.Background(), conLists)
+	if err != nil {
+		return nil, code, err
+	}
+
+	return formattedCons, http.StatusOK, nil
+}
+
+func MultiCon(repoInput string) ([]utils.ReturnCon, int, error) {
+	repos := strings.Split(repoInput, ",")
+	conMap := make(map[string]time.Time)
+
+	for _, r := range repos {
+		conLists, code, err := UpdateDB(r)
+		if err != nil {
+			return nil, code, err
+		}
+		for _, c := range conLists {
+			t, ok := conMap[c.Author]
+			if !ok || t.After(c.Date) {
+				conMap[c.Author] = c.Date
+			}
+		}
+	}
+
+	conLists := []*utils.ConList{}
+	for name, time := range conMap {
+		conLists = append(conLists, &utils.ConList{name, time})
+	}
+
+	formattedCons, code, err := ghapi.FormatCommits(context.Background(), conLists)
+	if err != nil {
+		return nil, code, err
+	}
+
+	return formattedCons, http.StatusOK, nil
 }
 
 func getConFromDB(ctx context.Context, cli *datastore.Client, repoName string) (time.Time, error) {

@@ -40,6 +40,7 @@ type returnMonthlyConObj struct {
 func main() {
 	http.HandleFunc("/contributors", getContributor)
 	http.HandleFunc("/contributors-svg", getContributorSVG)
+	http.HandleFunc("/contributors-multi", getMultiContributor)
 	http.HandleFunc("/refreshAll", refreshAll)
 	http.HandleFunc("/refreshMonthly", refreshMonthly)
 	http.HandleFunc("/repos", getRepos)
@@ -87,6 +88,23 @@ func getMonthlyContributor(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(returnMonthlyConObj{Contributors: monthlyConLists})
+}
+
+func getMultiContributor(w http.ResponseWriter, r *http.Request) {
+	v := r.URL.Query()
+	repo := v.Get("repo")
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	conList, code, err := gcpdb.MultiCon(repo)
+
+	if err != nil {
+		w.WriteHeader(code)
+		json.NewEncoder(w).Encode(returnConObj{Code: code, ErrorMessage: err.Error()})
+		return
+	}
+
+	json.NewEncoder(w).Encode(returnConObj{Contributors: conList})
 }
 
 // TODO: authentication, so GCF would not be abused
