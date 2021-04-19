@@ -3,13 +3,19 @@ import cloneDeep from "lodash.clonedeep";
 import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 import CompareComponent from "../../components/compare";
 import { Button, ButtonGroup } from "@material-ui/core";
 import { getMonths, isSameDay } from "../../utils";
 import { DEFAULT_OPTIONS } from "../../constants";
 
-const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelete }) => {
+const ContributorLineChart = ({
+  repoList = ["apache/apisix"],
+  showAlert,
+  onDelete
+}) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
@@ -170,9 +176,12 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
 
   React.useEffect(() => {
     updateSeries(xAxis);
-    window.parent.postMessage({
-      legend: Object.keys(dataSource)
-    }, "*");
+    window.parent.postMessage(
+      {
+        legend: Object.keys(dataSource)
+      },
+      "*"
+    );
   }, [dataSource, xAxis]);
 
   React.useEffect(() => {
@@ -332,6 +341,19 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
                 </Col>
               </Row>
             </Tab.Container>
+            <div>
+              <p>
+                You can include the chart on your repository's README.md as
+                follows:
+              </p>
+              <SyntaxHighlighter language="markdown" style={a11yDark}>
+                {`
+## Contributor over time
+
+[![Contributor over time](https://contributor-graph-api.apiseven.com/contributors-svg?repo=${repoList.join(',')})](https://www.apiseven.com/en/contributor-graph?repo=${repoList.join(',')})
+`}
+              </SyntaxHighlighter>
+            </div>
           </div>
         </div>
       </div>
