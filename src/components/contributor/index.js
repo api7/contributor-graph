@@ -122,8 +122,16 @@ const ContributorLineChart = ({
           })).sort(
             (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
           );
+          if (!isSameDay(new Date(sortContributors[sortContributors.length - 1].date), new Date())) {
+            sortContributors.push({
+              repo,
+              contributorNum: sortContributors[sortContributors.length - 1].idx,
+              date: new Date()
+            });
+          }
+
           const processContributors = [];
-          sortContributors.map((item, index) => {
+          sortContributors.forEach((item, index) => {
             processContributors.push(item);
 
             if (index !== sortContributors.length - 1) {
@@ -166,14 +174,6 @@ const ContributorLineChart = ({
         contributorNum: item.idx,
         date: item.date
       }));
-
-      if (!isSameDay(new Date(data[data.length - 1].date), new Date())) {
-        data.push({
-          repo,
-          contributorNum: Contributors[Contributors.length - 1].idx,
-          date: new Date()
-        });
-      }
 
       const clonedDatasource = cloneDeep(dataSource);
       if (!clonedDatasource[repo]) {
@@ -238,14 +238,6 @@ const ContributorLineChart = ({
           contributorNum: item.idx,
           date: item.date
         }));
-
-        if (!isSameDay(new Date(data[data.length - 1].date), new Date())) {
-          data.push({
-            repo,
-            contributorNum: Contributors[Contributors.length - 1].idx,
-            date: new Date()
-          });
-        }
 
         if (!tmpDataSouce[item.repo]) {
           tmpDataSouce[repo] = data;
