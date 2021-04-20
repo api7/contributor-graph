@@ -1,3 +1,2 @@
 runtime: go114
 main: ./cmd/contributor
-instance_class: F2

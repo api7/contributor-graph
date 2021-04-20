@@ -1,8 +1,6 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
-import Button from "@material-ui/core/Button";
-import TextField from "@material-ui/core/TextField";
 
 import Chips from "./chip";
 
@@ -21,7 +19,6 @@ const useStyles = makeStyles(theme => ({
 
 export default function CompareComponent({ list = [], onDelete, onConfirm }) {
   const classes = useStyles();
-  const [inputText, setInputText] = React.useState("");
 
   return (
     <div className={classes.root}>
@@ -32,36 +29,6 @@ export default function CompareComponent({ list = [], onDelete, onConfirm }) {
             onDelete(e);
           }}
         />
-        <TextField
-          variant="outlined"
-          placeholder="+ Add to Compare"
-          size="small"
-          style={{ with: "70px" }}
-          value={inputText}
-          onChange={e => {
-            setInputText(e.currentTarget.value);
-          }}
-          onKeyPress={ev => {
-            if (ev.key === "Enter") {
-              onConfirm(inputText);
-              ev.preventDefault();
-            }
-          }}
-          inputProps={{
-            style: { width: "150px" }
-          }}
-        ></TextField>
-        <Button
-          variant="contained"
-          size="small"
-          color="primary"
-          style={{ marginLeft: "10px", textTransform: "none" }}
-          onClick={() => {
-            onConfirm(inputText);
-          }}
-        >
-          Confirm
-        </Button>
       </Grid>
     </div>
   );

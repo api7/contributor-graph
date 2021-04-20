@@ -1,4 +1,11 @@
 cron:
 - description: "daily update all"
   url: /refreshAll
-  schedule: every 24 hours
+  schedule: every 3 hours
+  retry_parameters:
+    min_backoff_seconds: 5
+- description: "Monthly update for monthly"
+  url: /refreshMonthly
+  schedule: 1,2,3,4,5 of month 00:00
+  retry_parameters:
+    min_backoff_seconds: 5
