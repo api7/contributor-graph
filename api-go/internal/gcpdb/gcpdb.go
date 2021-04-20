@@ -21,7 +21,7 @@ import (
 
 // if repoInput is not empty, fetch single repo and store it in db
 // else, use repo list to do daily update for all repos
-func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
+func UpdateDB(repoInput string, token string) ([]*utils.ConList, int, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -47,10 +47,13 @@ func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 		conLists = []*utils.ConList{}
 
 		var ghToken string
+		var isSearch bool
 		if repoInput == "" {
 			ghToken = utils.UpdateToken[i%len(utils.UpdateToken)]
+			isSearch = false
 		} else {
-			ghToken = utils.Token
+			ghToken = token
+			isSearch = true
 		}
 		ghCli := ghapi.GetGithubClient(ctx, ghToken)
 
@@ -81,7 +84,7 @@ func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 			// get last page
 			lastPage := 0
 			listCommitOpts := &github.CommitsListOptions{Since: lastModifiedTimeDB, ListOptions: ghapi.ListOpts}
-			_, resp, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
+			_, resp, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts, isSearch)
 			if err != nil {
 				return nil, statusCode, err
 			}
@@ -89,7 +92,7 @@ func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 				lastPage = resp.LastPage
 			}
 
-			newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, conMap, repoName, lastPage, listCommitOpts)
+			newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, conMap, repoName, lastPage, listCommitOpts, isSearch)
 			if err != nil {
 				return nil, code, err
 			}
@@ -111,8 +114,8 @@ func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 	return conLists, http.StatusOK, nil
 }
 
-func SingleCon(repoInput string) ([]utils.ReturnCon, int, error) {
-	conLists, code, err := UpdateDB(repoInput)
+func SingleCon(repoInput string, token string) ([]utils.ReturnCon, int, error) {
+	conLists, code, err := UpdateDB(repoInput, token)
 	if err != nil {
 		return nil, code, err
 	}
@@ -129,7 +132,7 @@ func MultiCon(repoInput string) ([]utils.ReturnCon, int, error) {
 	conMap := make(map[string]time.Time)
 
 	for _, r := range repos {
-		conLists, code, err := UpdateDB(r)
+		conLists, code, err := UpdateDB(r, "")
 		if err != nil {
 			return nil, code, err
 		}
@@ -174,13 +177,14 @@ func updateContributorList(
 	repoName string,
 	lastPage int,
 	listCommitOpts *github.CommitsListOptions,
+	isSearch bool,
 ) ([]*utils.ConList, int, error) {
 	bar := progressbar.Default(int64(lastPage + 1))
 
 	var commitLists []*utils.ConList
 	for i := lastPage; i >= 0; i-- {
 		listCommitOpts.Page = i
-		commits, _, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
+		commits, _, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts, isSearch)
 		if err != nil {
 			return nil, statusCode, err
 		}

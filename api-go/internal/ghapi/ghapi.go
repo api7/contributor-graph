@@ -27,7 +27,10 @@ func SplitRepo(repo string) (string, string, error) {
 }
 
 func GetGithubClient(ctx context.Context, token string) *github.Client {
-	tc := getToken(ctx, token)
+	var tc *http.Client
+	if token != "" {
+		tc = getToken(ctx, token)
+	}
 
 	return github.NewClient(tc)
 }
@@ -58,7 +61,7 @@ func FormatCommits(ctx context.Context, comLists []*utils.ConList) ([]utils.Retu
 }
 
 // TODO: support goroutine
-func GetCommits(ctx context.Context, ghCli *github.Client, repoName string, listCommitOpts *github.CommitsListOptions) ([]*github.RepositoryCommit, *github.Response, int, error) {
+func GetCommits(ctx context.Context, ghCli *github.Client, repoName string, listCommitOpts *github.CommitsListOptions, isSearch bool) ([]*github.RepositoryCommit, *github.Response, int, error) {
 	owner, repo, err := SplitRepo(repoName)
 	if err != nil {
 		return nil, nil, http.StatusBadRequest, err
@@ -70,6 +73,9 @@ func GetCommits(ctx context.Context, ghCli *github.Client, repoName string, list
 			return nil, nil, http.StatusNotFound, fmt.Errorf("Repo not found")
 		}
 		if _, ok := err.(*github.RateLimitError); ok || strings.Contains(err.Error(), "403 API rate limit exceeded") {
+			if isSearch {
+				return nil, nil, http.StatusForbidden, fmt.Errorf("Hit rate limit! Need Github Token to increase API quota!")
+			}
 			// give it another random chance to see if magic happens
 			*ghCli = *GetGithubClient(ctx, utils.UpdateToken[rand.Intn(len(utils.UpdateToken))])
 			commits, resp, err = ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)

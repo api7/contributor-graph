@@ -59,10 +59,11 @@ func main() {
 func getContributor(w http.ResponseWriter, r *http.Request) {
 	v := r.URL.Query()
 	repo := v.Get("repo")
+	token := v.Get("token")
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	conList, code, err := contributor.GetContributorList(repo)
+	conList, code, err := contributor.GetContributorList(repo, token)
 
 	if err != nil {
 		w.WriteHeader(code)
@@ -172,7 +173,7 @@ func getActivities(w http.ResponseWriter, r *http.Request) {
 }
 
 func refreshAll(w http.ResponseWriter, r *http.Request) {
-	_, code, err := gcpdb.UpdateDB("")
+	_, code, err := gcpdb.UpdateDB("", "")
 
 	if err != nil {
 		w.WriteHeader(code)

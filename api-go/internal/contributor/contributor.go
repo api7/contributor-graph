@@ -17,14 +17,14 @@ import (
 	"github.com/api7/contributor-graph/api/internal/utils"
 )
 
-func GetContributorList(repoName string) ([]utils.ReturnCon, int, error) {
+func GetContributorList(repoName string, token string) ([]utils.ReturnCon, int, error) {
 	_, _, err := ghapi.SplitRepo(repoName)
 	if err != nil {
 		return nil, http.StatusNotFound, fmt.Errorf("Repo format error")
 	}
 
 	fmt.Printf("New request coming with %s\n", repoName)
-	returnCons, code, err := gcpdb.SingleCon(repoName)
+	returnCons, code, err := gcpdb.SingleCon(repoName, token)
 	if err != nil {
 		return nil, code, err
 	}
@@ -42,12 +42,15 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 	defer dbCli.Close()
 
 	var repos []string
+	var isSearch bool
 	if repoInput == "" {
+		isSearch = false
 		repos, err = getUpdateRepoList(ctx, dbCli)
 		if err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
 	} else {
+		isSearch = true
 		repos = []string{strings.ToLower(repoInput)}
 	}
 
@@ -74,13 +77,13 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 				// get first commit of the repo and use it as the start
 				listCommitOpts := &github.CommitsListOptions{}
 				var firstCommitTime *time.Time
-				commits, resp, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
+				commits, resp, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts, isSearch)
 				if err != nil {
 					return nil, statusCode, err
 				}
 				if resp.NextPage != 0 {
 					listCommitOpts.Page = resp.LastPage
-					commits, resp, statusCode, err = ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
+					commits, resp, statusCode, err = ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts, isSearch)
 					if err != nil {
 						return nil, statusCode, err
 					}
@@ -104,7 +107,7 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 
 				for firstCommitTime == nil {
 					listCommitOpts.Page = resp.PrevPage
-					commits, resp, statusCode, err = ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
+					commits, resp, statusCode, err = ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts, isSearch)
 					if err != nil {
 						return nil, statusCode, err
 					}
@@ -136,7 +139,7 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 				comLists := make(map[string]bool)
 				listCommitOpts := &github.CommitsListOptions{Since: firstDay, Until: firstDay.AddDate(0, 1, 0), ListOptions: ghapi.ListOpts}
 				for {
-					commits, resp, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
+					commits, resp, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts, isSearch)
 					if err != nil {
 						return nil, statusCode, err
 					}
