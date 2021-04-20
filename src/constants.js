@@ -5,13 +5,11 @@ export const DEFAULT_OPTIONS = {
     data: []
   },
   toolbox: {
-    feature: {
-      saveAsImage: {}
-    }
+    feature: {}
   },
   dataset: [],
   title: {
-    text: "Contributor Over Time"
+    text: ""
   },
   tooltip: {
     trigger: "axis"
@@ -33,14 +31,12 @@ export const DEFAULT_ACTIVITY_OPTIONS = {
     data: []
   },
   toolbox: {
-    feature: {
-      saveAsImage: {}
-    }
+    feature: {}
   },
   dataset: [],
   title: {
-    text: "Monthly Active Contributors",
-    subtext: 'The number of contributors who committed to main branch in each month'
+    text: "",
+    subtext: ''
   },
   tooltip: {
     trigger: "axis"
