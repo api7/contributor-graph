@@ -4,6 +4,8 @@ import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
 import moment from "moment";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 import CompareComponent from "../../components/compare";
 import { Button, ButtonGroup } from "@material-ui/core";
@@ -362,6 +364,19 @@ const ContributorLineChart = ({
                 </Col>
               </Row>
             </Tab.Container>
+            <div>
+              <p>
+                You can include the chart on your repository's README.md as
+                follows:
+              </p>
+              <SyntaxHighlighter language="markdown" style={a11yDark}>
+                {`
+## Contributor over time
+
+[![Contributor over time](https://contributor-graph-api.apiseven.com/contributors-svg?repo=${repoList.join(',')})](https://www.apiseven.com/en/contributor-graph?repo=${repoList.join(',')})
+`}
+              </SyntaxHighlighter>
+            </div>
           </div>
         </div>
       </div>
