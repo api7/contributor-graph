@@ -3,13 +3,18 @@ import cloneDeep from "lodash.clonedeep";
 import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
+import moment from "moment";
 
 import CompareComponent from "../../components/compare";
 import { Button, ButtonGroup } from "@material-ui/core";
 import { getMonths, isSameDay } from "../../utils";
 import { DEFAULT_OPTIONS } from "../../constants";
 
-const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelete }) => {
+const ContributorLineChart = ({
+  repoList = ["apache/apisix"],
+  showAlert,
+  onDelete
+}) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
@@ -109,8 +114,37 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
           return response.json();
         })
         .then(myJson => {
+          const { Contributors = [] } = myJson;
+          const sortContributors = Contributors.sort(
+            (a, b) => new Date(a.date - new Date(b.date))
+          );
+
+          const processContributors = [];
+          Contributors.map((item, index) => {
+            processContributors.push({
+              ...item,
+              date: item.date.substring(0, 10)
+            });
+
+            if (index !== sortContributors.length - 1) {
+              const diffDays = moment(
+                sortContributors[index + 1].date.substring(0, 10)
+              ).diff(item.date.substring(0, 10), "days");
+              if (diffDays > 1) {
+                for (let index = 1; index < diffDays; index++) {
+                  processContributors.push({
+                    ...item,
+                    date: moment(item.date)
+                      .add(index, "days")
+                      .format().substring(0,10)
+                  });
+                }
+              }
+            }
+          });
+
           setLoading(false);
-          resolve({ repo, ...myJson });
+          resolve({ repo, ...{ Contributors: processContributors } });
         })
         .catch(e => {
           showAlert(e, "error");
@@ -170,9 +204,12 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
 
   React.useEffect(() => {
     updateSeries(xAxis);
-    window.parent.postMessage({
-      legend: Object.keys(dataSource)
-    }, "*");
+    window.parent.postMessage(
+      {
+        legend: Object.keys(dataSource)
+      },
+      "*"
+    );
   }, [dataSource, xAxis]);
 
   React.useEffect(() => {
@@ -182,7 +219,6 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
       const deleteList = datasourceList.filter(
         item => !repoList.includes(item)
       );
-      console.log("deleteList: ", deleteList);
       const clonedDatasource = cloneDeep(dataSource);
       setDataSource(omit(clonedDatasource, deleteList));
       return;
