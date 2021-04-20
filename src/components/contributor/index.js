@@ -64,6 +64,7 @@ const ContributorLineChart = ({
       type: "line",
       datasetId: item,
       showSymbol: false,
+      smooth: true,
       encode: {
         x: "Date",
         y: "ContributorNum",
@@ -115,28 +116,29 @@ const ContributorLineChart = ({
         })
         .then(myJson => {
           const { Contributors = [] } = myJson;
-          const sortContributors = Contributors.sort(
-            (a, b) => new Date(a.date - new Date(b.date))
+          const sortContributors = Contributors.map(item => ({
+            ...item,
+            date: item.date.substring(0, 10)
+          })).sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
           );
-
           const processContributors = [];
-          Contributors.map((item, index) => {
-            processContributors.push({
-              ...item,
-              date: item.date.substring(0, 10)
-            });
+          sortContributors.map((item, index) => {
+            processContributors.push(item);
 
             if (index !== sortContributors.length - 1) {
-              const diffDays = moment(
-                sortContributors[index + 1].date.substring(0, 10)
-              ).diff(item.date.substring(0, 10), "days");
+              const diffDays = moment(sortContributors[index + 1].date).diff(
+                item.date,
+                "days"
+              );
               if (diffDays > 1) {
                 for (let index = 1; index < diffDays; index++) {
                   processContributors.push({
                     ...item,
                     date: moment(item.date)
                       .add(index, "days")
-                      .format().substring(0,10)
+                      .format()
+                      .substring(0, 10)
                   });
                 }
               }
