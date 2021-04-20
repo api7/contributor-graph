@@ -6,12 +6,13 @@ import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
 
 import CompareComponent from "../compare";
-import {
-  DEFAULT_ACTIVITY_OPTIONS,
-  DEFAULT_COLOR,
-} from "../../constants";
+import { DEFAULT_ACTIVITY_OPTIONS, DEFAULT_COLOR } from "../../constants";
 
-const ActivityChart = ({ repoList = ["apache/apisix"], showAlert,onDelete }) => {
+const ActivityChart = ({
+  repoList = ["apache/apisix"],
+  showAlert,
+  onDelete
+}) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [xAxis] = React.useState(["1970-01-01"]);
@@ -144,6 +145,7 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert,onDelete }) => 
       )
         .then(response => {
           if (!response.ok) {
+            onDelete(repo);
             let message = "";
             switch (response.status) {
               case 403:
@@ -209,7 +211,7 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert,onDelete }) => 
     }
 
     const updateList = repoList.filter(item => !datasourceList.includes(item));
-
+    setLoading(true);
     Promise.all(updateList.map(item => fetchData(item))).then(data => {
       const tmpDataSouce = {};
       data.forEach(item => {
@@ -228,6 +230,7 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert,onDelete }) => 
 
       const clonedDatasource = cloneDeep(dataSource);
       setDataSource({ ...clonedDatasource, ...tmpDataSouce });
+      setLoading(false);
     });
   }, [repoList]);
 

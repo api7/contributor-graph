@@ -92,6 +92,7 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
       )
         .then(response => {
           if (!response.ok) {
+            onDelete(repo);
             let message = "";
             switch (response.status) {
               case 403:
@@ -190,6 +191,7 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
 
     const updateList = repoList.filter(item => !datasourceList.includes(item));
 
+    setLoading(true);
     Promise.all(updateList.map(item => fetchData(item))).then(data => {
       const tmpDataSouce = {};
       data.forEach(item => {
@@ -216,6 +218,7 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
 
       const clonedDatasource = cloneDeep(dataSource);
       setDataSource({ ...clonedDatasource, ...tmpDataSouce });
+      setLoading(false);
     });
   }, [repoList]);
 

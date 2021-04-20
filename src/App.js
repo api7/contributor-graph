@@ -191,7 +191,7 @@ const App = () => {
             className="search-container"
             style={{ display: "flex", justifyContent: "center" }}
           >
-            <Paper className={classes.root} elevation>
+            <Paper className={classes.root} elevation={0}>
               <Autocomplete
                 freeSolo
                 className={classes.autocomplete}
@@ -246,7 +246,7 @@ const App = () => {
                 justifyContent: "center"
               }}
             >
-              <Paper color="default" elevation>
+              <Paper color="default" elevation={0}>
                 <Tabs
                   value={value}
                   onChange={handleChange}
@@ -255,7 +255,6 @@ const App = () => {
                   indicatorColor="primary"
                   textColor="primary"
                   aria-label="scrollable force tabs example"
-                  centered
                 >
                   <Tab
                     style={{ textTransform: "none" }}
