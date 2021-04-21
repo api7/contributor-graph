@@ -60,7 +60,6 @@ func FormatCommits(ctx context.Context, comLists []*utils.ConList) ([]utils.Retu
 	return returnCons, http.StatusOK, nil
 }
 
-// TODO: support goroutine
 func GetCommits(ctx context.Context, ghCli *github.Client, repoName string, listCommitOpts *github.CommitsListOptions, isSearch bool) ([]*github.RepositoryCommit, *github.Response, int, error) {
 	owner, repo, err := SplitRepo(repoName)
 	if err != nil {
@@ -84,10 +83,62 @@ func GetCommits(ctx context.Context, ghCli *github.Client, repoName string, list
 			}
 			fmt.Println("MAGIC happens and let's rolling again!")
 		} else {
-			return nil, nil, http.StatusInternalServerError, err
+			return nil, nil, resp.StatusCode, err
 		}
 	}
 	return commits, resp, http.StatusOK, nil
+}
+
+func GetFirstCommit(ctx context.Context, ghCli *github.Client, repoName string, isSearch bool) (time.Time, int, error) {
+	listCommitOpts := &github.CommitsListOptions{}
+	var firstCommitTime *time.Time
+	commits, resp, statusCode, err := GetCommits(ctx, ghCli, repoName, listCommitOpts, isSearch)
+	if err != nil {
+		return time.Time{}, statusCode, err
+	}
+	if resp.NextPage != 0 {
+		listCommitOpts.Page = resp.LastPage
+		commits, resp, statusCode, err = GetCommits(ctx, ghCli, repoName, listCommitOpts, isSearch)
+		if err != nil {
+			return time.Time{}, statusCode, err
+		}
+
+		// to jump over commits with tricked date
+		// don't know the reason but those author of those commits would be empty
+		// example:
+		//		curl -u username:$token -H "Accept: application/vnd.github.v3+json" 'https://api.github.com/repos/angular/angular.js/commits?author=git5@invalid'
+		//		https://github.com/golang/go/commit/7d7c6a97f815e9279d08cfaea7d5efb5e90695a8
+		// also this seems what Github is doing when presenting `insights - contributors`
+		// example:
+		//		the earliest commits of apache kafka happened at 2011-08-01, but it has the author `null`.
+		//		So on `insights - contributors`, it says the first commit is at 2012-12-16, which is the first commit whose author is not `null`
+		for i := range commits {
+			if commits[len(commits)-i-1].Author != nil {
+				firstCommitTime = commits[len(commits)-i-1].Commit.Author.Date
+				break
+			}
+		}
+	}
+
+	for firstCommitTime == nil {
+		listCommitOpts.Page = resp.PrevPage
+		commits, resp, statusCode, err = GetCommits(ctx, ghCli, repoName, listCommitOpts, isSearch)
+		if err != nil {
+			return time.Time{}, statusCode, err
+		}
+
+		for i := range commits {
+			if commits[len(commits)-i-1].Author != nil {
+				firstCommitTime = commits[len(commits)-i-1].Commit.Author.Date
+				break
+			}
+		}
+	}
+
+	year, month, _ := firstCommitTime.Date()
+	loc := firstCommitTime.Location()
+	// use the first second of this month as start
+	return time.Date(year, month, 1, 0, 0, 0, 0, loc), http.StatusOK, nil
 }
 
 func compareSameDay(time1 time.Time, time2 time.Time) bool {

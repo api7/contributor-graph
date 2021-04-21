@@ -3,13 +3,21 @@ import cloneDeep from "lodash.clonedeep";
 import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
+import moment from "moment";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 import CompareComponent from "../../components/compare";
 import { Button, ButtonGroup } from "@material-ui/core";
 import { getMonths, isSameDay } from "../../utils";
 import { DEFAULT_OPTIONS } from "../../constants";
 
-const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelete }) => {
+const ContributorLineChart = ({
+  repoList = ["apache/apisix"],
+  showAlert,
+  onDelete,
+  onLoading
+}) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
@@ -59,6 +67,7 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
       type: "line",
       datasetId: item,
       showSymbol: false,
+      smooth: true,
       encode: {
         x: "Date",
         y: "ContributorNum",
@@ -84,14 +93,13 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
     if (repo === "null" || repo === null) {
       repo = "apache/apisix";
     }
-    setLoading(true);
-
     return new Promise((resolve, reject) => {
       fetch(
         `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
       )
         .then(response => {
           if (!response.ok) {
+            onDelete(repo);
             let message = "";
             switch (response.status) {
               case 403:
@@ -109,12 +117,58 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
           return response.json();
         })
         .then(myJson => {
-          setLoading(false);
-          resolve({ repo, ...myJson });
+          const { Contributors = [] } = myJson;
+          const sortContributors = Contributors.map(item => ({
+            ...item,
+            date: item.date.substring(0, 10)
+          })).sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+          );
+          if (
+            !isSameDay(
+              new Date(sortContributors[sortContributors.length - 1].date),
+              new Date()
+            )
+          ) {
+            sortContributors.push({
+              repo,
+              idx: sortContributors[sortContributors.length - 1].idx,
+              date: moment(new Date()).format("YYYY-MM-DD")
+            });
+          }
+
+          const processContributors = [];
+          sortContributors.forEach((item, index) => {
+            processContributors.push(item);
+
+            if (index !== sortContributors.length - 1) {
+              const diffDays = moment(sortContributors[index + 1].date).diff(
+                item.date,
+                "days"
+              );
+              if (diffDays > 1) {
+                for (let index = 1; index < diffDays; index++) {
+                  processContributors.push({
+                    ...item,
+                    date: moment(item.date)
+                      .add(index, "days")
+                      .format()
+                      .substring(0, 10)
+                  });
+                }
+              }
+            }
+          });
+          const filterData = processContributors.filter(
+            (item, index) =>
+              index === 0 ||
+              index === processContributors.length - 1 ||
+              new Date(item.date).getDate() % 10 === 5
+          );
+          resolve({ repo, ...{ Contributors: filterData } });
         })
         .catch(e => {
           showAlert(e, "error");
-          setLoading(false);
           reject();
         });
     });
@@ -122,28 +176,25 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
 
   const updateChart = repo => {
     if (dataSource[repo]) return;
-
-    fetchData(repo).then(myJson => {
-      const { Contributors = [] } = myJson;
-      const data = Contributors.map(item => ({
-        repo,
-        contributorNum: item.idx,
-        date: item.date
-      }));
-
-      if (!isSameDay(new Date(data[data.length - 1].date), new Date())) {
-        data.push({
+    setLoading(true);
+    fetchData(repo)
+      .then(myJson => {
+        const { Contributors = [] } = myJson;
+        const data = Contributors.map(item => ({
           repo,
-          contributorNum: Contributors[Contributors.length - 1].idx,
-          date: new Date()
-        });
-      }
+          contributorNum: item.idx,
+          date: item.date
+        }));
 
-      const clonedDatasource = cloneDeep(dataSource);
-      if (!clonedDatasource[repo]) {
-        setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
-      }
-    });
+        const clonedDatasource = cloneDeep(dataSource);
+        if (!clonedDatasource[repo]) {
+          setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
   };
 
   React.useEffect(() => {
@@ -170,10 +221,17 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
 
   React.useEffect(() => {
     updateSeries(xAxis);
-    window.parent.postMessage({
-      legend: Object.keys(dataSource)
-    }, "*");
+    window.parent.postMessage(
+      {
+        legend: Object.keys(dataSource)
+      },
+      "*"
+    );
   }, [dataSource, xAxis]);
+
+  React.useEffect(() => {
+    onLoading(loading);
+  }, [loading]);
 
   React.useEffect(() => {
     const datasourceList = Object.keys(dataSource);
@@ -182,7 +240,6 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
       const deleteList = datasourceList.filter(
         item => !repoList.includes(item)
       );
-      console.log("deleteList: ", deleteList);
       const clonedDatasource = cloneDeep(dataSource);
       setDataSource(omit(clonedDatasource, deleteList));
       return;
@@ -190,33 +247,30 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
 
     const updateList = repoList.filter(item => !datasourceList.includes(item));
 
-    Promise.all(updateList.map(item => fetchData(item))).then(data => {
-      const tmpDataSouce = {};
-      data.forEach(item => {
-        const { Contributors = [], repo } = item;
-
-        const data = Contributors.map(item => ({
-          repo,
-          contributorNum: item.idx,
-          date: item.date
-        }));
-
-        if (!isSameDay(new Date(data[data.length - 1].date), new Date())) {
-          data.push({
+    setLoading(true);
+    Promise.all(updateList.map(item => fetchData(item)))
+      .then(data => {
+        const tmpDataSouce = {};
+        data.forEach(item => {
+          const { Contributors = [], repo } = item;
+          const data = Contributors.map(item => ({
             repo,
-            contributorNum: Contributors[Contributors.length - 1].idx,
-            date: new Date()
-          });
-        }
+            contributorNum: item.idx,
+            date: item.date
+          }));
 
-        if (!tmpDataSouce[item.repo]) {
-          tmpDataSouce[repo] = data;
-        }
+          if (!tmpDataSouce[item.repo]) {
+            tmpDataSouce[repo] = data;
+          }
+        });
+
+        const clonedDatasource = cloneDeep(dataSource);
+        setDataSource({ ...clonedDatasource, ...tmpDataSouce });
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
       });
-
-      const clonedDatasource = cloneDeep(dataSource);
-      setDataSource({ ...clonedDatasource, ...tmpDataSouce });
-    });
   }, [repoList]);
 
   return (
@@ -332,6 +386,25 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
                 </Col>
               </Row>
             </Tab.Container>
+            {Boolean(repoList.length) && (
+              <div>
+                <p>
+                  You can include the chart on your repository's README.md as
+                  follows:
+                </p>
+                <SyntaxHighlighter language="markdown" style={a11yDark}>
+                  {`
+## Contributor over time
+
+[![Contributor over time](https://contributor-graph-api.apiseven.com/contributors-svg?repo=${repoList.join(
+                    ","
+                  )})](https://www.apiseven.com/en/contributor-graph?repo=${repoList.join(
+                    ","
+                  )})
+`}
+                </SyntaxHighlighter>
+              </div>
+            )}
           </div>
         </div>
       </div>
