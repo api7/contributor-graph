@@ -162,7 +162,7 @@ const ContributorLineChart = ({
         });
     } else {
       if (!repoList.length) return;
-
+      setLoading(true);
       const repo = repoList[0];
       fetchMergeContributor(repo, showAlert, onDelete)
         .then(_data => {
