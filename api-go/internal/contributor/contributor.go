@@ -34,7 +34,7 @@ func GetContributorList(repoName string, token string) ([]utils.ReturnCon, int, 
 	return returnCons, http.StatusOK, nil
 }
 
-func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error) {
+func GetContributorMonthly(repoInput string, token string) ([]utils.MonthlyConList, int, error) {
 	ctx := context.Background()
 
 	dbCli, err := datastore.NewClient(ctx, utils.ProjectID)
@@ -71,7 +71,14 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 		})
 
 		if len(monthlyConLists) == 0 || monthlyConLists[len(monthlyConLists)-1].Month.AddDate(0, 2, 0).Before(time.Now()) {
-			ghCli := ghapi.GetGithubClient(ctx, utils.UpdateToken[i%len(utils.UpdateToken)])
+			var ghToken string
+			if repoInput == "" {
+				ghToken = utils.UpdateToken[i%len(utils.UpdateToken)]
+			} else {
+				ghToken = token
+			}
+
+			ghCli := ghapi.GetGithubClient(ctx, ghToken)
 
 			var firstDay time.Time
 			if len(monthlyConLists) > 0 {
