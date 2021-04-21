@@ -125,8 +125,8 @@ const ContributorLineChart = ({
           if (!isSameDay(new Date(sortContributors[sortContributors.length - 1].date), new Date())) {
             sortContributors.push({
               repo,
-              contributorNum: sortContributors[sortContributors.length - 1].idx,
-              date: new Date()
+              idx: sortContributors[sortContributors.length - 1].idx,
+              date: moment(new Date()).format('YYYY-MM-DD')
             });
           }
 
@@ -152,9 +152,9 @@ const ContributorLineChart = ({
               }
             }
           });
-
+          const filterData = processContributors.filter((item,index)=>(index===0||index===processContributors.length-1 || new Date(item.date).getDate()%10===0))
           setLoading(false);
-          resolve({ repo, ...{ Contributors: processContributors } });
+          resolve({ repo, ...{ Contributors: filterData } });
         })
         .catch(e => {
           showAlert(e, "error");
