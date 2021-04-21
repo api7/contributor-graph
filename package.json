@@ -12,10 +12,12 @@
     "lodash.clonedeep": "^4.5.0",
     "lodash.omit": "^4.5.0",
     "lodash.throttle": "^4.1.1",
+    "moment": "^2.29.1",
     "react": "^16.6.1",
     "react-bootstrap": "^1.5.1",
     "react-dom": "^16.6.1",
     "react-scripts": "2.1.1",
+    "react-syntax-highlighter": "^15.4.3",
     "react-toastify": "^7.0.3"
   },
   "scripts": {
