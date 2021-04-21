@@ -287,12 +287,12 @@ const App = () => {
                   style={{ width: "260px" }}
                 >
                   {Boolean(!mergeStatus)
-                    ? `查看${
+                    ? `View all views related to ${
                         repo.includes("skywalking")
-                          ? " apache/skywalking "
-                          : " apache/apisix "
-                      }合并视图`
-                    : "取消合并视图"}
+                          ? "apache/skywalking"
+                          : "apache/apisix"
+                      }`
+                    : "Cancel merge view"}
                 </Button>
               )}
             </div>
