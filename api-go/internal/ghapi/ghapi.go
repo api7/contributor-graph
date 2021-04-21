@@ -78,7 +78,7 @@ func GetCommits(ctx context.Context, ghCli *github.Client, repoName string, list
 			}
 			fmt.Println("MAGIC happens and let's rolling again!")
 		} else {
-			return nil, nil, http.StatusInternalServerError, err
+			return nil, nil, resp.StatusCode, err
 		}
 	}
 	return commits, resp, http.StatusOK, nil
