@@ -6,7 +6,7 @@ export const getGithubRepoList = searchText => {
       })
       .then(myJson => {
         const filteredData = myJson.items
-          .filter(item => item.name.startsWith("apache/" + searchText))
+          .filter(item => item.full_name.startsWith("apache/" + searchText))
           .map(item => item.full_name);
         resolve(filteredData);
       })

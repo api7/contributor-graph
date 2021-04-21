@@ -89,7 +89,7 @@ export const fetchData = (repo, showAlert, onDelete) => {
 export const fetchMergeContributor = (repoList, showAlert) => {
   return new Promise((resolve, reject) => {
     fetch(
-      `https://contributor-graph-api.apiseven.com/contributors?repo=${repoList.join(
+      `https://contributor-graph-api.apiseven.com/contributors-multi?repo=${repoList.join(
         ","
       )}`
     )
@@ -113,9 +113,7 @@ export const fetchMergeContributor = (repoList, showAlert) => {
         return response.json();
       })
       .then(myJson => {
-        const { Contributors = [] } = myJson;
-        console.log("Contributors: ", Contributors);
-        // resolve({ repo, ...{ Contributors: filterData } });
+        resolve({ repo: repoList[0], ...myJson });
       })
       .catch(e => {
         showAlert(e, "error");

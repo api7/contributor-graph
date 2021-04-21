@@ -31,7 +31,6 @@ const ContributorLineChart = ({
     ];
     const legend = [];
     const limitDate = new Date(passXAxis[0]).getTime();
-
     Object.entries(dataSource).forEach(([key, value]) => {
       legend.push(key);
       value.forEach(item => {
@@ -139,30 +138,55 @@ const ContributorLineChart = ({
 
     const updateList = repoList.filter(item => !datasourceList.includes(item));
 
-    setLoading(true);
-    Promise.all(updateList.map(item => fetchData(item, showAlert, onDelete)))
-      .then(data => {
-        const tmpDataSouce = {};
-        data.forEach(item => {
-          const { Contributors = [], repo } = item;
+    if (mode === "normal") {
+      setLoading(true);
+      Promise.all(updateList.map(item => fetchData(item, showAlert, onDelete)))
+        .then(data => {
+          const tmpDataSouce = {};
+          data.forEach(item => {
+            const { Contributors = [], repo } = item;
+            const data = Contributors.map(item => ({
+              repo,
+              contributorNum: item.idx,
+              date: item.date
+            }));
+
+            if (!tmpDataSouce[item.repo]) {
+              tmpDataSouce[repo] = data;
+            }
+          });
+
+          const clonedDatasource = cloneDeep(dataSource);
+          setDataSource({ ...clonedDatasource, ...tmpDataSouce });
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+        });
+    } else {
+      if (!repoList.length) return;
+      fetchMergeContributor(repoList, showAlert, onDelete)
+        .then(_data => {
+          const tmpDataSouce = {};
+          const { Contributors = [], repo } = _data;
           const data = Contributors.map(item => ({
             repo,
             contributorNum: item.idx,
             date: item.date
           }));
 
-          if (!tmpDataSouce[item.repo]) {
+          if (!tmpDataSouce[_data.repo]) {
             tmpDataSouce[repo] = data;
           }
-        });
 
-        const clonedDatasource = cloneDeep(dataSource);
-        setDataSource({ ...clonedDatasource, ...tmpDataSouce });
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
+          const clonedDatasource = cloneDeep(dataSource);
+          setDataSource({ ...clonedDatasource, ...tmpDataSouce });
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+        });
+    }
   }, [repoList]);
 
   return (
