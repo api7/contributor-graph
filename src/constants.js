@@ -5,7 +5,9 @@ export const DEFAULT_OPTIONS = {
     data: []
   },
   toolbox: {
-    feature: {}
+    feature: {
+      saveAsImage: {}
+    }
   },
   dataset: [],
   title: {
@@ -31,7 +33,9 @@ export const DEFAULT_ACTIVITY_OPTIONS = {
     data: []
   },
   toolbox: {
-    feature: {}
+    feature: {
+      saveAsImage: {}
+    }
   },
   dataset: [],
   title: {
