@@ -17,7 +17,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-export default function CompareComponent({ list = [], onDelete, onConfirm }) {
+export default function CompareComponent({ list = [], onDelete }) {
   const classes = useStyles();
 
   return (

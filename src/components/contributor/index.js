@@ -17,7 +17,7 @@ const ContributorLineChart = ({
   showAlert,
   onDelete,
   onLoading,
-  mode='normal'
+  mode = "normal"
 }) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
@@ -87,29 +87,6 @@ const ContributorLineChart = ({
     newClonedOption.legend.data = legend;
 
     setOption(newClonedOption);
-  };
-
-  const updateChart = repo => {
-    if (dataSource[repo]) return;
-    setLoading(true);
-    fetchData(repo, showAlert, onDelete)
-      .then(myJson => {
-        const { Contributors = [] } = myJson;
-        const data = Contributors.map(item => ({
-          repo,
-          contributorNum: item.idx,
-          date: item.date
-        }));
-
-        const clonedDatasource = cloneDeep(dataSource);
-        if (!clonedDatasource[repo]) {
-          setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
   };
 
   React.useEffect(() => {
@@ -206,10 +183,6 @@ const ContributorLineChart = ({
                 const newDataSource = omit(clonedDataSource, [e]);
                 setDataSource(newDataSource);
                 onDelete(e);
-              }}
-              onConfirm={e => {
-                if (!e) return;
-                updateChart(e);
               }}
             />
           </div>
