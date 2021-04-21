@@ -36,6 +36,11 @@ type LastModifiedTime struct {
 	LastModifiedTime time.Time
 }
 
+type ErrorWithCode struct {
+	Err  error
+	Code int
+}
+
 var (
 	DBName       = "contributor"
 	RepoDBName   = "Repo"
