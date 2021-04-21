@@ -57,12 +57,13 @@ func main() {
 }
 
 func getContributor(w http.ResponseWriter, r *http.Request) {
+	token := r.Header.Get("Authorization")
 	v := r.URL.Query()
 	repo := v.Get("repo")
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	conList, code, err := contributor.GetContributorList(repo)
+	conList, code, err := contributor.GetContributorList(repo, token)
 
 	if err != nil {
 		w.WriteHeader(code)
@@ -74,12 +75,13 @@ func getContributor(w http.ResponseWriter, r *http.Request) {
 }
 
 func getMonthlyContributor(w http.ResponseWriter, r *http.Request) {
+	token := r.Header.Get("Authorization")
 	v := r.URL.Query()
 	repo := v.Get("repo")
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	monthlyConLists, code, err := contributor.GetContributorMonthly(repo)
+	monthlyConLists, code, err := contributor.GetContributorMonthly(repo, token)
 
 	if err != nil {
 		w.WriteHeader(code)
@@ -172,7 +174,7 @@ func getActivities(w http.ResponseWriter, r *http.Request) {
 }
 
 func refreshAll(w http.ResponseWriter, r *http.Request) {
-	_, code, err := gcpdb.UpdateDB("")
+	_, code, err := gcpdb.UpdateDB("", "")
 
 	if err != nil {
 		w.WriteHeader(code)
@@ -182,7 +184,7 @@ func refreshAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func refreshMonthly(w http.ResponseWriter, r *http.Request) {
-	_, code, err := contributor.GetContributorMonthly("")
+	_, code, err := contributor.GetContributorMonthly("", "")
 
 	if err != nil {
 		w.WriteHeader(code)

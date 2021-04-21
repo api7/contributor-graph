@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"cloud.google.com/go/storage"
 	"github.com/api7/contributor-graph/api/internal/utils"
@@ -32,16 +33,18 @@ func GenerateAndSaveSVG(ctx context.Context, repo string) error {
 		return err
 	}
 
-	wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
-	wc.ACL = []storage.ACLRule{{Entity: storage.AllUsers, Role: storage.RoleReader}}
-	wc.CacheControl = "public, max-age=86400"
-	wc.ContentType = "image/svg+xml;charset=utf-8"
+	if !strings.Contains(repo, ",") {
+		wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
+		wc.ACL = []storage.ACLRule{{Entity: storage.AllUsers, Role: storage.RoleReader}}
+		wc.CacheControl = "public, max-age=86400"
+		wc.ContentType = "image/svg+xml;charset=utf-8"
 
-	if _, err = io.Copy(wc, bytes.NewReader(svg)); err != nil {
-		return fmt.Errorf("upload svg failed: io.Copy: %v", err)
-	}
-	if err := wc.Close(); err != nil {
-		return fmt.Errorf("upload svg failed: Writer.Close: %v", err)
+		if _, err = io.Copy(wc, bytes.NewReader(svg)); err != nil {
+			return fmt.Errorf("upload svg failed: io.Copy: %v", err)
+		}
+		if err := wc.Close(); err != nil {
+			return fmt.Errorf("upload svg failed: Writer.Close: %v", err)
+		}
 	}
 	fmt.Printf("New SVG generated with %s\n", repo)
 	return nil

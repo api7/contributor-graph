@@ -19,14 +19,14 @@ import (
 	"github.com/api7/contributor-graph/api/internal/utils"
 )
 
-func GetContributorList(repoName string) ([]utils.ReturnCon, int, error) {
+func GetContributorList(repoName string, token string) ([]utils.ReturnCon, int, error) {
 	_, _, err := ghapi.SplitRepo(repoName)
 	if err != nil {
 		return nil, http.StatusNotFound, fmt.Errorf("Repo format error")
 	}
 
 	fmt.Printf("New request coming with %s\n", repoName)
-	returnCons, code, err := gcpdb.SingleCon(repoName)
+	returnCons, code, err := gcpdb.SingleCon(repoName, token)
 	if err != nil {
 		return nil, code, err
 	}
@@ -34,7 +34,7 @@ func GetContributorList(repoName string) ([]utils.ReturnCon, int, error) {
 	return returnCons, http.StatusOK, nil
 }
 
-func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error) {
+func GetContributorMonthly(repoInput string, token string) ([]utils.MonthlyConList, int, error) {
 	ctx := context.Background()
 
 	dbCli, err := datastore.NewClient(ctx, utils.ProjectID)
@@ -71,7 +71,14 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 		})
 
 		if len(monthlyConLists) == 0 || monthlyConLists[len(monthlyConLists)-1].Month.AddDate(0, 2, 0).Before(time.Now()) {
-			ghCli := ghapi.GetGithubClient(ctx, utils.UpdateToken[i%len(utils.UpdateToken)])
+			var ghToken string
+			if repoInput == "" {
+				ghToken = utils.UpdateToken[i%len(utils.UpdateToken)]
+			} else {
+				ghToken = token
+			}
+
+			ghCli := ghapi.GetGithubClient(ctx, ghToken)
 
 			var firstDay time.Time
 			if len(monthlyConLists) > 0 {
@@ -79,7 +86,7 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 			} else {
 				// get first commit of the repo and use it as the start
 				var code int
-				firstDay, code, err = ghapi.GetFirstCommit(ctx, ghCli, repoName)
+				firstDay, code, err = ghapi.GetFirstCommit(ctx, ghCli, repoName, isSearch)
 				if err != nil {
 					return nil, code, err
 				}
@@ -118,7 +125,7 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 					untilDay := sinceDay.AddDate(0, 1, 0)
 					listCommitOpts := &github.CommitsListOptions{Since: sinceDay, Until: untilDay, ListOptions: ghapi.ListOpts}
 					for {
-						commits, resp, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
+						commits, resp, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts, isSearch)
 						if err != nil {
 							errCh <- utils.ErrorWithCode{err, statusCode}
 							return
