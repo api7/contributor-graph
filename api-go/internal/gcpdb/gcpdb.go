@@ -181,76 +181,68 @@ func updateContributorList(
 ) ([]*utils.ConList, int, error) {
 	var commitLists []*utils.ConList
 	bar := progressbar.Default(int64(lastPage + 1))
-	if isSearch && len(conMap) == 0 {
-		errCh := make(chan utils.ErrorWithCode, lastPage+1)
-		comCh := make(chan *[]*github.RepositoryCommit, lastPage+1)
 
-		var wg sync.WaitGroup
-		guard := make(chan int, 100)
-		for i := lastPage; i >= 0; i-- {
-			wg.Add(1)
-			go func(i int) {
-				defer wg.Done()
-				guard <- 1
-				// could not directly pass listCommitOpts since `Page` would be changed in different goroutine
-				optsGoroutine := *listCommitOpts
-				optsGoroutine.Page = i
-				commits, _, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, &optsGoroutine)
-				if err != nil {
-					errCh <- utils.ErrorWithCode{err, statusCode}
-					return
-				}
-				comCh <- &commits
-				bar.Add(1)
-				<-guard
-			}(i)
-		}
-		wg.Wait()
+	parallelLimit := 1
+	if isSearch {
+		parallelLimit = 100
+	}
 
-		close(errCh)
-		close(comCh)
-		for err := range errCh {
-			if _, ok := err.Err.(*github.RateLimitError); ok {
-				return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
-			} else {
-				return nil, err.Code, err.Err
-			}
-		}
-		for com := range comCh {
-			commits := *com
-			for j := len(commits) - 1; j >= 0; j-- {
-				if commits[j].GetAuthor() != nil {
-					commitAuthor := commits[j].GetAuthor().GetLogin()
-					commitTime := commits[j].GetCommit().GetAuthor().GetDate()
-					oriTime, ok := conMap[commitAuthor]
-					if !ok || commitTime.Before(oriTime) {
-						conMap[commitAuthor] = commitTime
-					}
-				}
-			}
-		}
-		for name, time := range conMap {
-			commitLists = append(commitLists, &utils.ConList{name, time})
-		}
-	} else {
-		for i := lastPage; i >= 0; i-- {
-			listCommitOpts.Page = i
-			commits, _, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
+	errCh := make(chan utils.ErrorWithCode, lastPage+1)
+	comList := make([]*[]*github.RepositoryCommit, lastPage+1)
+
+	var wg sync.WaitGroup
+	guard := make(chan int, parallelLimit)
+	for i := lastPage; i >= 0; i-- {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			guard <- 1
+			// could not directly pass listCommitOpts since `Page` would be changed in different goroutine
+			optsGoroutine := *listCommitOpts
+			optsGoroutine.Page = i
+			commits, _, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, &optsGoroutine)
 			if err != nil {
-				return nil, statusCode, err
+				errCh <- utils.ErrorWithCode{err, statusCode}
+				return
 			}
-			for j := len(commits) - 1; j >= 0; j-- {
-				if commits[j].GetAuthor() != nil {
-					commitAuthor := commits[j].GetAuthor().GetLogin()
-					commitTime := commits[j].GetCommit().GetAuthor().GetDate()
-					if _, ok := conMap[commitAuthor]; !ok {
-						conMap[commitAuthor] = commitTime
-						commitLists = append(commitLists, &utils.ConList{commitAuthor, commitTime})
-					}
+			comList[i] = &commits
+			bar.Add(1)
+			<-guard
+		}(i)
+	}
+	wg.Wait()
+
+	close(errCh)
+
+	for err := range errCh {
+		if _, ok := err.Err.(*github.RateLimitError); ok {
+			return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
+		} else {
+			return nil, err.Code, err.Err
+		}
+	}
+	for i := range comList {
+		commits := *comList[len(comList)-i-1]
+		for j := len(commits) - 1; j >= 0; j-- {
+			if commits[j].GetAuthor() != nil {
+				commitAuthor := commits[j].GetAuthor().GetLogin()
+				commitTime := commits[j].GetCommit().GetAuthor().GetDate()
+				if _, ok := conMap[commitAuthor]; !ok {
+					conMap[commitAuthor] = commitTime
 				}
 			}
-			bar.Add(1)
 		}
+	}
+	for name, time := range conMap {
+		commitLists = append(commitLists, &utils.ConList{name, time})
+	}
+
+	sort.SliceStable(commitLists, func(i, j int) bool {
+		return commitLists[i].Date.Before(commitLists[j].Date)
+	})
+
+	for _, c := range commitLists {
+		fmt.Printf("%s %s\n", c.Date.String(), c.Author)
 	}
 
 	// at most write 500 entities in a single call

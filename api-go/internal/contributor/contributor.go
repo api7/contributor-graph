@@ -144,7 +144,7 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 
 			parallelLimit := 1
 			if isSearch {
-				parallelLimit = 1
+				parallelLimit = 100
 			}
 
 			var wg sync.WaitGroup
