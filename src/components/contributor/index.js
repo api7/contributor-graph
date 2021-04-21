@@ -124,11 +124,16 @@ const ContributorLineChart = ({
           })).sort(
             (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
           );
-          if (!isSameDay(new Date(sortContributors[sortContributors.length - 1].date), new Date())) {
+          if (
+            !isSameDay(
+              new Date(sortContributors[sortContributors.length - 1].date),
+              new Date()
+            )
+          ) {
             sortContributors.push({
               repo,
               idx: sortContributors[sortContributors.length - 1].idx,
-              date: moment(new Date()).format('YYYY-MM-DD')
+              date: moment(new Date()).format("YYYY-MM-DD")
             });
           }
 
@@ -154,7 +159,12 @@ const ContributorLineChart = ({
               }
             }
           });
-          const filterData = processContributors.filter((item,index)=>(index===0||index===processContributors.length-1 || new Date(item.date).getDate()%10===0))
+          const filterData = processContributors.filter(
+            (item, index) =>
+              index === 0 ||
+              index === processContributors.length - 1 ||
+              new Date(item.date).getDate() % 10 === 5
+          );
           setLoading(false);
           resolve({ repo, ...{ Contributors: filterData } });
         })
@@ -373,7 +383,11 @@ const ContributorLineChart = ({
                 {`
 ## Contributor over time
 
-[![Contributor over time](https://contributor-graph-api.apiseven.com/contributors-svg?repo=${repoList.join(',')})](https://www.apiseven.com/en/contributor-graph?repo=${repoList.join(',')})
+[![Contributor over time](https://contributor-graph-api.apiseven.com/contributors-svg?repo=${repoList.join(
+                  ","
+                )})](https://www.apiseven.com/en/contributor-graph?repo=${repoList.join(
+                  ","
+                )})
 `}
               </SyntaxHighlighter>
             </div>
