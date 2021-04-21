@@ -9,7 +9,12 @@ import { Button, ButtonGroup } from "@material-ui/core";
 import { getMonths, isSameDay } from "../../utils";
 import { DEFAULT_OPTIONS } from "../../constants";
 
-const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelete, onLoading }) => {
+const ContributorLineChart = ({
+  repoList = ["apache/apisix"],
+  showAlert,
+  onDelete,
+  onLoading
+}) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
@@ -84,8 +89,6 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
     if (repo === "null" || repo === null) {
       repo = "apache/apisix";
     }
-    setLoading(true);
-
     return new Promise((resolve, reject) => {
       fetch(
         `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
@@ -110,12 +113,10 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
           return response.json();
         })
         .then(myJson => {
-          setLoading(false);
           resolve({ repo, ...myJson });
         })
         .catch(e => {
           showAlert(e, "error");
-          setLoading(false);
           reject();
         });
     });
@@ -123,28 +124,33 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
 
   const updateChart = repo => {
     if (dataSource[repo]) return;
-
-    fetchData(repo).then(myJson => {
-      const { Contributors = [] } = myJson;
-      const data = Contributors.map(item => ({
-        repo,
-        contributorNum: item.idx,
-        date: item.date
-      }));
-
-      if (!isSameDay(new Date(data[data.length - 1].date), new Date())) {
-        data.push({
+    setLoading(true);
+    fetchData(repo)
+      .then(myJson => {
+        const { Contributors = [] } = myJson;
+        const data = Contributors.map(item => ({
           repo,
-          contributorNum: Contributors[Contributors.length - 1].idx,
-          date: new Date()
-        });
-      }
+          contributorNum: item.idx,
+          date: item.date
+        }));
 
-      const clonedDatasource = cloneDeep(dataSource);
-      if (!clonedDatasource[repo]) {
-        setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
-      }
-    });
+        if (!isSameDay(new Date(data[data.length - 1].date), new Date())) {
+          data.push({
+            repo,
+            contributorNum: Contributors[Contributors.length - 1].idx,
+            date: new Date()
+          });
+        }
+
+        const clonedDatasource = cloneDeep(dataSource);
+        if (!clonedDatasource[repo]) {
+          setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
   };
 
   React.useEffect(() => {
@@ -171,15 +177,18 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
 
   React.useEffect(() => {
     updateSeries(xAxis);
-    window.parent.postMessage({
-      legend: Object.keys(dataSource)
-    }, "*");
+    window.parent.postMessage(
+      {
+        legend: Object.keys(dataSource)
+      },
+      "*"
+    );
   }, [dataSource, xAxis]);
 
-  React.useEffect(()=>{
+  React.useEffect(() => {
     onLoading(loading);
-  },[loading]);
-  
+  }, [loading]);
+
   React.useEffect(() => {
     const datasourceList = Object.keys(dataSource);
 
@@ -196,34 +205,38 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
     const updateList = repoList.filter(item => !datasourceList.includes(item));
 
     setLoading(true);
-    Promise.all(updateList.map(item => fetchData(item))).then(data => {
-      const tmpDataSouce = {};
-      data.forEach(item => {
-        const { Contributors = [], repo } = item;
+    Promise.all(updateList.map(item => fetchData(item)))
+      .then(data => {
+        const tmpDataSouce = {};
+        data.forEach(item => {
+          const { Contributors = [], repo } = item;
 
-        const data = Contributors.map(item => ({
-          repo,
-          contributorNum: item.idx,
-          date: item.date
-        }));
-
-        if (!isSameDay(new Date(data[data.length - 1].date), new Date())) {
-          data.push({
+          const data = Contributors.map(item => ({
             repo,
-            contributorNum: Contributors[Contributors.length - 1].idx,
-            date: new Date()
-          });
-        }
+            contributorNum: item.idx,
+            date: item.date
+          }));
 
-        if (!tmpDataSouce[item.repo]) {
-          tmpDataSouce[repo] = data;
-        }
+          if (!isSameDay(new Date(data[data.length - 1].date), new Date())) {
+            data.push({
+              repo,
+              contributorNum: Contributors[Contributors.length - 1].idx,
+              date: new Date()
+            });
+          }
+
+          if (!tmpDataSouce[item.repo]) {
+            tmpDataSouce[repo] = data;
+          }
+        });
+
+        const clonedDatasource = cloneDeep(dataSource);
+        setDataSource({ ...clonedDatasource, ...tmpDataSouce });
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
       });
-
-      const clonedDatasource = cloneDeep(dataSource);
-      setDataSource({ ...clonedDatasource, ...tmpDataSouce });
-      setLoading(false);
-    });
   }, [repoList]);
 
   return (

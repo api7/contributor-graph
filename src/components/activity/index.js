@@ -138,8 +138,6 @@ const ActivityChart = ({
     if (repo === "null" || repo === null) {
       repo = "apache/apisix";
     }
-    setLoading(true);
-
     return new Promise((resolve, reject) => {
       fetch(
         `https://contributor-graph-api.apiseven.com/monthly-contributor?repo=${repo}`
@@ -164,12 +162,10 @@ const ActivityChart = ({
           return response.json();
         })
         .then(myJson => {
-          setLoading(false);
           resolve({ repo, ...myJson });
         })
         .catch(e => {
           showAlert(e, "error");
-          setLoading(false);
           reject();
         });
     });
@@ -177,20 +173,25 @@ const ActivityChart = ({
 
   const updateChart = repo => {
     if (dataSource[repo]) return;
+    setLoading(true);
+    fetchData(repo)
+      .then(myJson => {
+        const { Contributors = [] } = myJson;
+        const data = Contributors.map(item => ({
+          repo,
+          contributorNum: item.Num,
+          date: item.Month
+        }));
 
-    fetchData(repo).then(myJson => {
-      const { Contributors = [] } = myJson;
-      const data = Contributors.map(item => ({
-        repo,
-        contributorNum: item.Num,
-        date: item.Month
-      }));
-
-      const clonedDatasource = cloneDeep(dataSource);
-      if (!clonedDatasource[repo]) {
-        setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
-      }
-    });
+        const clonedDatasource = cloneDeep(dataSource);
+        if (!clonedDatasource[repo]) {
+          setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
   };
 
   React.useEffect(() => {
@@ -198,9 +199,9 @@ const ActivityChart = ({
     window.parent.postMessage({ legend: Object.keys(dataSource) }, "*");
   }, [dataSource, xAxis]);
 
-  React.useEffect(()=>{
+  React.useEffect(() => {
     onLoading(loading);
-  },[loading]);
+  }, [loading]);
 
   React.useEffect(() => {
     const datasourceList = Object.keys(dataSource);
@@ -217,26 +218,30 @@ const ActivityChart = ({
 
     const updateList = repoList.filter(item => !datasourceList.includes(item));
     setLoading(true);
-    Promise.all(updateList.map(item => fetchData(item))).then(data => {
-      const tmpDataSouce = {};
-      data.forEach(item => {
-        const { Contributors = [], repo } = item;
+    Promise.all(updateList.map(item => fetchData(item)))
+      .then(data => {
+        const tmpDataSouce = {};
+        data.forEach(item => {
+          const { Contributors = [], repo } = item;
 
-        const data = Contributors.map(item => ({
-          repo,
-          contributorNum: item.Num,
-          date: item.Month
-        }));
+          const data = Contributors.map(item => ({
+            repo,
+            contributorNum: item.Num,
+            date: item.Month
+          }));
 
-        if (!tmpDataSouce[item.repo]) {
-          tmpDataSouce[repo] = data;
-        }
+          if (!tmpDataSouce[item.repo]) {
+            tmpDataSouce[repo] = data;
+          }
+        });
+
+        const clonedDatasource = cloneDeep(dataSource);
+        setDataSource({ ...clonedDatasource, ...tmpDataSouce });
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
       });
-
-      const clonedDatasource = cloneDeep(dataSource);
-      setDataSource({ ...clonedDatasource, ...tmpDataSouce });
-      setLoading(false);
-    });
   }, [repoList]);
 
   return (
