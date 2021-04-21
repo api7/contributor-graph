@@ -186,14 +186,6 @@ const ContributorLineChart = ({
           date: item.date
         }));
 
-        if (!isSameDay(new Date(data[data.length - 1].date), new Date())) {
-          data.push({
-            repo,
-            contributorNum: Contributors[Contributors.length - 1].idx,
-            date: new Date()
-          });
-        }
-
         const clonedDatasource = cloneDeep(dataSource);
         if (!clonedDatasource[repo]) {
           setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
