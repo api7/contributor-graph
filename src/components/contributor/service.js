@@ -1,5 +1,6 @@
 import moment from "moment";
 import { isSameDay } from "../../utils";
+import { getGithubRepoList } from "../../api/service";
 
 export const fetchData = (repo, showAlert, onDelete) => {
   if (repo === "null" || repo === null) {
@@ -86,38 +87,39 @@ export const fetchData = (repo, showAlert, onDelete) => {
   });
 };
 
-export const fetchMergeContributor = (repoList, showAlert) => {
+export const fetchMergeContributor = (repo, showAlert) => {
   return new Promise((resolve, reject) => {
-    fetch(
-      `https://contributor-graph-api.apiseven.com/contributors-multi?repo=${repoList.join(
-        ","
-      )}`
-    )
-      .then(response => {
-        if (!response.ok) {
-          // onDelete(repo);
-          let message = "";
-          switch (response.status) {
-            case 403:
-              message = "Hit rate limit";
-              break;
-            case 404:
-              message = "Repo format error / Repo not found";
-              break;
-            default:
-              message = "Request Error";
-              break;
+    getGithubRepoList(repo).then(data => {
+      fetch(
+        `https://contributor-graph-api.apiseven.com/contributors-multi?repo=${data.join(
+          ","
+        )}`
+      )
+        .then(response => {
+          if (!response.ok) {
+            let message = "";
+            switch (response.status) {
+              case 403:
+                message = "Hit rate limit";
+                break;
+              case 404:
+                message = "Repo format error / Repo not found";
+                break;
+              default:
+                message = "Request Error";
+                break;
+            }
+            throw message;
           }
-          throw message;
-        }
-        return response.json();
-      })
-      .then(myJson => {
-        resolve({ repo: repoList[0], ...myJson });
-      })
-      .catch(e => {
-        showAlert(e, "error");
-        reject();
-      });
+          return response.json();
+        })
+        .then(myJson => {
+          resolve({ repo, ...myJson });
+        })
+        .catch(e => {
+          showAlert(e, "error");
+          reject();
+        });
+    });
   });
 };

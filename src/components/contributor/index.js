@@ -136,11 +136,9 @@ const ContributorLineChart = ({
       return;
     }
 
-    const updateList = repoList.filter(item => !datasourceList.includes(item));
-
     if (mode === "normal") {
       setLoading(true);
-      Promise.all(updateList.map(item => fetchData(item, showAlert, onDelete)))
+      Promise.all(repoList.map(item => fetchData(item, showAlert, onDelete)))
         .then(data => {
           const tmpDataSouce = {};
           data.forEach(item => {
@@ -156,8 +154,7 @@ const ContributorLineChart = ({
             }
           });
 
-          const clonedDatasource = cloneDeep(dataSource);
-          setDataSource({ ...clonedDatasource, ...tmpDataSouce });
+          setDataSource(tmpDataSouce);
           setLoading(false);
         })
         .catch(() => {
@@ -165,7 +162,9 @@ const ContributorLineChart = ({
         });
     } else {
       if (!repoList.length) return;
-      fetchMergeContributor(repoList, showAlert, onDelete)
+
+      const repo = repoList[0];
+      fetchMergeContributor(repo, showAlert, onDelete)
         .then(_data => {
           const tmpDataSouce = {};
           const { Contributors = [], repo } = _data;
@@ -179,15 +178,14 @@ const ContributorLineChart = ({
             tmpDataSouce[repo] = data;
           }
 
-          const clonedDatasource = cloneDeep(dataSource);
-          setDataSource({ ...clonedDatasource, ...tmpDataSouce });
+          setDataSource(tmpDataSouce);
           setLoading(false);
         })
         .catch(() => {
           setLoading(false);
         });
     }
-  }, [repoList]);
+  }, [repoList, mode]);
 
   return (
     <>

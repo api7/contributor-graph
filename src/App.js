@@ -14,7 +14,6 @@ import Button from "@material-ui/core/Button";
 import ContirbutorLineChart from "./components/contributor";
 import ActivityChart from "./components/activity";
 import { getParameterByName } from "./utils";
-import { getGithubRepoList } from "./api/service";
 
 const Alert = props => {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -177,10 +176,34 @@ const App = () => {
   }, [value]);
 
   React.useEffect(() => {
-    if (ALLOW_MERGE_LIST.includes(repo)) {
+    const index = ALLOW_MERGE_LIST.findIndex(item => repo.includes(item));
+    if (index !== -1) {
       setShowMergeButton(true);
+    } else {
+      setShowMergeButton(false);
     }
-  }, [repo]);
+    if (contributorRepoList.length === 0) {
+      setShowMergeButton(false);
+    }
+  }, [repo, contributorRepoList]);
+
+  React.useEffect(() => {
+    if (mergeStatus) {
+      if (repo.includes("skywalking")) {
+        setContributorRepoList(["apache/skywalking"]);
+      }
+      if (repo.includes("apisix")) {
+        setContributorRepoList(["apache/apisix"]);
+      }
+    } else {
+      if (repo.includes("skywalking")) {
+        setContributorRepoList(["apache/skywalking"]);
+      }
+      if (repo.includes("apisix")) {
+        setContributorRepoList(["apache/apisix"]);
+      }
+    }
+  }, [mergeStatus]);
   return (
     <>
       <Snackbar
@@ -238,7 +261,7 @@ const App = () => {
                   />
                 )}
               />
-              {/* <IconButton
+              <IconButton
                 className={classes.iconButton}
                 aria-label="search"
                 onClick={() => {
@@ -246,18 +269,12 @@ const App = () => {
                 }}
               >
                 <SearchIcon />
-              </IconButton> */}
+              </IconButton>
               {Boolean(showMergeButton) && (
                 <Button
                   variant="contained"
                   color="primary"
                   onClick={() => {
-                    if (!mergeStatus) {
-                      getGithubRepoList("skywalking").then(data => {
-                        setContributorRepoList([])
-                        setContributorRepoList(data);
-                      });
-                    }
                     setMergeStatus(!mergeStatus);
                   }}
                 >
