@@ -9,14 +9,18 @@ import Tab from "@material-ui/core/Tab";
 import PropTypes from "prop-types";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
+import Button from "@material-ui/core/Button";
 
 import ContirbutorLineChart from "./components/contributor";
 import ActivityChart from "./components/activity";
 import { getParameterByName } from "./utils";
+import { getGithubRepoList } from "./api/service";
 
 const Alert = props => {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 };
+
+const ALLOW_MERGE_LIST = ["skywalking", "apisix"];
 
 const useStyles = makeStyles(theme => ({
   button: {
@@ -100,6 +104,8 @@ const App = () => {
   const classesTable = useTabStyles();
   const [value, setValue] = React.useState(0);
   const [tabdisabled, setTabDisabled] = React.useState(false);
+  const [showMergeButton, setShowMergeButton] = React.useState(false);
+  const [mergeStatus, setMergeStatus] = React.useState(false);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -170,6 +176,11 @@ const App = () => {
     );
   }, [value]);
 
+  React.useEffect(() => {
+    if (ALLOW_MERGE_LIST.includes(repo)) {
+      setShowMergeButton(true);
+    }
+  }, [repo]);
   return (
     <>
       <Snackbar
@@ -227,7 +238,7 @@ const App = () => {
                   />
                 )}
               />
-              <IconButton
+              {/* <IconButton
                 className={classes.iconButton}
                 aria-label="search"
                 onClick={() => {
@@ -235,7 +246,24 @@ const App = () => {
                 }}
               >
                 <SearchIcon />
-              </IconButton>
+              </IconButton> */}
+              {Boolean(showMergeButton) && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    if (!mergeStatus) {
+                      getGithubRepoList("skywalking").then(data => {
+                        setContributorRepoList([])
+                        setContributorRepoList(data);
+                      });
+                    }
+                    setMergeStatus(!mergeStatus);
+                  }}
+                >
+                  {Boolean(!mergeStatus) ? "查看合并" : "取消合并"}
+                </Button>
+              )}
             </Paper>
           </div>
 
@@ -275,8 +303,9 @@ const App = () => {
             <TabPanel value={value} index={0}>
               <ContirbutorLineChart
                 repoList={contributorRepoList}
+                mode={!mergeStatus ? "normal" : "merge"}
                 showAlert={showAlert}
-                onLoading={(e)=>{
+                onLoading={e => {
                   setTabDisabled(e);
                 }}
                 onDelete={e => {
@@ -290,7 +319,7 @@ const App = () => {
               <ActivityChart
                 repoList={contributorRepoList}
                 showAlert={showAlert}
-                onLoading={(e)=>{
+                onLoading={e => {
                   setTabDisabled(e);
                 }}
                 onDelete={e => {

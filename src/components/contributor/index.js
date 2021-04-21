@@ -3,27 +3,27 @@ import cloneDeep from "lodash.clonedeep";
 import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
-import moment from "moment";
 import SyntaxHighlighter from "react-syntax-highlighter";
 import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 import CompareComponent from "../../components/compare";
 import { Button, ButtonGroup } from "@material-ui/core";
-import { getMonths, isSameDay } from "../../utils";
+import { getMonths } from "../../utils";
 import { DEFAULT_OPTIONS } from "../../constants";
+import { fetchData, fetchMergeContributor } from "./service";
 
 const ContributorLineChart = ({
   repoList = ["apache/apisix"],
   showAlert,
   onDelete,
-  onLoading
+  onLoading,
+  mode='normal'
 }) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
   const [xAxis, setXAxis] = React.useState([]);
   const [option, setOption] = React.useState(DEFAULT_OPTIONS);
-
   const updateSeries = passXAxis => {
     const newClonedOption = cloneDeep(DEFAULT_OPTIONS);
     const datasetWithFilters = [
@@ -89,95 +89,10 @@ const ContributorLineChart = ({
     setOption(newClonedOption);
   };
 
-  const fetchData = repo => {
-    if (repo === "null" || repo === null) {
-      repo = "apache/apisix";
-    }
-    return new Promise((resolve, reject) => {
-      fetch(
-        `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
-      )
-        .then(response => {
-          if (!response.ok) {
-            onDelete(repo);
-            let message = "";
-            switch (response.status) {
-              case 403:
-                message = "Hit rate limit";
-                break;
-              case 404:
-                message = "Repo format error / Repo not found";
-                break;
-              default:
-                message = "Request Error";
-                break;
-            }
-            throw message;
-          }
-          return response.json();
-        })
-        .then(myJson => {
-          const { Contributors = [] } = myJson;
-          const sortContributors = Contributors.map(item => ({
-            ...item,
-            date: item.date.substring(0, 10)
-          })).sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-          );
-          if (
-            !isSameDay(
-              new Date(sortContributors[sortContributors.length - 1].date),
-              new Date()
-            )
-          ) {
-            sortContributors.push({
-              repo,
-              idx: sortContributors[sortContributors.length - 1].idx,
-              date: moment(new Date()).format("YYYY-MM-DD")
-            });
-          }
-
-          const processContributors = [];
-          sortContributors.forEach((item, index) => {
-            processContributors.push(item);
-
-            if (index !== sortContributors.length - 1) {
-              const diffDays = moment(sortContributors[index + 1].date).diff(
-                item.date,
-                "days"
-              );
-              if (diffDays > 1) {
-                for (let index = 1; index < diffDays; index++) {
-                  processContributors.push({
-                    ...item,
-                    date: moment(item.date)
-                      .add(index, "days")
-                      .format()
-                      .substring(0, 10)
-                  });
-                }
-              }
-            }
-          });
-          const filterData = processContributors.filter(
-            (item, index) =>
-              index === 0 ||
-              index === processContributors.length - 1 ||
-              new Date(item.date).getDate() % 10 === 5
-          );
-          resolve({ repo, ...{ Contributors: filterData } });
-        })
-        .catch(e => {
-          showAlert(e, "error");
-          reject();
-        });
-    });
-  };
-
   const updateChart = repo => {
     if (dataSource[repo]) return;
     setLoading(true);
-    fetchData(repo)
+    fetchData(repo, showAlert, onDelete)
       .then(myJson => {
         const { Contributors = [] } = myJson;
         const data = Contributors.map(item => ({
@@ -248,7 +163,7 @@ const ContributorLineChart = ({
     const updateList = repoList.filter(item => !datasourceList.includes(item));
 
     setLoading(true);
-    Promise.all(updateList.map(item => fetchData(item)))
+    Promise.all(updateList.map(item => fetchData(item, showAlert, onDelete)))
       .then(data => {
         const tmpDataSouce = {};
         data.forEach(item => {
