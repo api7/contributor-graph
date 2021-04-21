@@ -41,6 +41,11 @@ type ErrorWithCode struct {
 	Code int
 }
 
+type GraphTraffic struct {
+	Num              int
+	LastModifiedTime time.Time
+}
+
 var (
 	DBName       = "contributor"
 	RepoDBName   = "Repo"

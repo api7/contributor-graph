@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -115,7 +114,7 @@ func getContributorSVG(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("content-type", "image/svg+xml;charset=utf-8")
 	w.Header().Add("cache-control", "public, max-age=86400")
 
-	svg, err := subGetSVG(w, repo)
+	svg, err := graph.SubGetSVG(w, repo)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err.Error())
@@ -128,7 +127,7 @@ func getContributorSVG(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode(err.Error())
 			return
 		}
-		svg, err = subGetSVG(w, repo)
+		svg, err = graph.SubGetSVG(w, repo)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(err.Error())
@@ -189,17 +188,4 @@ func refreshMonthly(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(returnConObj{Code: code, ErrorMessage: err.Error()})
 		return
 	}
-}
-
-func subGetSVG(w http.ResponseWriter, repo string) (string, error) {
-	resp, err := http.Get("https://storage.googleapis.com/api7-301102.appspot.com/" + utils.RepoNameToFileName(repo) + ".svg")
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	svg, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-	return string(svg), nil
 }
