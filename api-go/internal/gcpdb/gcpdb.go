@@ -146,6 +146,10 @@ func MultiCon(repoInput string) ([]utils.ReturnCon, int, error) {
 		conLists = append(conLists, &utils.ConList{name, time})
 	}
 
+	sort.SliceStable(conLists, func(i, j int) bool {
+		return conLists[i].Date.Before(conLists[j].Date)
+	})
+
 	formattedCons, code, err := ghapi.FormatCommits(context.Background(), conLists)
 	if err != nil {
 		return nil, code, err
