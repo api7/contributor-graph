@@ -252,8 +252,6 @@ func updateContributorList(
 			bar.Add(1)
 		}
 	}
-	fmt.Println(len(commitLists))
-	panic("STOP")
 
 	// at most write 500 entities in a single call
 	rangeMax := 500
