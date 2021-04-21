@@ -394,23 +394,25 @@ const ContributorLineChart = ({
                 </Col>
               </Row>
             </Tab.Container>
-            <div>
-              <p>
-                You can include the chart on your repository's README.md as
-                follows:
-              </p>
-              <SyntaxHighlighter language="markdown" style={a11yDark}>
-                {`
+            {Boolean(repoList.length) && (
+              <div>
+                <p>
+                  You can include the chart on your repository's README.md as
+                  follows:
+                </p>
+                <SyntaxHighlighter language="markdown" style={a11yDark}>
+                  {`
 ## Contributor over time
 
 [![Contributor over time](https://contributor-graph-api.apiseven.com/contributors-svg?repo=${repoList.join(
-                  ","
-                )})](https://www.apiseven.com/en/contributor-graph?repo=${repoList.join(
-                  ","
-                )})
+                    ","
+                  )})](https://www.apiseven.com/en/contributor-graph?repo=${repoList.join(
+                    ","
+                  )})
 `}
-              </SyntaxHighlighter>
-            </div>
+                </SyntaxHighlighter>
+              </div>
+            )}
           </div>
         </div>
       </div>
