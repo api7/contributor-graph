@@ -6,12 +6,14 @@ import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
 
 import CompareComponent from "../compare";
-import {
-  DEFAULT_ACTIVITY_OPTIONS,
-  DEFAULT_COLOR,
-} from "../../constants";
+import { DEFAULT_ACTIVITY_OPTIONS, DEFAULT_COLOR } from "../../constants";
 
-const ActivityChart = ({ repoList = ["apache/apisix"], showAlert,onDelete }) => {
+const ActivityChart = ({
+  repoList = ["apache/apisix"],
+  showAlert,
+  onDelete,
+  onLoading
+}) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [xAxis] = React.useState(["1970-01-01"]);
@@ -136,14 +138,13 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert,onDelete }) => 
     if (repo === "null" || repo === null) {
       repo = "apache/apisix";
     }
-    setLoading(true);
-
     return new Promise((resolve, reject) => {
       fetch(
         `https://contributor-graph-api.apiseven.com/monthly-contributor?repo=${repo}`
       )
         .then(response => {
           if (!response.ok) {
+            onDelete(repo);
             let message = "";
             switch (response.status) {
               case 403:
@@ -161,12 +162,10 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert,onDelete }) => 
           return response.json();
         })
         .then(myJson => {
-          setLoading(false);
           resolve({ repo, ...myJson });
         })
         .catch(e => {
           showAlert(e, "error");
-          setLoading(false);
           reject();
         });
     });
@@ -174,26 +173,35 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert,onDelete }) => 
 
   const updateChart = repo => {
     if (dataSource[repo]) return;
+    setLoading(true);
+    fetchData(repo)
+      .then(myJson => {
+        const { Contributors = [] } = myJson;
+        const data = Contributors.map(item => ({
+          repo,
+          contributorNum: item.Num,
+          date: item.Month
+        }));
 
-    fetchData(repo).then(myJson => {
-      const { Contributors = [] } = myJson;
-      const data = Contributors.map(item => ({
-        repo,
-        contributorNum: item.Num,
-        date: item.Month
-      }));
-
-      const clonedDatasource = cloneDeep(dataSource);
-      if (!clonedDatasource[repo]) {
-        setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
-      }
-    });
+        const clonedDatasource = cloneDeep(dataSource);
+        if (!clonedDatasource[repo]) {
+          setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
   };
 
   React.useEffect(() => {
     updateSeries(xAxis);
     window.parent.postMessage({ legend: Object.keys(dataSource) }, "*");
   }, [dataSource, xAxis]);
+
+  React.useEffect(() => {
+    onLoading(loading);
+  }, [loading]);
 
   React.useEffect(() => {
     const datasourceList = Object.keys(dataSource);
@@ -209,26 +217,31 @@ const ActivityChart = ({ repoList = ["apache/apisix"], showAlert,onDelete }) => 
     }
 
     const updateList = repoList.filter(item => !datasourceList.includes(item));
+    setLoading(true);
+    Promise.all(updateList.map(item => fetchData(item)))
+      .then(data => {
+        const tmpDataSouce = {};
+        data.forEach(item => {
+          const { Contributors = [], repo } = item;
 
-    Promise.all(updateList.map(item => fetchData(item))).then(data => {
-      const tmpDataSouce = {};
-      data.forEach(item => {
-        const { Contributors = [], repo } = item;
+          const data = Contributors.map(item => ({
+            repo,
+            contributorNum: item.Num,
+            date: item.Month
+          }));
 
-        const data = Contributors.map(item => ({
-          repo,
-          contributorNum: item.Num,
-          date: item.Month
-        }));
+          if (!tmpDataSouce[item.repo]) {
+            tmpDataSouce[repo] = data;
+          }
+        });
 
-        if (!tmpDataSouce[item.repo]) {
-          tmpDataSouce[repo] = data;
-        }
+        const clonedDatasource = cloneDeep(dataSource);
+        setDataSource({ ...clonedDatasource, ...tmpDataSouce });
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
       });
-
-      const clonedDatasource = cloneDeep(dataSource);
-      setDataSource({ ...clonedDatasource, ...tmpDataSouce });
-    });
   }, [repoList]);
 
   return (

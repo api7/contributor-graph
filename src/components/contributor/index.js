@@ -15,7 +15,8 @@ import { DEFAULT_OPTIONS } from "../../constants";
 const ContributorLineChart = ({
   repoList = ["apache/apisix"],
   showAlert,
-  onDelete
+  onDelete,
+  onLoading
 }) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
@@ -92,14 +93,13 @@ const ContributorLineChart = ({
     if (repo === "null" || repo === null) {
       repo = "apache/apisix";
     }
-    setLoading(true);
-
     return new Promise((resolve, reject) => {
       fetch(
         `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
       )
         .then(response => {
           if (!response.ok) {
+            onDelete(repo);
             let message = "";
             switch (response.status) {
               case 403:
@@ -165,12 +165,10 @@ const ContributorLineChart = ({
               index === processContributors.length - 1 ||
               new Date(item.date).getDate() % 10 === 5
           );
-          setLoading(false);
           resolve({ repo, ...{ Contributors: filterData } });
         })
         .catch(e => {
           showAlert(e, "error");
-          setLoading(false);
           reject();
         });
     });
@@ -178,20 +176,25 @@ const ContributorLineChart = ({
 
   const updateChart = repo => {
     if (dataSource[repo]) return;
+    setLoading(true);
+    fetchData(repo)
+      .then(myJson => {
+        const { Contributors = [] } = myJson;
+        const data = Contributors.map(item => ({
+          repo,
+          contributorNum: item.idx,
+          date: item.date
+        }));
 
-    fetchData(repo).then(myJson => {
-      const { Contributors = [] } = myJson;
-      const data = Contributors.map(item => ({
-        repo,
-        contributorNum: item.idx,
-        date: item.date
-      }));
-
-      const clonedDatasource = cloneDeep(dataSource);
-      if (!clonedDatasource[repo]) {
-        setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
-      }
-    });
+        const clonedDatasource = cloneDeep(dataSource);
+        if (!clonedDatasource[repo]) {
+          setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
+      });
   };
 
   React.useEffect(() => {
@@ -227,6 +230,10 @@ const ContributorLineChart = ({
   }, [dataSource, xAxis]);
 
   React.useEffect(() => {
+    onLoading(loading);
+  }, [loading]);
+
+  React.useEffect(() => {
     const datasourceList = Object.keys(dataSource);
 
     if (datasourceList.length > repoList.length) {
@@ -240,25 +247,30 @@ const ContributorLineChart = ({
 
     const updateList = repoList.filter(item => !datasourceList.includes(item));
 
-    Promise.all(updateList.map(item => fetchData(item))).then(data => {
-      const tmpDataSouce = {};
-      data.forEach(item => {
-        const { Contributors = [], repo } = item;
+    setLoading(true);
+    Promise.all(updateList.map(item => fetchData(item)))
+      .then(data => {
+        const tmpDataSouce = {};
+        data.forEach(item => {
+          const { Contributors = [], repo } = item;
+          const data = Contributors.map(item => ({
+            repo,
+            contributorNum: item.idx,
+            date: item.date
+          }));
 
-        const data = Contributors.map(item => ({
-          repo,
-          contributorNum: item.idx,
-          date: item.date
-        }));
+          if (!tmpDataSouce[item.repo]) {
+            tmpDataSouce[repo] = data;
+          }
+        });
 
-        if (!tmpDataSouce[item.repo]) {
-          tmpDataSouce[repo] = data;
-        }
+        const clonedDatasource = cloneDeep(dataSource);
+        setDataSource({ ...clonedDatasource, ...tmpDataSouce });
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoading(false);
       });
-
-      const clonedDatasource = cloneDeep(dataSource);
-      setDataSource({ ...clonedDatasource, ...tmpDataSouce });
-    });
   }, [repoList]);
 
   return (
@@ -374,23 +386,25 @@ const ContributorLineChart = ({
                 </Col>
               </Row>
             </Tab.Container>
-            <div>
-              <p>
-                You can include the chart on your repository's README.md as
-                follows:
-              </p>
-              <SyntaxHighlighter language="markdown" style={a11yDark}>
-                {`
+            {Boolean(repoList.length) && (
+              <div>
+                <p>
+                  You can include the chart on your repository's README.md as
+                  follows:
+                </p>
+                <SyntaxHighlighter language="markdown" style={a11yDark}>
+                  {`
 ## Contributor over time
 
 [![Contributor over time](https://contributor-graph-api.apiseven.com/contributors-svg?repo=${repoList.join(
-                  ","
-                )})](https://www.apiseven.com/en/contributor-graph?repo=${repoList.join(
-                  ","
-                )})
+                    ","
+                  )})](https://www.apiseven.com/en/contributor-graph?repo=${repoList.join(
+                    ","
+                  )})
 `}
-              </SyntaxHighlighter>
-            </div>
+                </SyntaxHighlighter>
+              </div>
+            )}
           </div>
         </div>
       </div>
