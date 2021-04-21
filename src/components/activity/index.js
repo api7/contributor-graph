@@ -11,7 +11,8 @@ import { DEFAULT_ACTIVITY_OPTIONS, DEFAULT_COLOR } from "../../constants";
 const ActivityChart = ({
   repoList = ["apache/apisix"],
   showAlert,
-  onDelete
+  onDelete,
+  onLoading
 }) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
@@ -196,6 +197,10 @@ const ActivityChart = ({
     updateSeries(xAxis);
     window.parent.postMessage({ legend: Object.keys(dataSource) }, "*");
   }, [dataSource, xAxis]);
+
+  React.useEffect(()=>{
+    onLoading(loading);
+  },[loading]);
 
   React.useEffect(() => {
     const datasourceList = Object.keys(dataSource);

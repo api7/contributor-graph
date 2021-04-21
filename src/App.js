@@ -99,6 +99,7 @@ const App = () => {
   const [contributorRepoList, setContributorRepoList] = React.useState([]);
   const classesTable = useTabStyles();
   const [value, setValue] = React.useState(0);
+  const [tabdisabled, setTabDisabled] = React.useState(false);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -260,11 +261,13 @@ const App = () => {
                     style={{ textTransform: "none" }}
                     label="Contributor Over Time"
                     {...a11yProps(0)}
+                    disabled={tabdisabled}
                   />
                   <Tab
                     style={{ textTransform: "none" }}
                     label="Monthly Active Contributors"
                     {...a11yProps(1)}
+                    disabled={tabdisabled}
                   />
                 </Tabs>
               </Paper>
@@ -273,6 +276,9 @@ const App = () => {
               <ContirbutorLineChart
                 repoList={contributorRepoList}
                 showAlert={showAlert}
+                onLoading={(e)=>{
+                  setTabDisabled(e);
+                }}
                 onDelete={e => {
                   setContributorRepoList(
                     contributorRepoList.filter(item => item !== e)
@@ -284,6 +290,9 @@ const App = () => {
               <ActivityChart
                 repoList={contributorRepoList}
                 showAlert={showAlert}
+                onLoading={(e)=>{
+                  setTabDisabled(e);
+                }}
                 onDelete={e => {
                   setContributorRepoList(
                     contributorRepoList.filter(item => item !== e)
