@@ -42,8 +42,8 @@ type ErrorWithCode struct {
 }
 
 type GraphTraffic struct {
-	Num              int
-	LastModifiedTime time.Time
+	Num           int
+	LastVisitTime time.Time
 }
 
 var (
