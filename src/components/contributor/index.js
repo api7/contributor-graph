@@ -3,6 +3,9 @@ import cloneDeep from "lodash.clonedeep";
 import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
+import moment from "moment";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 import CompareComponent from "../../components/compare";
 import { Button, ButtonGroup } from "@material-ui/core";
@@ -64,6 +67,7 @@ const ContributorLineChart = ({
       type: "line",
       datasetId: item,
       showSymbol: false,
+      smooth: true,
       encode: {
         x: "Date",
         y: "ContributorNum",
@@ -113,7 +117,55 @@ const ContributorLineChart = ({
           return response.json();
         })
         .then(myJson => {
-          resolve({ repo, ...myJson });
+          const { Contributors = [] } = myJson;
+          const sortContributors = Contributors.map(item => ({
+            ...item,
+            date: item.date.substring(0, 10)
+          })).sort(
+            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+          );
+          if (
+            !isSameDay(
+              new Date(sortContributors[sortContributors.length - 1].date),
+              new Date()
+            )
+          ) {
+            sortContributors.push({
+              repo,
+              idx: sortContributors[sortContributors.length - 1].idx,
+              date: moment(new Date()).format("YYYY-MM-DD")
+            });
+          }
+
+          const processContributors = [];
+          sortContributors.forEach((item, index) => {
+            processContributors.push(item);
+
+            if (index !== sortContributors.length - 1) {
+              const diffDays = moment(sortContributors[index + 1].date).diff(
+                item.date,
+                "days"
+              );
+              if (diffDays > 1) {
+                for (let index = 1; index < diffDays; index++) {
+                  processContributors.push({
+                    ...item,
+                    date: moment(item.date)
+                      .add(index, "days")
+                      .format()
+                      .substring(0, 10)
+                  });
+                }
+              }
+            }
+          });
+          const filterData = processContributors.filter(
+            (item, index) =>
+              index === 0 ||
+              index === processContributors.length - 1 ||
+              new Date(item.date).getDate() % 10 === 5
+          );
+          resolve({ repo, ...{ Contributors: filterData } });
         })
         .catch(e => {
           showAlert(e, "error");
@@ -196,7 +248,6 @@ const ContributorLineChart = ({
       const deleteList = datasourceList.filter(
         item => !repoList.includes(item)
       );
-      console.log("deleteList: ", deleteList);
       const clonedDatasource = cloneDeep(dataSource);
       setDataSource(omit(clonedDatasource, deleteList));
       return;
@@ -210,20 +261,11 @@ const ContributorLineChart = ({
         const tmpDataSouce = {};
         data.forEach(item => {
           const { Contributors = [], repo } = item;
-
           const data = Contributors.map(item => ({
             repo,
             contributorNum: item.idx,
             date: item.date
           }));
-
-          if (!isSameDay(new Date(data[data.length - 1].date), new Date())) {
-            data.push({
-              repo,
-              contributorNum: Contributors[Contributors.length - 1].idx,
-              date: new Date()
-            });
-          }
 
           if (!tmpDataSouce[item.repo]) {
             tmpDataSouce[repo] = data;
@@ -352,6 +394,23 @@ const ContributorLineChart = ({
                 </Col>
               </Row>
             </Tab.Container>
+            <div>
+              <p>
+                You can include the chart on your repository's README.md as
+                follows:
+              </p>
+              <SyntaxHighlighter language="markdown" style={a11yDark}>
+                {`
+## Contributor over time
+
+[![Contributor over time](https://contributor-graph-api.apiseven.com/contributors-svg?repo=${repoList.join(
+                  ","
+                )})](https://www.apiseven.com/en/contributor-graph?repo=${repoList.join(
+                  ","
+                )})
+`}
+              </SyntaxHighlighter>
+            </div>
           </div>
         </div>
       </div>
