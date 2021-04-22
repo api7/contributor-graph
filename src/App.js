@@ -127,6 +127,10 @@ const App = () => {
   };
 
   const updateChart = repo => {
+    const index = ALLOW_MERGE_LIST.findIndex(item => repo.includes(item));
+    if (index === -1) {
+      setMergeStatus(false);
+    } 
     if (!contributorRepoList.includes(repo)) {
       setContributorRepoList([...contributorRepoList, repo]);
     }
@@ -181,8 +185,10 @@ const App = () => {
       setShowMergeButton(true);
     } else {
       setShowMergeButton(false);
+      setMergeStatus(false);
     }
     if (contributorRepoList.length === 0) {
+      setMergeStatus(false);
       setShowMergeButton(false);
     }
   }, [repo, contributorRepoList]);
