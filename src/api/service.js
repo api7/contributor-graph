@@ -3,6 +3,7 @@ export const getGithubRepoList = searchText => {
   return new Promise((resolve, reject) => {
     if (cacheRepoList[searchText]) {
       resolve(cacheRepoList[searchText]);
+      return;
     }
     fetch(`https://api.github.com/search/repositories?q=${searchText}`)
       .then(response => {
