@@ -198,7 +198,6 @@ const App = () => {
     if (repo.includes("apisix")) {
       setMergeRepo("apache/apisix");
     }
-
   }, [repo, contributorRepoList]);
 
   return (
@@ -273,7 +272,7 @@ const App = () => {
                   <SearchIcon />
                 </IconButton>
               </Paper>
-              {Boolean(showMergeButton) && (
+              {Boolean(!value) && Boolean(showMergeButton) && (
                 <Button
                   variant="contained"
                   color="primary"
@@ -284,7 +283,7 @@ const App = () => {
                   style={{ width: "260px" }}
                 >
                   {Boolean(!mergeStatus)
-                    ? `View all views related to ${
+                    ? `View all repos related to ${
                         repo.includes("skywalking")
                           ? "apache/skywalking"
                           : "apache/apisix"
