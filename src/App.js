@@ -290,7 +290,7 @@ const App = () => {
                   onClick={() => {
                     setMergeStatus(!mergeStatus);
                   }}
-                  style={{ width: "260px" }}
+                  style={{ width: "260px",marginLeft: "8px" }}
                 >
                   {Boolean(!mergeStatus)
                     ? `View all repos related to ${
