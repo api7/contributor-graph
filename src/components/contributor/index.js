@@ -201,7 +201,6 @@ const ContributorLineChart = ({
             <CompareComponent
               list={Object.keys(dataSource)}
               onDelete={e => {
-                if (isMerge) return;
                 const clonedDataSource = cloneDeep(dataSource);
                 const newDataSource = omit(clonedDataSource, [e]);
                 setDataSource(newDataSource);

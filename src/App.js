@@ -290,7 +290,7 @@ const App = () => {
                   onClick={() => {
                     setMergeStatus(!mergeStatus);
                   }}
-                  style={{ width: "260px",marginLeft: "8px" }}
+                  style={{ width: "260px", marginLeft: "8px" }}
                 >
                   {Boolean(!mergeStatus)
                     ? `View all repos related to ${
@@ -347,6 +347,10 @@ const App = () => {
                   setTabDisabled(e);
                 }}
                 onDelete={e => {
+                  if (mergeStatus) {
+                    setMergeStatus(false);
+                    return;
+                  }
                   setContributorRepoList(
                     contributorRepoList.filter(item => item !== e)
                   );
