@@ -5,18 +5,18 @@ export const getGithubRepoList = searchText => {
       resolve(cacheRepoList[searchText]);
       return;
     }
-    fetch(`https://api.github.com/search/repositories?q=${searchText}`)
+    const queryString = "q=" + encodeURIComponent(`${searchText} org:apache`);
+
+    fetch(`https://api.github.com/search/repositories?${queryString}`)
       .then(response => {
         return response.json();
       })
       .then(myJson => {
-        const filteredData = myJson.items
-          .filter(item => item.full_name.startsWith(searchText))
-          .map(item => item.full_name);
+        const filterdData = myJson.items.map(item => item.full_name);
         if (!cacheRepoList[searchText]) {
-          cacheRepoList[searchText] = filteredData;
+          cacheRepoList[searchText] = filterdData;
         }
-        resolve(filteredData);
+        resolve(filterdData);
       })
       .catch(e => {
         reject();
