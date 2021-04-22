@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"cloud.google.com/go/datastore"
@@ -32,6 +33,7 @@ func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 	defer dbCli.Close()
 
 	var repos []string
+	var isSearch bool
 	if repoInput == "" {
 		repos, err = getUpdateRepoList(ctx, dbCli)
 		if err != nil {
@@ -39,6 +41,7 @@ func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 		}
 	} else {
 		repos = []string{strings.ToLower(repoInput)}
+		isSearch = true
 	}
 
 	var conLists []*utils.ConList
@@ -89,7 +92,7 @@ func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 				lastPage = resp.LastPage
 			}
 
-			newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, conMap, repoName, lastPage, listCommitOpts)
+			newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, conMap, repoName, lastPage, listCommitOpts, isSearch)
 			if err != nil {
 				return nil, code, err
 			}
@@ -146,6 +149,10 @@ func MultiCon(repoInput string) ([]utils.ReturnCon, int, error) {
 		conLists = append(conLists, &utils.ConList{name, time})
 	}
 
+	sort.SliceStable(conLists, func(i, j int) bool {
+		return conLists[i].Date.Before(conLists[j].Date)
+	})
+
 	formattedCons, code, err := ghapi.FormatCommits(context.Background(), conLists)
 	if err != nil {
 		return nil, code, err
@@ -174,27 +181,72 @@ func updateContributorList(
 	repoName string,
 	lastPage int,
 	listCommitOpts *github.CommitsListOptions,
+	isSearch bool,
 ) ([]*utils.ConList, int, error) {
+	var commitLists []*utils.ConList
 	bar := progressbar.Default(int64(lastPage + 1))
 
-	var commitLists []*utils.ConList
+	parallelLimit := 1
+	if isSearch {
+		parallelLimit = 100
+	}
+
+	errCh := make(chan utils.ErrorWithCode, lastPage+1)
+	comList := make([]*[]*github.RepositoryCommit, lastPage+1)
+
+	var wg sync.WaitGroup
+	guard := make(chan int, parallelLimit)
 	for i := lastPage; i >= 0; i-- {
-		listCommitOpts.Page = i
-		commits, _, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
-		if err != nil {
-			return nil, statusCode, err
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			guard <- 1
+			// could not directly pass listCommitOpts since `Page` would be changed in different goroutine
+			optsGoroutine := *listCommitOpts
+			optsGoroutine.Page = i
+			commits, _, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, &optsGoroutine)
+			if err != nil {
+				errCh <- utils.ErrorWithCode{err, statusCode}
+				return
+			}
+			comList[i] = &commits
+			bar.Add(1)
+			<-guard
+		}(i)
+	}
+	wg.Wait()
+
+	close(errCh)
+
+	for err := range errCh {
+		if _, ok := err.Err.(*github.RateLimitError); ok {
+			return nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
+		} else {
+			return nil, err.Code, err.Err
 		}
+	}
+	for i := range comList {
+		commits := *comList[len(comList)-i-1]
 		for j := len(commits) - 1; j >= 0; j-- {
 			if commits[j].GetAuthor() != nil {
 				commitAuthor := commits[j].GetAuthor().GetLogin()
 				commitTime := commits[j].GetCommit().GetAuthor().GetDate()
 				if _, ok := conMap[commitAuthor]; !ok {
 					conMap[commitAuthor] = commitTime
-					commitLists = append(commitLists, &utils.ConList{commitAuthor, commitTime})
 				}
 			}
 		}
-		bar.Add(1)
+	}
+	for name, time := range conMap {
+		commitLists = append(commitLists, &utils.ConList{name, time})
+	}
+
+	sort.SliceStable(commitLists, func(i, j int) bool {
+		return commitLists[i].Date.Before(commitLists[j].Date)
+	})
+
+	for _, c := range commitLists {
+		fmt.Printf("%s %s\n", c.Date.String(), c.Author)
 	}
 
 	// at most write 500 entities in a single call

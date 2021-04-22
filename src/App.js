@@ -99,6 +99,7 @@ const App = () => {
   const [contributorRepoList, setContributorRepoList] = React.useState([]);
   const classesTable = useTabStyles();
   const [value, setValue] = React.useState(0);
+  const [tabdisabled, setTabDisabled] = React.useState(false);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -191,7 +192,7 @@ const App = () => {
             className="search-container"
             style={{ display: "flex", justifyContent: "center" }}
           >
-            <Paper className={classes.root} elevation>
+            <Paper className={classes.root} elevation={0}>
               <Autocomplete
                 freeSolo
                 className={classes.autocomplete}
@@ -246,7 +247,7 @@ const App = () => {
                 justifyContent: "center"
               }}
             >
-              <Paper color="default" elevation>
+              <Paper color="default" elevation={0}>
                 <Tabs
                   value={value}
                   onChange={handleChange}
@@ -255,17 +256,18 @@ const App = () => {
                   indicatorColor="primary"
                   textColor="primary"
                   aria-label="scrollable force tabs example"
-                  centered
                 >
                   <Tab
                     style={{ textTransform: "none" }}
                     label="Contributor Over Time"
                     {...a11yProps(0)}
+                    disabled={tabdisabled}
                   />
                   <Tab
                     style={{ textTransform: "none" }}
                     label="Monthly Active Contributors"
                     {...a11yProps(1)}
+                    disabled={tabdisabled}
                   />
                 </Tabs>
               </Paper>
@@ -274,6 +276,9 @@ const App = () => {
               <ContirbutorLineChart
                 repoList={contributorRepoList}
                 showAlert={showAlert}
+                onLoading={(e)=>{
+                  setTabDisabled(e);
+                }}
                 onDelete={e => {
                   setContributorRepoList(
                     contributorRepoList.filter(item => item !== e)
@@ -285,6 +290,9 @@ const App = () => {
               <ActivityChart
                 repoList={contributorRepoList}
                 showAlert={showAlert}
+                onLoading={(e)=>{
+                  setTabDisabled(e);
+                }}
                 onDelete={e => {
                   setContributorRepoList(
                     contributorRepoList.filter(item => item !== e)
