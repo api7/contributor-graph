@@ -157,7 +157,7 @@ const App = () => {
 
   React.useEffect(() => {
     getSearchOptions();
-    const repo = getParameterByName("repo");
+    const repo = getParameterByName("repo") || "apache/apisix";
     const chart = getParameterByName("chart");
     if (chart === "contributorMonthlyActivity") {
       setValue(1);

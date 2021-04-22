@@ -18,7 +18,7 @@ const ContributorLineChart = ({
   onDelete,
   onLoading,
   isMerge = false,
-  mergeRepo = "",
+  mergeRepo = ""
 }) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
@@ -306,11 +306,11 @@ const ContributorLineChart = ({
                   {`
 ## Contributor over time
 
-[![Contributor over time](https://contributor-graph-api.apiseven.com/contributors-svg?repo=${repoList.join(
-                    ","
-                  )})](https://www.apiseven.com/en/contributor-graph?repo=${repoList.join(
-                    ","
-                  )})
+[![Contributor over time](https://contributor-graph-api.apiseven.com/contributors-svg?repo=${
+                    isMerge ? mergeRepo + "&merge=true" : repoList.join(",")
+                  })](https://www.apiseven.com/en/contributor-graph?repo=${
+                    isMerge ? mergeRepo + "&merge=true" : repoList.join(",")
+                  })
 `}
                 </SyntaxHighlighter>
               </div>
