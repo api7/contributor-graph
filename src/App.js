@@ -156,10 +156,21 @@ const App = () => {
   };
 
   React.useEffect(() => {
+    getSearchOptions();
     const repo = getParameterByName("repo");
     const chart = getParameterByName("chart");
     if (chart === "contributorMonthlyActivity") {
       setValue(1);
+    } else {
+      const merge = getParameterByName("merge");
+      setRepo(repo);
+      const index = ALLOW_MERGE_LIST.findIndex(item => repo.includes(item));
+      if (merge === "true" && index !== -1) {
+        setTimeout(() => {
+          setMergeStatus(true);
+          setShowMergeButton(true);
+        }, 500);
+      }
     }
     if (repo) {
       const repoArr = repo.split(",").filter(Boolean);
@@ -167,7 +178,6 @@ const App = () => {
     } else {
       setContributorRepoList(["apache/apisix"]);
     }
-    getSearchOptions();
   }, []);
 
   React.useEffect(() => {
@@ -330,7 +340,7 @@ const App = () => {
             <TabPanel value={value} index={0}>
               <ContirbutorLineChart
                 repoList={contributorRepoList}
-                mode={!mergeStatus ? "normal" : "merge"}
+                isMerge={mergeStatus}
                 mergeRepo={mergeRepo}
                 showAlert={showAlert}
                 onLoading={e => {

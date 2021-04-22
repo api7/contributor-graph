@@ -14,11 +14,11 @@ import { fetchData, fetchMergeContributor } from "./service";
 
 const ContributorLineChart = ({
   repoList = ["apache/apisix"],
-  mergeRepo = "",
   showAlert,
   onDelete,
   onLoading,
-  mode = "normal"
+  isMerge = false,
+  mergeRepo = "",
 }) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
@@ -137,7 +137,7 @@ const ContributorLineChart = ({
       return;
     }
 
-    if (mode === "normal") {
+    if (!isMerge) {
       setLoading(true);
       Promise.all(repoList.map(item => fetchData(item, showAlert, onDelete)))
         .then(data => {
@@ -185,7 +185,7 @@ const ContributorLineChart = ({
           setLoading(false);
         });
     }
-  }, [repoList, mode]);
+  }, [repoList, isMerge]);
 
   return (
     <>
