@@ -93,6 +93,7 @@ const ContributorLineChart = ({ repoList = ["apache/apisix"], showAlert, onDelet
         .then(response => {
           if (!response.ok) {
             let message = "";
+            window.echartErrorJson = response;
             switch (response.status) {
               case 403:
                 message = "Hit rate limit";
