@@ -105,6 +105,7 @@ const App = () => {
   const [tabdisabled, setTabDisabled] = React.useState(false);
   const [showMergeButton, setShowMergeButton] = React.useState(false);
   const [mergeStatus, setMergeStatus] = React.useState(false);
+  const [mergeRepo, setMergeRepo] = React.useState("apache/apisix");
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -130,7 +131,7 @@ const App = () => {
     const index = ALLOW_MERGE_LIST.findIndex(item => repo.includes(item));
     if (index === -1) {
       setMergeStatus(false);
-    } 
+    }
     if (!contributorRepoList.includes(repo)) {
       setContributorRepoList([...contributorRepoList, repo]);
     }
@@ -191,25 +192,15 @@ const App = () => {
       setMergeStatus(false);
       setShowMergeButton(false);
     }
+    if (repo.includes("skywalking")) {
+      setMergeRepo("apache/skywalking");
+    }
+    if (repo.includes("apisix")) {
+      setMergeRepo("apache/apisix");
+    }
+
   }, [repo, contributorRepoList]);
 
-  React.useEffect(() => {
-    if (mergeStatus) {
-      if (repo.includes("skywalking")) {
-        setContributorRepoList(["apache/skywalking"]);
-      }
-      if (repo.includes("apisix")) {
-        setContributorRepoList(["apache/apisix"]);
-      }
-    } else {
-      if (repo.includes("skywalking")) {
-        setContributorRepoList(["apache/skywalking"]);
-      }
-      if (repo.includes("apisix")) {
-        setContributorRepoList(["apache/apisix"]);
-      }
-    }
-  }, [mergeStatus]);
   return (
     <>
       <Snackbar
@@ -341,6 +332,7 @@ const App = () => {
               <ContirbutorLineChart
                 repoList={contributorRepoList}
                 mode={!mergeStatus ? "normal" : "merge"}
+                mergeRepo={mergeRepo}
                 showAlert={showAlert}
                 onLoading={e => {
                   setTabDisabled(e);

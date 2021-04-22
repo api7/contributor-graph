@@ -14,6 +14,7 @@ import { fetchData, fetchMergeContributor } from "./service";
 
 const ContributorLineChart = ({
   repoList = ["apache/apisix"],
+  mergeRepo = "",
   showAlert,
   onDelete,
   onLoading,
@@ -161,10 +162,9 @@ const ContributorLineChart = ({
           setLoading(false);
         });
     } else {
-      if (!repoList.length) return;
+      if (!mergeRepo.length) return;
       setLoading(true);
-      const repo = repoList[0];
-      fetchMergeContributor(repo, showAlert, onDelete)
+      fetchMergeContributor(mergeRepo, showAlert, onDelete)
         .then(_data => {
           const tmpDataSouce = {};
           const { Contributors = [], repo } = _data;
