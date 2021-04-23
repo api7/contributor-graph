@@ -9,6 +9,7 @@ import Tab from "@material-ui/core/Tab";
 import PropTypes from "prop-types";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
+import Button from "@material-ui/core/Button";
 
 import ContirbutorLineChart from "./components/contributor";
 import ActivityChart from "./components/activity";
@@ -17,6 +18,8 @@ import { getParameterByName } from "./utils";
 const Alert = props => {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 };
+
+const ALLOW_MERGE_LIST = ["skywalking", "apisix"];
 
 const useStyles = makeStyles(theme => ({
   button: {
@@ -99,6 +102,10 @@ const App = () => {
   const [contributorRepoList, setContributorRepoList] = React.useState([]);
   const classesTable = useTabStyles();
   const [value, setValue] = React.useState(0);
+  const [tabdisabled, setTabDisabled] = React.useState(false);
+  const [showMergeButton, setShowMergeButton] = React.useState(false);
+  const [mergeStatus, setMergeStatus] = React.useState(false);
+  const [mergeRepo, setMergeRepo] = React.useState("apache/apisix");
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -121,6 +128,10 @@ const App = () => {
   };
 
   const updateChart = repo => {
+    const index = ALLOW_MERGE_LIST.findIndex(item => repo.includes(item));
+    if (index === -1) {
+      setMergeStatus(false);
+    }
     if (!contributorRepoList.includes(repo)) {
       setContributorRepoList([...contributorRepoList, repo]);
     }
@@ -145,10 +156,21 @@ const App = () => {
   };
 
   React.useEffect(() => {
-    const repo = getParameterByName("repo");
+    getSearchOptions();
+    const repo = getParameterByName("repo") || "apache/apisix";
     const chart = getParameterByName("chart");
     if (chart === "contributorMonthlyActivity") {
       setValue(1);
+    } else {
+      const merge = getParameterByName("merge");
+      setRepo(repo);
+      const index = ALLOW_MERGE_LIST.findIndex(item => repo.includes(item));
+      if (merge === "true" && index !== -1) {
+        setTimeout(() => {
+          setMergeStatus(true);
+          setShowMergeButton(true);
+        }, 500);
+      }
     }
     if (repo) {
       const repoArr = repo.split(",").filter(Boolean);
@@ -156,7 +178,6 @@ const App = () => {
     } else {
       setContributorRepoList(["apache/apisix"]);
     }
-    getSearchOptions();
   }, []);
 
   React.useEffect(() => {
@@ -168,6 +189,26 @@ const App = () => {
       "*"
     );
   }, [value]);
+
+  React.useEffect(() => {
+    const index = ALLOW_MERGE_LIST.findIndex(item => repo.includes(item));
+    if (index !== -1) {
+      setShowMergeButton(true);
+    } else {
+      setShowMergeButton(false);
+      setMergeStatus(false);
+    }
+    if (contributorRepoList.length === 0) {
+      setMergeStatus(false);
+      setShowMergeButton(false);
+    }
+    if (repo.includes("skywalking")) {
+      setMergeRepo("apache/skywalking");
+    }
+    if (repo.includes("apisix")) {
+      setMergeRepo("apache/apisix");
+    }
+  }, [repo, contributorRepoList]);
 
   return (
     <>
@@ -187,55 +228,80 @@ const App = () => {
         style={{ display: "flex", justifyContent: "center" }}
       >
         <div className="right" style={{ width: "90%", marginTop: "10px" }}>
-          <div
-            className="search-container"
-            style={{ display: "flex", justifyContent: "center" }}
-          >
-            <Paper className={classes.root} elevation>
-              <Autocomplete
-                freeSolo
-                className={classes.autocomplete}
-                size="small"
-                id="autocomplete"
-                disableClearable
-                options={searchOption}
-                onInputChange={(event, value, reason) => {
-                  if (reason === "reset") {
-                    setRepo(value);
-                    updateChart(value);
-                  }
-                }}
-                renderInput={params => (
-                  <TextField
-                    {...params}
-                    label="Search Github Repository Name"
-                    margin="normal"
-                    variant="outlined"
-                    helperText="Keep searching to complete the comparison"
-                    className={classes.searchTextField}
-                    onChange={e => {
-                      setRepo(e.target.value);
-                    }}
-                    onKeyPress={ev => {
-                      if (ev.key === "Enter") {
-                        updateChart(repo);
-                        ev.preventDefault();
-                      }
-                    }}
-                    InputProps={{ ...params.InputProps, type: "search" }}
-                  />
-                )}
-              />
-              <IconButton
-                className={classes.iconButton}
-                aria-label="search"
-                onClick={() => {
-                  updateChart(repo);
-                }}
-              >
-                <SearchIcon />
-              </IconButton>
-            </Paper>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <div
+              className="search-container"
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                flexDirection: "column"
+              }}
+            >
+              <Paper className={classes.root} elevation={0}>
+                <Autocomplete
+                  freeSolo
+                  className={classes.autocomplete}
+                  size="small"
+                  id="autocomplete"
+                  disableClearable
+                  options={searchOption}
+                  onInputChange={(event, value, reason) => {
+                    if (reason === "reset") {
+                      setRepo(value);
+                      updateChart(value);
+                    }
+                  }}
+                  renderInput={params => (
+                    <TextField
+                      {...params}
+                      label="Search Github Repository Name"
+                      margin="normal"
+                      variant="outlined"
+                      helperText="Keep searching to complete the comparison"
+                      className={classes.searchTextField}
+                      onChange={e => {
+                        setRepo(e.target.value);
+                      }}
+                      onKeyPress={ev => {
+                        if (ev.key === "Enter") {
+                          updateChart(repo);
+                          ev.preventDefault();
+                        }
+                      }}
+                      InputProps={{ ...params.InputProps, type: "search" }}
+                    />
+                  )}
+                />
+                <IconButton
+                  className={classes.iconButton}
+                  aria-label="search"
+                  onClick={() => {
+                    updateChart(repo);
+                  }}
+                >
+                  <SearchIcon />
+                </IconButton>
+              </Paper>
+              {Boolean(!value) && Boolean(showMergeButton) && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  size="small"
+                  onClick={() => {
+                    setMergeStatus(!mergeStatus);
+                  }}
+                  style={{ width: "260px", marginLeft: "8px" }}
+                >
+                  {Boolean(!mergeStatus)
+                    ? `View all repos related to ${
+                        repo.includes("skywalking")
+                          ? "apache/skywalking"
+                          : "apache/apisix"
+                      }`
+                    : "Cancel merge view"}
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className={classesTable.root} style={{ marginTop: "20px" }}>
@@ -246,7 +312,7 @@ const App = () => {
                 justifyContent: "center"
               }}
             >
-              <Paper color="default" elevation>
+              <Paper color="default" elevation={0}>
                 <Tabs
                   value={value}
                   onChange={handleChange}
@@ -255,17 +321,18 @@ const App = () => {
                   indicatorColor="primary"
                   textColor="primary"
                   aria-label="scrollable force tabs example"
-                  centered
                 >
                   <Tab
                     style={{ textTransform: "none" }}
                     label="Contributor Over Time"
                     {...a11yProps(0)}
+                    disabled={tabdisabled}
                   />
                   <Tab
                     style={{ textTransform: "none" }}
                     label="Monthly Active Contributors"
                     {...a11yProps(1)}
+                    disabled={tabdisabled}
                   />
                 </Tabs>
               </Paper>
@@ -273,8 +340,17 @@ const App = () => {
             <TabPanel value={value} index={0}>
               <ContirbutorLineChart
                 repoList={contributorRepoList}
+                isMerge={mergeStatus}
+                mergeRepo={mergeRepo}
                 showAlert={showAlert}
+                onLoading={e => {
+                  setTabDisabled(e);
+                }}
                 onDelete={e => {
+                  if (mergeStatus) {
+                    setMergeStatus(false);
+                    return;
+                  }
                   setContributorRepoList(
                     contributorRepoList.filter(item => item !== e)
                   );
@@ -285,6 +361,9 @@ const App = () => {
               <ActivityChart
                 repoList={contributorRepoList}
                 showAlert={showAlert}
+                onLoading={e => {
+                  setTabDisabled(e);
+                }}
                 onDelete={e => {
                   setContributorRepoList(
                     contributorRepoList.filter(item => item !== e)
