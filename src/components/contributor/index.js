@@ -9,7 +9,7 @@ import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import CompareComponent from "../../components/compare";
 import { Button, ButtonGroup } from "@material-ui/core";
 import { getMonths } from "../../utils";
-import { DEFAULT_OPTIONS } from "../../constants";
+import { generateDefaultOption } from "../../constants";
 import { fetchData, fetchMergeContributor } from "./service";
 
 const ContributorLineChart = ({
@@ -24,9 +24,20 @@ const ContributorLineChart = ({
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
   const [xAxis, setXAxis] = React.useState([]);
-  const [option, setOption] = React.useState(DEFAULT_OPTIONS);
+  const [shareModalVisible, setShareModalVisible] = React.useState(false);
+  const [option, setOption] = React.useState( generateDefaultOption({
+    handleShareClick: () => {
+      setShareModalVisible(true);
+    }
+  }));
   const updateSeries = passXAxis => {
-    const newClonedOption = cloneDeep(DEFAULT_OPTIONS);
+    const newClonedOption = cloneDeep(
+      generateDefaultOption({
+        handleShareClick: () => {
+          setShareModalVisible(true);
+        }
+      })
+    );
     const datasetWithFilters = [
       ["ContributorNum", "Repo", "Date", "DateValue"]
     ];
@@ -88,6 +99,10 @@ const ContributorLineChart = ({
 
     setOption(newClonedOption);
   };
+
+  React.useEffect(() => {
+    console.log("shareModalVisible: ", shareModalVisible);
+  }, [shareModalVisible]);
 
   React.useEffect(() => {
     switch (activeDate) {
