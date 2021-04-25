@@ -92,11 +92,10 @@ func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 				lastPage = resp.LastPage
 			}
 
-			newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, conMap, repoName, lastPage, listCommitOpts, isSearch)
+			conLists, code, err := updateContributorList(ctx, dbCli, ghCli, conMap, repoName, lastPage, listCommitOpts, isSearch)
 			if err != nil {
 				return nil, code, err
 			}
-			conLists = append(conLists, newConLists...)
 
 			updateFlag := repoInput == ""
 			if err := updateRepoList(ctx, dbCli, repoName, len(conLists), updateFlag); err != nil {
