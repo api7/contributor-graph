@@ -245,10 +245,6 @@ func updateContributorList(
 		return commitLists[i].Date.Before(commitLists[j].Date)
 	})
 
-	for _, c := range commitLists {
-		fmt.Printf("%s %s\n", c.Date.String(), c.Author)
-	}
-
 	// at most write 500 entities in a single call
 	rangeMax := 500
 	rangeNeeded := int(math.Ceil(float64(len(commitLists)) / float64(rangeMax)))
