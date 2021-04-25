@@ -11,6 +11,7 @@ import { Button, ButtonGroup } from "@material-ui/core";
 import { getMonths } from "../../utils";
 import { generateDefaultOption } from "../../constants";
 import { fetchData, fetchMergeContributor } from "./service";
+import CustomizedDialogs from "../shareDialog";
 
 const ContributorLineChart = ({
   repoList = ["apache/apisix"],
@@ -25,11 +26,25 @@ const ContributorLineChart = ({
   const [activeDate, setActiveDate] = React.useState("max");
   const [xAxis, setXAxis] = React.useState([]);
   const [shareModalVisible, setShareModalVisible] = React.useState(false);
-  const [option, setOption] = React.useState( generateDefaultOption({
-    handleShareClick: () => {
-      setShareModalVisible(true);
-    }
-  }));
+  const [option, setOption] = React.useState(
+    generateDefaultOption({
+      handleShareClick: () => {
+        setShareModalVisible(true);
+      }
+    })
+  );
+
+  const Dialog = React.useCallback(() => {
+    return (
+      <CustomizedDialogs
+        open={shareModalVisible}
+        onChange={() => {
+          setShareModalVisible(false);
+        }}
+      />
+    );
+  }, [shareModalVisible]);
+
   const updateSeries = passXAxis => {
     const newClonedOption = cloneDeep(
       generateDefaultOption({
@@ -211,6 +226,7 @@ const ContributorLineChart = ({
           justifyContent: "center"
         }}
       >
+        <Dialog />
         <div className="right" style={{ width: "90%", marginTop: "10px" }}>
           <div style={{ marginTop: "10px" }}>
             <CompareComponent
