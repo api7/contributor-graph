@@ -13,9 +13,9 @@ import (
 	"github.com/api7/contributor-graph/api/internal/utils"
 )
 
-func GenerateAndSaveSVG(ctx context.Context, repo string) (string, error) {
+func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, error) {
 	bucket := "api7-301102.appspot.com"
-	object := utils.RepoNameToFileName(repo) + ".svg"
+	object := utils.RepoNameToFileName(repo, merge) + ".svg"
 
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -23,7 +23,11 @@ func GenerateAndSaveSVG(ctx context.Context, repo string) (string, error) {
 	}
 	defer client.Close()
 
-	resp, err := http.Get("https://asia-east2-api7-301102.cloudfunctions.net/svg?repo=" + repo)
+	graphFunctionUrl := "https://asia-east2-api7-301102.cloudfunctions.net/svg?repo=" + repo
+	if merge {
+		graphFunctionUrl += "&merge=true"
+	}
+	resp, err := http.Get(graphFunctionUrl)
 	if err != nil {
 		return "", err
 	}
@@ -53,8 +57,8 @@ func GenerateAndSaveSVG(ctx context.Context, repo string) (string, error) {
 	return string(svg[:]), nil
 }
 
-func SubGetSVG(w http.ResponseWriter, repo string) (string, error) {
-	resp, err := http.Get("https://storage.googleapis.com/api7-301102.appspot.com/" + utils.RepoNameToFileName(repo) + ".svg")
+func SubGetSVG(w http.ResponseWriter, repo string, merge bool) (string, error) {
+	resp, err := http.Get("https://storage.googleapis.com/api7-301102.appspot.com/" + utils.RepoNameToFileName(repo, merge) + ".svg")
 	if err != nil {
 		return "", err
 	}

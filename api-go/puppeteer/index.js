@@ -9,6 +9,7 @@ const querystring = require('querystring');
 
 exports.svg = async (req, res) => {
   const repo = req.query.repo;
+  const merge = req.query.merge;
 
   const browser = await puppeteer.launch({
     args: ['--no-sandbox',]
@@ -16,7 +17,11 @@ exports.svg = async (req, res) => {
   const page = await browser.newPage();
   await page.setViewport({ width: 1920, height: 1080 });
 
-  await page.goto("https://contributor-graph-git-no-animation-apiseven.vercel.app/?repo=" + repo);
+  graphUrl = "https://contributor-graph-git-no-animation-apiseven.vercel.app/?repo=" + repo;
+  if (merge) {
+    graphUrl += "&merge=true"
+  }
+  await page.goto(graphUrl);
 
   var getSVG = function () {
     return window.echartInstance.getDataURL();

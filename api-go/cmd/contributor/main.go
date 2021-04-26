@@ -42,6 +42,7 @@ func main() {
 	http.HandleFunc("/contributors-multi", getMultiContributor)
 	http.HandleFunc("/refreshAll", refreshAll)
 	http.HandleFunc("/refreshMonthly", refreshMonthly)
+	http.HandleFunc("/refreshMultiRepo", refreshMultiRepo)
 	http.HandleFunc("/repos", getRepos)
 	http.HandleFunc("/activities", getActivities)
 	http.HandleFunc("/monthly-contributor", getMonthlyContributor)
@@ -110,8 +111,9 @@ func getMultiContributor(w http.ResponseWriter, r *http.Request) {
 func getContributorSVG(w http.ResponseWriter, r *http.Request) {
 	v := r.URL.Query()
 	repo := v.Get("repo")
+	merge := v.Get("merge") != ""
 
-	svg, err := graph.SubGetSVG(w, repo)
+	svg, err := graph.SubGetSVG(w, repo, merge)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err.Error())
@@ -119,7 +121,7 @@ func getContributorSVG(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if strings.Contains(svg, "AccessDenied") {
-		svg, err = graph.GenerateAndSaveSVG(context.Background(), repo)
+		svg, err = graph.GenerateAndSaveSVG(context.Background(), repo, merge)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(err.Error())
@@ -181,5 +183,17 @@ func refreshMonthly(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(code)
 		json.NewEncoder(w).Encode(returnConObj{Code: code, ErrorMessage: err.Error()})
 		return
+	}
+}
+
+func refreshMultiRepo(w http.ResponseWriter, r *http.Request) {
+	merge := true
+	for _, repo := range utils.MultiRepoList {
+		_, err := graph.GenerateAndSaveSVG(context.Background(), repo, merge)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(err.Error())
+			return
+		}
 	}
 }

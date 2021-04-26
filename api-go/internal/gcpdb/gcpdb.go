@@ -103,7 +103,8 @@ func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 			}
 
 			if repoInput == "" {
-				if _, err := graph.GenerateAndSaveSVG(ctx, repoName); err != nil {
+				merge := false
+				if _, err := graph.GenerateAndSaveSVG(ctx, repoName, merge); err != nil {
 					return nil, http.StatusInternalServerError, err
 				}
 			}
