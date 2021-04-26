@@ -7,7 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strings"
+	"time"
 
 	"cloud.google.com/go/storage"
 	"github.com/api7/contributor-graph/api/internal/utils"
@@ -23,7 +23,7 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 	}
 	defer client.Close()
 
-	graphFunctionUrl := "https://asia-east2-api7-301102.cloudfunctions.net/svg?repo=" + repo
+	graphFunctionUrl := "https://cloudfunction.contributor-graph.com/svg?repo=" + repo
 	if merge {
 		graphFunctionUrl += "&merge=true"
 	}
@@ -37,33 +37,50 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 		return "", err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf(string(svg[:]))
+		return "", fmt.Errorf("%d %s", resp.StatusCode, string(svg[:]))
 	}
 
-	if !strings.Contains(repo, ",") {
-		wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
-		wc.ACL = []storage.ACLRule{{Entity: storage.AllUsers, Role: storage.RoleReader}}
-		wc.CacheControl = "public, max-age=86400"
-		wc.ContentType = "image/svg+xml;charset=utf-8"
+	wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
+	wc.CacheControl = "public, max-age=86400"
+	wc.ContentType = "image/svg+xml;charset=utf-8"
 
-		if _, err = io.Copy(wc, bytes.NewReader(svg)); err != nil {
-			return "", fmt.Errorf("upload svg failed: io.Copy: %v", err)
-		}
-		if err := wc.Close(); err != nil {
-			return "", fmt.Errorf("upload svg failed: Writer.Close: %v", err)
-		}
+	if _, err = io.Copy(wc, bytes.NewReader(svg)); err != nil {
+		return "", fmt.Errorf("upload svg failed: io.Copy: %v", err)
 	}
+	if err := wc.Close(); err != nil {
+		return "", fmt.Errorf("upload svg failed: Writer.Close: %v", err)
+	}
+
 	fmt.Printf("New SVG generated with %s\n", repo)
 	return string(svg[:]), nil
 }
 
 func SubGetSVG(w http.ResponseWriter, repo string, merge bool) (string, error) {
-	resp, err := http.Get("https://storage.googleapis.com/api7-301102.appspot.com/" + utils.RepoNameToFileName(repo, merge) + ".svg")
+	bucket := "api7-301102.appspot.com"
+	object := utils.RepoNameToFileName(repo, merge) + ".svg"
+
+	ctx := context.Background()
+	client, err := storage.NewClient(ctx)
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
-	svg, err := ioutil.ReadAll(resp.Body)
+	reader, err := client.Bucket(bucket).Object(object).NewReader(ctx)
+	if err != nil {
+		return "", err
+	}
+	LastModifiedTime, err := reader.LastModified()
+	if err != nil {
+		return "", err
+	}
+	// if the svg is too small (<2kb), or graph is outdated, do the update.
+	// TODO: Something wrong with last modified time
+	if reader.Size() < 2000 || LastModifiedTime.Add(48*time.Hour).Before(time.Now()) {
+		fmt.Println(reader.Size(), LastModifiedTime)
+		return "", utils.ErrSVGNeedUpdate
+	}
+
+	svg, err := ioutil.ReadAll(reader)
+	reader.Close()
 	if err != nil {
 		return "", err
 	}

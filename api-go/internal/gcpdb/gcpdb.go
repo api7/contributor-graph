@@ -84,30 +84,33 @@ func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 			// get last page
 			lastPage := 0
 			listCommitOpts := &github.CommitsListOptions{Since: lastModifiedTimeDB, ListOptions: ghapi.ListOpts}
-			_, resp, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
+			lastCommits, resp, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
 			if err != nil {
 				return nil, statusCode, err
 			}
-			if resp.LastPage != 0 {
-				lastPage = resp.LastPage
-			}
+			if len(lastCommits) != 0 {
+				if resp.LastPage != 0 {
+					lastPage = resp.LastPage
+				}
 
-			conLists, code, err := updateContributorList(ctx, dbCli, ghCli, conMap, repoName, lastPage, listCommitOpts, isSearch)
-			if err != nil {
-				return nil, code, err
-			}
+				var code int
+				conLists, code, err = updateContributorList(ctx, dbCli, ghCli, conMap, repoName, lastPage, listCommitOpts, isSearch)
+				if err != nil {
+					return nil, code, err
+				}
 
+				if repoInput == "" {
+					merge := false
+					if _, err := graph.GenerateAndSaveSVG(ctx, repoName, merge); err != nil {
+						return nil, http.StatusInternalServerError, err
+					}
+				}
+			}
 			updateFlag := repoInput == ""
 			if err := updateRepoList(ctx, dbCli, repoName, len(conLists), updateFlag); err != nil {
 				return nil, http.StatusInternalServerError, err
 			}
 
-			if repoInput == "" {
-				merge := false
-				if _, err := graph.GenerateAndSaveSVG(ctx, repoName, merge); err != nil {
-					return nil, http.StatusInternalServerError, err
-				}
-			}
 		}
 	}
 

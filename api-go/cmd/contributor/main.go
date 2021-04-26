@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 
+	"cloud.google.com/go/storage"
 	"github.com/api7/contributor-graph/api/internal/activities"
 	"github.com/api7/contributor-graph/api/internal/contributor"
 	"github.com/api7/contributor-graph/api/internal/gcpdb"
@@ -114,13 +114,13 @@ func getContributorSVG(w http.ResponseWriter, r *http.Request) {
 	merge := v.Get("merge") != ""
 
 	svg, err := graph.SubGetSVG(w, repo, merge)
-	if err != nil {
+	if err != nil && err != storage.ErrObjectNotExist && err != utils.ErrSVGNeedUpdate {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err.Error())
 		return
 	}
 
-	if strings.Contains(svg, "AccessDenied") {
+	if svg == "" {
 		svg, err = graph.GenerateAndSaveSVG(context.Background(), repo, merge)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
