@@ -1,6 +1,6 @@
 import React from "react";
 import { withStyles } from "@material-ui/core/styles";
-import Button from "@material-ui/core/Button";
+// import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
 import MuiDialogTitle from "@material-ui/core/DialogTitle";
 import MuiDialogContent from "@material-ui/core/DialogContent";
@@ -8,6 +8,13 @@ import MuiDialogActions from "@material-ui/core/DialogActions";
 import IconButton from "@material-ui/core/IconButton";
 import CloseIcon from "@material-ui/icons/Close";
 import Typography from "@material-ui/core/Typography";
+import Paper from "@material-ui/core/Paper";
+import Grid from "@material-ui/core/Grid";
+import { makeStyles } from "@material-ui/core/styles";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import Button from "@material-ui/core/Button";
+import TextField from "@material-ui/core/TextField";
 
 const styles = theme => ({
   root: {
@@ -21,6 +28,171 @@ const styles = theme => ({
     color: theme.palette.grey[500]
   }
 });
+
+const ShareLink = () => {
+  return (
+    <>
+      <div style={{ marginTop: "50px", marginBottom: "10px" }}>
+        <div style={{ display: "flex", marginBottom: "30px" }}>
+          <TextField
+            id="standard-basic"
+            label="分享地址"
+            variant="outlined"
+            value={"www.baidu.com"}
+            style={{ width: "400px" }}
+          />
+          <Button variant="contained" color="primary">
+            复制
+          </Button>
+        </div>
+        <div style={{ display: "flex" }}>
+          <TextField
+            id="standard-basic"
+            label="图片地址"
+            variant="outlined"
+            value={"www.baidu.com"}
+            style={{ width: "400px" }}
+          />
+          <Button variant="contained" color="primary">
+            复制
+          </Button>
+        </div>
+      </div>
+    </>
+  );
+};
+
+function CenteredGrid() {
+  const useStyles = makeStyles(theme => ({
+    root: {
+      flexGrow: 1
+    },
+    paper: {
+      padding: 0,
+      textAlign: "center",
+      color: theme.palette.text.secondary
+    }
+  }));
+  const classes = useStyles();
+
+  return (
+    <div className={classes.root}>
+      <Grid container spacing={3}>
+        <Grid item xs={2}>
+          <Paper className={classes.paper} elevation={0}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: "8px"
+              }}
+            >
+              <svg
+                viewBox="0 0 60 60"
+                preserveAspectRatio="xMidYMid meet"
+                focusable="false"
+                class="style-scope yt-icon"
+                style={{
+                  pointerEvents: "none",
+                  display: "block",
+                  width: "60px",
+                  height: "60px"
+                }}
+              >
+                <g class="style-scope yt-icon">
+                  <g
+                    fill="none"
+                    fill-rule="evenodd"
+                    class="style-scope yt-icon"
+                  >
+                    <path
+                      d="M28.486325 59.969298c-6.636404-.569063-11.56302-2.326956-16.321973-5.823932C4.443764 48.472116 0 39.646792 0 29.986934 0 15.11156 10.506778 2.798388 25.274412.36718c6.028107-.992411 12.703853.049265 18.28794 2.85363 13.576275 6.818095 19.7813 22.541053 14.64267 37.103159-3.527955 9.997705-12.789708 17.617785-23.391072 19.244938-2.085625.320112-5.065149.508645-6.327625.400391z"
+                      fill="#1DA1F2"
+                      fill-rule="nonzero"
+                      class="style-scope yt-icon"
+                    ></path>
+                    <path
+                      d="M45.089067 17.577067c-.929778.595555-3.064534 1.460977-4.117334 1.460977v.001778C39.7696 17.784 38.077156 17 36.200178 17c-3.645511 0-6.6016 2.956089-6.6016 6.600178 0 .50631.058666 1.000178.16711 1.473778h-.001066c-4.945066-.129778-10.353422-2.608356-13.609244-6.85049-2.001778 3.46489-.269511 7.3184 2.002133 8.72249-.7776.058666-2.209067-.0896-2.882844-.747023-.045156 2.299734 1.060622 5.346845 5.092622 6.452267-.776533.417778-2.151111.297956-2.7488.209067.209778 1.941333 2.928355 4.479289 5.901155 4.479289C22.46009 38.565156 18.4736 40.788089 14 40.080889 17.038222 41.929422 20.5792 43 24.327111 43c10.650667 0 18.921956-8.631822 18.4768-19.280356-.001778-.011733-.001778-.023466-.002844-.036266.001066-.027378.002844-.054756.002844-.0832 0-.033067-.002844-.064356-.003911-.096356.9696-.66311 2.270578-1.836089 3.2-3.37991-.539022.296888-2.156089.891377-3.6608 1.038932.965689-.521244 2.396444-2.228266 2.749867-3.585777"
+                      fill="#FFF"
+                      class="style-scope yt-icon"
+                    ></path>
+                  </g>
+                </g>
+              </svg>
+            </div>
+            <span style={{ width: "1.3rem" }}>Twitter</span>
+          </Paper>
+        </Grid>
+        <Grid item xs={2}>
+          <Paper className={classes.paper} elevation={0}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginBottom: "8px"
+              }}
+            >
+              <svg
+                viewBox="0 0 60 60"
+                preserveAspectRatio="xMidYMid meet"
+                focusable="false"
+                class="style-scope yt-icon"
+                style={{
+                  pointerEvents: "none",
+                  display: "block",
+                  width: "60px",
+                  height: "60px"
+                }}
+              >
+                <g class="style-scope yt-icon">
+                  <g
+                    fill="none"
+                    fill-rule="evenodd"
+                    class="style-scope yt-icon"
+                  >
+                    <path
+                      d="M28.486325 59.969298c-6.636404-.569063-11.56302-2.326956-16.321973-5.823932C4.443764 48.472116 0 39.646792 0 29.986934 0 15.11156 10.506778 2.798388 25.274412.36718c6.028107-.992411 12.703853.049265 18.28794 2.85363 13.576275 6.818095 19.7813 22.541053 14.64267 37.103159-3.527955 9.997705-12.789708 17.617785-23.391072 19.244938-2.085625.320112-5.065149.508645-6.327625.400391z"
+                      fill="#1DA1F2"
+                      fill-rule="nonzero"
+                      class="style-scope yt-icon"
+                    ></path>
+                    <path
+                      d="M45.089067 17.577067c-.929778.595555-3.064534 1.460977-4.117334 1.460977v.001778C39.7696 17.784 38.077156 17 36.200178 17c-3.645511 0-6.6016 2.956089-6.6016 6.600178 0 .50631.058666 1.000178.16711 1.473778h-.001066c-4.945066-.129778-10.353422-2.608356-13.609244-6.85049-2.001778 3.46489-.269511 7.3184 2.002133 8.72249-.7776.058666-2.209067-.0896-2.882844-.747023-.045156 2.299734 1.060622 5.346845 5.092622 6.452267-.776533.417778-2.151111.297956-2.7488.209067.209778 1.941333 2.928355 4.479289 5.901155 4.479289C22.46009 38.565156 18.4736 40.788089 14 40.080889 17.038222 41.929422 20.5792 43 24.327111 43c10.650667 0 18.921956-8.631822 18.4768-19.280356-.001778-.011733-.001778-.023466-.002844-.036266.001066-.027378.002844-.054756.002844-.0832 0-.033067-.002844-.064356-.003911-.096356.9696-.66311 2.270578-1.836089 3.2-3.37991-.539022.296888-2.156089.891377-3.6608 1.038932.965689-.521244 2.396444-2.228266 2.749867-3.585777"
+                      fill="#FFF"
+                      class="style-scope yt-icon"
+                    ></path>
+                  </g>
+                </g>
+              </svg>
+            </div>
+            <span style={{ width: "1.3rem" }}>Twitter</span>
+          </Paper>
+        </Grid>
+      </Grid>
+    </div>
+  );
+}
+
+const MarkdownLink = ({ repoList = [], isMerge = false, mergeRepo = "" }) => {
+  return (
+    <div>
+      <p>
+        You can include the chart on your repository's README.md as follows:
+      </p>
+      <SyntaxHighlighter language="markdown" style={a11yDark}>
+        {`
+## Contributor over time
+
+[![Contributor over time](https://contributor-graph-api.apiseven.com/contributors-svg?repo=${
+          isMerge ? mergeRepo + "&merge=true" : repoList.join(",")
+        })](https://www.apiseven.com/en/contributor-graph?repo=${
+          isMerge ? mergeRepo + "&merge=true" : repoList.join(",")
+        })
+`}
+      </SyntaxHighlighter>
+    </div>
+  );
+};
 
 const DialogTitle = withStyles(styles)(props => {
   const { children, classes, onClose, ...other } = props;
@@ -69,30 +241,18 @@ export default function CustomizedDialogs({
         open={open}
       >
         <DialogTitle id="customized-dialog-title" onClose={handleClose}>
-          Modal title
+          Share
         </DialogTitle>
         <DialogContent dividers>
-          <Typography gutterBottom>
-            Cras mattis consectetur purus sit amet fermentum. Cras justo odio,
-            dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta
-            ac consectetur ac, vestibulum at eros.
-          </Typography>
-          <Typography gutterBottom>
-            Praesent commodo cursus magna, vel scelerisque nisl consectetur et.
-            Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor
-            auctor.
-          </Typography>
-          <Typography gutterBottom>
-            Aenean lacinia bibendum nulla sed consectetur. Praesent commodo
-            cursus magna, vel scelerisque nisl consectetur et. Donec sed odio
-            dui. Donec ullamcorper nulla non metus auctor fringilla.
-          </Typography>
+          <CenteredGrid />
+          <ShareLink />
+          {/* <MarkdownLink /> */}
         </DialogContent>
-        <DialogActions>
+        {/* <DialogActions>
           <Button autoFocus onClick={handleClose} color="primary">
             Save changes
           </Button>
-        </DialogActions>
+        </DialogActions> */}
       </Dialog>
     </div>
   );
