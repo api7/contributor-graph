@@ -1,7 +1,6 @@
 import React from "react";
 import { makeStyles, Paper, IconButton, Snackbar } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
-import SearchIcon from "@material-ui/icons/Search";
 import MuiAlert from "@material-ui/lab/Alert";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import Tabs from "@material-ui/core/Tabs";
@@ -9,11 +8,12 @@ import Tab from "@material-ui/core/Tab";
 import PropTypes from "prop-types";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
-import Button from "@material-ui/core/Button";
+import cloneDeep from "lodash.clonedeep";
 
 import ContirbutorLineChart from "./components/contributor";
 import ActivityChart from "./components/activity";
 import { getParameterByName } from "./utils";
+import CompareComponent from "./components/compare";
 
 const Alert = props => {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -342,7 +342,27 @@ const App = () => {
               />
             </TabPanel>
           </div>
-          <div style={{ display: "flex", justifyContent: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              flexDirection: "column"
+            }}
+          >
+            <div style={{ padding: "0 40px" }}>
+              <CompareComponent
+                list={contributorRepoList}
+                onDelete={e => {
+                  const clonedContributorRepoList = cloneDeep(
+                    contributorRepoList
+                  );
+                  const newContributorRepoList = clonedContributorRepoList.filter(
+                    item => item !== e
+                  );
+                  setContributorRepoList(newContributorRepoList);
+                }}
+              />
+            </div>
             <Paper className={classes.root} elevation={0}>
               <Autocomplete
                 freeSolo
