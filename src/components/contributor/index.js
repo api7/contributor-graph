@@ -233,8 +233,8 @@ const ContributorLineChart = ({
         }}
       >
         <Dialog />
-        <div className="right" style={{ width: "90%", marginTop: "10px" }}>
-          <div style={{ marginTop: "10px" }}>
+        <div className="right" style={{ width: "100%" }}>
+          {/* <div style={{ marginTop: "10px" }}>
             <CompareComponent
               list={Object.keys(dataSource)}
               onDelete={e => {
@@ -244,8 +244,8 @@ const ContributorLineChart = ({
                 onDelete(e);
               }}
             />
-          </div>
-          <div id="chart" style={{ marginTop: "30px" }}>
+          </div> */}
+          <div id="chart" style={{ marginTop: "20px", padding: "0px 40px" }}>
             <Tab.Container defaultActiveKey="contributor">
               <Row>
                 <Col>
@@ -324,7 +324,7 @@ const ContributorLineChart = ({
                             window.echartInstance = echartInstance;
                           }
                         }}
-                        style={{ height: 700, width: "100%" }}
+                        style={{ height: 600 }}
                         showLoading={loading}
                         notMerge
                       />

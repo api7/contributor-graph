@@ -5,7 +5,7 @@ export const generateDefaultOption = ({ handleShareClick = () => {} }) => {
       top: "5%",
       data: [],
       textStyle: {
-        fontSize: 16
+        fontSize: 14
       }
     },
     toolbox: {

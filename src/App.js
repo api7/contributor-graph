@@ -225,9 +225,67 @@ const App = () => {
       </Snackbar>
       <div
         className="content"
-        style={{ display: "flex", justifyContent: "center" }}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center"
+        }}
       >
-        <div className="right" style={{ width: "90%", marginTop: "10px" }}>
+        {/* <Paper className={classes.root} elevation={0}>
+          <Autocomplete
+            freeSolo
+            className={classes.autocomplete}
+            size="small"
+            id="autocomplete"
+            disableClearable
+            options={searchOption}
+            onInputChange={(event, value, reason) => {
+              if (reason === "reset") {
+                setRepo(value);
+                updateChart(value);
+              }
+            }}
+            renderInput={params => (
+              <TextField
+                {...params}
+                label="Search Github Repository Name"
+                margin="normal"
+                variant="outlined"
+                helperText="Keep searching to complete the comparison"
+                className={classes.searchTextField}
+                onChange={e => {
+                  setRepo(e.target.value);
+                }}
+                onKeyPress={ev => {
+                  if (ev.key === "Enter") {
+                    updateChart(repo);
+                    ev.preventDefault();
+                  }
+                }}
+                InputProps={{ ...params.InputProps, type: "search" }}
+              />
+            )}
+          />
+          <IconButton
+            className={classes.iconButton}
+            aria-label="search"
+            onClick={() => {
+              updateChart(repo);
+            }}
+          >
+            <SearchIcon />
+          </IconButton>
+        </Paper> */}
+        <div
+          className="right"
+          style={{
+            width: "70%",
+            marginTop: "30px",
+            border: "1px solid #dadce0",
+            borderRadius: "12px"
+          }}
+        >
           <div style={{ display: "flex", justifyContent: "center" }}>
             <div
               className="search-container"
@@ -237,52 +295,7 @@ const App = () => {
                 flexDirection: "column"
               }}
             >
-              <Paper className={classes.root} elevation={0}>
-                <Autocomplete
-                  freeSolo
-                  className={classes.autocomplete}
-                  size="small"
-                  id="autocomplete"
-                  disableClearable
-                  options={searchOption}
-                  onInputChange={(event, value, reason) => {
-                    if (reason === "reset") {
-                      setRepo(value);
-                      updateChart(value);
-                    }
-                  }}
-                  renderInput={params => (
-                    <TextField
-                      {...params}
-                      label="Search Github Repository Name"
-                      margin="normal"
-                      variant="outlined"
-                      helperText="Keep searching to complete the comparison"
-                      className={classes.searchTextField}
-                      onChange={e => {
-                        setRepo(e.target.value);
-                      }}
-                      onKeyPress={ev => {
-                        if (ev.key === "Enter") {
-                          updateChart(repo);
-                          ev.preventDefault();
-                        }
-                      }}
-                      InputProps={{ ...params.InputProps, type: "search" }}
-                    />
-                  )}
-                />
-                <IconButton
-                  className={classes.iconButton}
-                  aria-label="search"
-                  onClick={() => {
-                    updateChart(repo);
-                  }}
-                >
-                  <SearchIcon />
-                </IconButton>
-              </Paper>
-              {Boolean(!value) && Boolean(showMergeButton) && (
+              {/* {Boolean(!value) && Boolean(showMergeButton) && (
                 <Button
                   variant="contained"
                   color="primary"
@@ -300,16 +313,17 @@ const App = () => {
                       }`
                     : "Cancel merge view"}
                 </Button>
-              )}
+              )} */}
             </div>
           </div>
 
-          <div className={classesTable.root} style={{ marginTop: "20px" }}>
+          <div>
             <div
               style={{
                 width: "100%",
                 display: "flex",
-                justifyContent: "left"
+                justifyContent: "left",
+                padding: "5px"
               }}
             >
               <Paper color="default" elevation={0}>
