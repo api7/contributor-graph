@@ -1,4 +1,5 @@
 export const DEFAULT_OPTIONS = {
+  animation: false,
   color: ['#39a85a', '#4385ee', '#fabc37', '#2dc1dd', '#f972cf', '#8331c8'],
   legend: {
     top: "5%",
@@ -25,6 +26,7 @@ export const DEFAULT_OPTIONS = {
 };
 
 export const DEFAULT_ACTIVITY_OPTIONS = {
+  animation: false,
   color: ['#39a85a', '#4385ee', '#fabc37', '#2dc1dd', '#f972cf', '#8331c8'],
   legend: {
     top: "5%",
