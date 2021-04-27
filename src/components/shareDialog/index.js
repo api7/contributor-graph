@@ -15,6 +15,8 @@ import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import copy from "copy-to-clipboard";
 
+import { inIframe } from "../../utils";
+
 const styles = theme => ({
   root: {
     margin: 0,
@@ -102,7 +104,18 @@ function CenteredGrid({ params = "" }) {
             elevation={0}
             style={{ cursor: "pointer" }}
             onClick={() => {
-              window.location.href = `https://twitter.com/share?text=Amazing tools to view your repo contributor over time!&url=${shareUrl}`;
+              if (!inIframe()) {
+                window.location.href = `https://twitter.com/share?text=Amazing tools to view your repo contributor over time!&url=${shareUrl}`;
+              }
+              window.parent.postMessage(
+                {
+                  share: {
+                    to: "twitter",
+                    url: shareUrl
+                  }
+                },
+                "*"
+              );
             }}
           >
             <div
