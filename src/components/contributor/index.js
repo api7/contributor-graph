@@ -2,6 +2,7 @@ import React from "react";
 import cloneDeep from "lodash.clonedeep";
 import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
+import * as echarts from "echarts";
 import omit from "lodash.omit";
 
 import CompareComponent from "../../components/compare";
@@ -10,6 +11,7 @@ import { getMonths } from "../../utils";
 import { generateDefaultOption } from "../../constants";
 import { fetchData, fetchMergeContributor } from "./service";
 import CustomizedDialogs from "../shareDialog";
+import { DEFAULT_COLOR } from "../../constants";
 
 const ContributorLineChart = ({
   repoList = ["apache/apisix"],
@@ -107,6 +109,29 @@ const ContributorLineChart = ({
         tooltip: ["ContributorNum"]
       }
     }));
+
+    if (series.length === 1) {
+      series[0].areaStyle = {
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          {
+            offset: 0,
+            color: DEFAULT_COLOR + "80"
+          },
+          {
+            offset: 1,
+            color: DEFAULT_COLOR + "00"
+          }
+        ])
+      };
+      series[0].itemStyle = {
+        normal: {
+          color: DEFAULT_COLOR,
+          lineStyle: {
+            color: DEFAULT_COLOR
+          }
+        }
+      };
+    }
 
     newClonedOption.dataset = [
       {
