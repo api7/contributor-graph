@@ -309,7 +309,7 @@ const App = () => {
               style={{
                 width: "100%",
                 display: "flex",
-                justifyContent: "center"
+                justifyContent: "left"
               }}
             >
               <Paper color="default" elevation={0}>
