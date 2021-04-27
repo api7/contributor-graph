@@ -37,10 +37,11 @@ const useStyles = makeStyles(theme => ({
     display: "flex",
     flexWrap: "wrap",
     alignItems: "center",
-    width: 600
+    width: "100%"
   },
   autocomplete: {
-    marginLeft: theme.spacing(1),
+    padding: "0 40px",
+    marginBottom: "10px",
     flex: 1
   },
   iconButton: {
@@ -232,51 +233,6 @@ const App = () => {
           alignItems: "center"
         }}
       >
-        {/* <Paper className={classes.root} elevation={0}>
-          <Autocomplete
-            freeSolo
-            className={classes.autocomplete}
-            size="small"
-            id="autocomplete"
-            disableClearable
-            options={searchOption}
-            onInputChange={(event, value, reason) => {
-              if (reason === "reset") {
-                setRepo(value);
-                updateChart(value);
-              }
-            }}
-            renderInput={params => (
-              <TextField
-                {...params}
-                label="Search Github Repository Name"
-                margin="normal"
-                variant="outlined"
-                helperText="Keep searching to complete the comparison"
-                className={classes.searchTextField}
-                onChange={e => {
-                  setRepo(e.target.value);
-                }}
-                onKeyPress={ev => {
-                  if (ev.key === "Enter") {
-                    updateChart(repo);
-                    ev.preventDefault();
-                  }
-                }}
-                InputProps={{ ...params.InputProps, type: "search" }}
-              />
-            )}
-          />
-          <IconButton
-            className={classes.iconButton}
-            aria-label="search"
-            onClick={() => {
-              updateChart(repo);
-            }}
-          >
-            <SearchIcon />
-          </IconButton>
-        </Paper> */}
         <div
           className="right"
           style={{
@@ -385,6 +341,53 @@ const App = () => {
                 }}
               />
             </TabPanel>
+          </div>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <Paper className={classes.root} elevation={0}>
+              <Autocomplete
+                freeSolo
+                className={classes.autocomplete}
+                size="small"
+                id="autocomplete"
+                disableClearable
+                options={searchOption}
+                onInputChange={(event, value, reason) => {
+                  if (reason === "reset") {
+                    setRepo(value);
+                    updateChart(value);
+                  }
+                }}
+                renderInput={params => (
+                  <TextField
+                    {...params}
+                    label="Search Github Repository Name"
+                    margin="normal"
+                    variant="outlined"
+                    helperText="Keep searching to complete the comparison"
+                    className={classes.searchTextField}
+                    onChange={e => {
+                      setRepo(e.target.value);
+                    }}
+                    onKeyPress={ev => {
+                      if (ev.key === "Enter") {
+                        updateChart(repo);
+                        ev.preventDefault();
+                      }
+                    }}
+                    InputProps={{ ...params.InputProps, type: "search" }}
+                  />
+                )}
+              />
+              {/* <IconButton
+                className={classes.iconButton}
+                aria-label="search"
+                onClick={() => {
+                  updateChart(repo);
+                }}
+              >
+                <SearchIcon />
+              </IconButton> */}
+            </Paper>
           </div>
         </div>
       </div>
