@@ -277,7 +277,6 @@ const ActivityChart = ({
                     <Tab.Pane eventKey="contributor">
                       <ReactECharts
                         option={option}
-                        opts={{ renderer: "svg" }}
                         ref={e => {
                           if (e) {
                             const echartInstance = e.getEchartsInstance();
