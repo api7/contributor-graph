@@ -59,7 +59,10 @@ export const DEFAULT_ACTIVITY_OPTIONS = {
   color: ["#39a85a", "#4385ee", "#fabc37", "#2dc1dd", "#f972cf", "#8331c8"],
   legend: {
     top: "5%",
-    data: []
+    data: [],
+    textStyle: {
+      fontSize: 16
+    }
   },
   toolbox: {
     feature: {
@@ -80,10 +83,22 @@ export const DEFAULT_ACTIVITY_OPTIONS = {
   },
   xAxis: {
     type: "time",
-    nameLocation: "middle"
+    nameLocation: "middle",
+    axisLabel: {
+      show: true,
+      textStyle: {
+        fontSize: 14
+      }
+    }
   },
   yAxis: {
-    name: ""
+    name: "",
+    axisLabel: {
+      show: true,
+      textStyle: {
+        fontSize: 14
+      }
+    }
   },
   series: []
 };
