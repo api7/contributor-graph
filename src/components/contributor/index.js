@@ -5,7 +5,7 @@ import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
 import omit from "lodash.omit";
 
-import CompareComponent from "../../components/compare";
+// import CompareComponent from "../../components/compare";
 import { Button, ButtonGroup } from "@material-ui/core";
 import { getMonths } from "../../utils";
 import { generateDefaultOption } from "../../constants";

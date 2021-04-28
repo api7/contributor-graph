@@ -20,6 +20,7 @@ export const generateDefaultOption = ({ handleShareClick = () => {} }) => {
           }
         },
         saveAsImage: {
+          title: "Save",
           show: true,
           type: "png"
         }
@@ -64,6 +65,7 @@ export const DEFAULT_ACTIVITY_OPTIONS = {
   toolbox: {
     feature: {
       saveAsImage: {
+        title: "Save",
         show: true,
         type: "png"
       }

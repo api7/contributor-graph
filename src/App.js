@@ -1,5 +1,5 @@
 import React from "react";
-import { makeStyles, Paper, IconButton, Snackbar } from "@material-ui/core";
+import { makeStyles, Paper, Snackbar } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import MuiAlert from "@material-ui/lab/Alert";
 import Autocomplete from "@material-ui/lab/Autocomplete";
@@ -85,14 +85,6 @@ function a11yProps(index) {
   };
 }
 
-const useTabStyles = makeStyles(theme => ({
-  root: {
-    flexGrow: 1,
-    width: "100%",
-    backgroundColor: theme.palette.background.paper
-  }
-}));
-
 const App = () => {
   const [repo, setRepo] = React.useState("apache/apisix");
   const [message, setMessage] = React.useState("");
@@ -100,7 +92,7 @@ const App = () => {
   const [alertType, setAlertType] = React.useState("success");
   const [searchOption, setSearchOption] = React.useState([]);
   const [contributorRepoList, setContributorRepoList] = React.useState([]);
-  const classesTable = useTabStyles();
+  // const classesTable = useTabStyles();
   const [value, setValue] = React.useState(0);
   const [tabdisabled, setTabDisabled] = React.useState(false);
   const [showMergeButton, setShowMergeButton] = React.useState(false);
@@ -223,7 +215,6 @@ const App = () => {
           {message}
         </Alert>
       </Snackbar>
-
       <div
         className="content"
         style={{
