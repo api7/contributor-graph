@@ -122,10 +122,6 @@ const ContributorLineChart = ({
   };
 
   React.useEffect(() => {
-    console.log("shareModalVisible: ", shareModalVisible);
-  }, [shareModalVisible]);
-
-  React.useEffect(() => {
     switch (activeDate) {
       case "1month":
         setXAxis(getMonths(1));
