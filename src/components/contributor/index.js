@@ -270,7 +270,7 @@ const ContributorLineChart = ({
               }}
             />
           </div> */}
-          <div id="chart" style={{ marginTop: "20px", padding: "0px 40px" }}>
+          <div id="chart" style={{ marginTop: "10px", padding: "0px 40px" }}>
             <Tab.Container defaultActiveKey="contributor">
               <Row>
                 <Col>

@@ -40,9 +40,8 @@ const useStyles = makeStyles(theme => ({
     width: "100%"
   },
   autocomplete: {
-    padding: "0 40px",
-    marginBottom: "10px",
-    flex: 1
+    flex: 1,
+    paddingTop: "5px"
   },
   iconButton: {
     padding: 10
@@ -224,6 +223,7 @@ const App = () => {
           {message}
         </Alert>
       </Snackbar>
+
       <div
         className="content"
         style={{
@@ -234,10 +234,77 @@ const App = () => {
         }}
       >
         <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            flexDirection: "column",
+            width: "70%"
+          }}
+        >
+          <Paper className={classes.root} elevation={0}>
+            <Autocomplete
+              freeSolo
+              className={classes.autocomplete}
+              size="small"
+              id="autocomplete"
+              disableClearable
+              options={searchOption}
+              onInputChange={(event, value, reason) => {
+                if (reason === "reset") {
+                  setRepo(value);
+                  updateChart(value);
+                }
+              }}
+              renderInput={params => (
+                <TextField
+                  {...params}
+                  label="Search Github Repository Name"
+                  margin="normal"
+                  variant="outlined"
+                  helperText="Keep searching to complete the comparison"
+                  className={classes.searchTextField}
+                  onChange={e => {
+                    setRepo(e.target.value);
+                  }}
+                  onKeyPress={ev => {
+                    if (ev.key === "Enter") {
+                      updateChart(repo);
+                      ev.preventDefault();
+                    }
+                  }}
+                  InputProps={{ ...params.InputProps, type: "search" }}
+                />
+              )}
+            />
+            {/* <IconButton
+                className={classes.iconButton}
+                aria-label="search"
+                onClick={() => {
+                  updateChart(repo);
+                }}
+              >
+                <SearchIcon />
+              </IconButton> */}
+          </Paper>
+          <div>
+            <CompareComponent
+              list={contributorRepoList}
+              onDelete={e => {
+                const clonedContributorRepoList = cloneDeep(
+                  contributorRepoList
+                );
+                const newContributorRepoList = clonedContributorRepoList.filter(
+                  item => item !== e
+                );
+                setContributorRepoList(newContributorRepoList);
+              }}
+            />
+          </div>
+        </div>
+        <div
           className="right"
           style={{
             width: "70%",
-            marginTop: "30px",
             border: "1px solid #dadce0",
             borderRadius: "12px"
           }}
@@ -341,73 +408,6 @@ const App = () => {
                 }}
               />
             </TabPanel>
-          </div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              flexDirection: "column"
-            }}
-          >
-            <div style={{ padding: "0 40px" }}>
-              <CompareComponent
-                list={contributorRepoList}
-                onDelete={e => {
-                  const clonedContributorRepoList = cloneDeep(
-                    contributorRepoList
-                  );
-                  const newContributorRepoList = clonedContributorRepoList.filter(
-                    item => item !== e
-                  );
-                  setContributorRepoList(newContributorRepoList);
-                }}
-              />
-            </div>
-            <Paper className={classes.root} elevation={0}>
-              <Autocomplete
-                freeSolo
-                className={classes.autocomplete}
-                size="small"
-                id="autocomplete"
-                disableClearable
-                options={searchOption}
-                onInputChange={(event, value, reason) => {
-                  if (reason === "reset") {
-                    setRepo(value);
-                    updateChart(value);
-                  }
-                }}
-                renderInput={params => (
-                  <TextField
-                    {...params}
-                    label="Search Github Repository Name"
-                    margin="normal"
-                    variant="outlined"
-                    helperText="Keep searching to complete the comparison"
-                    className={classes.searchTextField}
-                    onChange={e => {
-                      setRepo(e.target.value);
-                    }}
-                    onKeyPress={ev => {
-                      if (ev.key === "Enter") {
-                        updateChart(repo);
-                        ev.preventDefault();
-                      }
-                    }}
-                    InputProps={{ ...params.InputProps, type: "search" }}
-                  />
-                )}
-              />
-              {/* <IconButton
-                className={classes.iconButton}
-                aria-label="search"
-                onClick={() => {
-                  updateChart(repo);
-                }}
-              >
-                <SearchIcon />
-              </IconButton> */}
-            </Paper>
           </div>
         </div>
       </div>
