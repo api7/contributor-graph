@@ -14,12 +14,9 @@ import { DEFAULT_COLOR } from "../../constants";
 
 const ContributorLineChart = ({
   repoList = ["apache/apisix"],
-
   showAlert,
   onDelete,
-  onLoading,
-  isMerge = false,
-  mergeRepo = ""
+  onLoading
 }) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
@@ -37,8 +34,8 @@ const ContributorLineChart = ({
   const [viewMerge, setViewMerge] = React.useState(false);
 
   const getShareParams = () => {
-    if (isMerge) {
-      return `?chart=contributorOverTime&repo=${mergeRepo}&merge=true`;
+    if (viewMerge) {
+      return `?chart=contributorOverTime&repo=${repoList.join(",")}&merge=true`;
     }
     return `?chart=contributorOverTime&repo=${repoList.join(",")}`;
   };
@@ -200,7 +197,7 @@ const ContributorLineChart = ({
       return;
     }
 
-    if (!isMerge) {
+    if (!viewMerge) {
       setLoading(true);
       Promise.all(repoList.map(item => fetchData(item, showAlert, onDelete)))
         .then(data => {
@@ -225,30 +222,30 @@ const ContributorLineChart = ({
           setLoading(false);
         });
     } else {
-      if (!mergeRepo.length) return;
+      if (!repoList.length) return;
       setLoading(true);
-      fetchMergeContributor(mergeRepo, showAlert, onDelete)
+      fetchMergeContributor(repoList, showAlert, onDelete)
         .then(_data => {
           const tmpDataSouce = {};
           const { Contributors = [], repo } = _data;
           const data = Contributors.map(item => ({
-            repo,
+            repo: repo.join(","),
             contributorNum: item.idx,
             date: item.date
           }));
 
-          if (!tmpDataSouce[_data.repo]) {
-            tmpDataSouce[repo] = data;
+          if (!tmpDataSouce[repo.join(",")]) {
+            tmpDataSouce[repo.join(",")] = data;
           }
 
           setDataSource(tmpDataSouce);
           setLoading(false);
         })
-        .catch(() => {
+        .catch(e => {
           setLoading(false);
         });
     }
-  }, [repoList, isMerge]);
+  }, [repoList, viewMerge]);
 
   return (
     <>
