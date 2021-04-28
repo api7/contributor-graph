@@ -5,7 +5,6 @@ import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
 import omit from "lodash.omit";
 
-// import CompareComponent from "../../components/compare";
 import { Button, ButtonGroup } from "@material-ui/core";
 import { getMonths } from "../../utils";
 import { generateDefaultOption } from "../../constants";
@@ -15,6 +14,7 @@ import { DEFAULT_COLOR } from "../../constants";
 
 const ContributorLineChart = ({
   repoList = ["apache/apisix"],
+
   showAlert,
   onDelete,
   onLoading,
@@ -33,6 +33,8 @@ const ContributorLineChart = ({
       }
     })
   );
+
+  const [viewMerge, setViewMerge] = React.useState(false);
 
   const getShareParams = () => {
     if (isMerge) {
@@ -270,13 +272,25 @@ const ContributorLineChart = ({
               }}
             />
           </div> */}
-          <div id="chart" style={{ marginTop: "10px", padding: "0px 40px" }}>
+          <div
+            id="chart"
+            style={{
+              marginTop: "10px",
+              padding: "0px 40px"
+            }}
+          >
             <Tab.Container defaultActiveKey="contributor">
               <Row>
                 <Col>
                   <Tab.Content>
                     <Tab.Pane eventKey="contributor">
-                      <div style={{ marginBottom: "5px" }}>
+                      <div
+                        style={{
+                          marginBottom: "5px",
+                          display: "flex",
+                          justifyContent: "space-between"
+                        }}
+                      >
                         <ButtonGroup color="secondary" size="small">
                           <Button
                             variant={
@@ -338,6 +352,18 @@ const ContributorLineChart = ({
                             Max
                           </Button>
                         </ButtonGroup>
+
+                        {repoList.length > 1 && (
+                          <Button
+                            color="primary"
+                            variant="outlined"
+                            onClick={() => {
+                              setViewMerge(viewMerge => !viewMerge);
+                            }}
+                          >
+                            {!viewMerge ? "view merge" : "cancel merge view"}
+                          </Button>
+                        )}
                       </div>
                       <ReactECharts
                         option={option}
@@ -349,7 +375,7 @@ const ContributorLineChart = ({
                             window.echartInstance = echartInstance;
                           }
                         }}
-                        style={{ height: 600 }}
+                        style={{ height: 550 }}
                         showLoading={loading}
                         notMerge
                       />

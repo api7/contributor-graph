@@ -170,29 +170,6 @@ const ActivityChart = ({
     });
   };
 
-  const updateChart = repo => {
-    if (dataSource[repo]) return;
-    setLoading(true);
-    fetchData(repo)
-      .then(myJson => {
-        const { Contributors = [] } = myJson;
-        const data = Contributors.map(item => ({
-          repo,
-          contributorNum: item.Num,
-          date: item.Month
-        }));
-
-        const clonedDatasource = cloneDeep(dataSource);
-        if (!clonedDatasource[repo]) {
-          setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
-  };
-
   React.useEffect(() => {
     updateSeries(xAxis);
     window.parent.postMessage({ legend: Object.keys(dataSource) }, "*");
@@ -269,7 +246,7 @@ const ActivityChart = ({
                             window.echartInstance = echartInstance;
                           }
                         }}
-                        style={{ height: 600 }}
+                        style={{ height: 550 }}
                         showLoading={loading}
                         notMerge
                       />
