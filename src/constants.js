@@ -3,9 +3,33 @@ export const generateDefaultOption = ({ handleShareClick = () => {} }) => {
     color: ["#39a85a", "#4385ee", "#fabc37", "#2dc1dd", "#f972cf", "#8331c8"],
     legend: {
       top: "5%",
+      // show: false,
       data: [],
       textStyle: {
         fontSize: 14
+      },
+      formatter: function(params) {
+        var newParamsName = "";
+        var paramsNameNumber = params.length;
+        var provideNumber = 80;
+        var rowNumber = Math.ceil(paramsNameNumber / provideNumber);
+
+        if (paramsNameNumber > provideNumber) {
+          for (var p = 0; p < rowNumber; p++) {
+            var tempStr = "";
+            var start = p * provideNumber;
+            var end = start + provideNumber;
+            if (p == rowNumber - 1) {
+              tempStr = params.substring(start, paramsNameNumber);
+            } else {
+              tempStr = params.substring(start, end) + "\n";
+            }
+            newParamsName += tempStr;
+          }
+        } else {
+          newParamsName = params;
+        }
+        return newParamsName;
       }
     },
     toolbox: {
