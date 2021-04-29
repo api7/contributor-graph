@@ -27,3 +27,11 @@ export const isSameDay = (d1, d2) => {
     d1.getDate() === d2.getDate()
   );
 };
+
+export const inIframe = () => {
+  try {
+    return window.self !== window.top;
+  } catch (e) {
+    return true;
+  }
+};

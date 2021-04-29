@@ -3,14 +3,13 @@ import cloneDeep from "lodash.clonedeep";
 import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 import CompareComponent from "../../components/compare";
 import { Button, ButtonGroup } from "@material-ui/core";
 import { getMonths } from "../../utils";
-import { DEFAULT_OPTIONS } from "../../constants";
+import { generateDefaultOption } from "../../constants";
 import { fetchData, fetchMergeContributor } from "./service";
+import CustomizedDialogs from "../shareDialog";
 
 const ContributorLineChart = ({
   repoList = ["apache/apisix"],
@@ -24,9 +23,42 @@ const ContributorLineChart = ({
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
   const [xAxis, setXAxis] = React.useState([]);
-  const [option, setOption] = React.useState(DEFAULT_OPTIONS);
+  const [shareModalVisible, setShareModalVisible] = React.useState(false);
+  const [option, setOption] = React.useState(
+    generateDefaultOption({
+      handleShareClick: () => {
+        setShareModalVisible(true);
+      }
+    })
+  );
+
+  const getShareParams = () => {
+    if (isMerge) {
+      return `?chart=contributorOverTime&repo=${mergeRepo}&merge=true`;
+    }
+    return `?chart=contributorOverTime&repo=${repoList.join(",")}`;
+  };
+
+  const Dialog = React.useCallback(() => {
+    return (
+      <CustomizedDialogs
+        open={shareModalVisible}
+        params={getShareParams()}
+        onChange={() => {
+          setShareModalVisible(false);
+        }}
+      />
+    );
+  }, [shareModalVisible]);
+
   const updateSeries = passXAxis => {
-    const newClonedOption = cloneDeep(DEFAULT_OPTIONS);
+    const newClonedOption = cloneDeep(
+      generateDefaultOption({
+        handleShareClick: () => {
+          setShareModalVisible(true);
+        }
+      })
+    );
     const datasetWithFilters = [
       ["ContributorNum", "Repo", "Date", "DateValue"]
     ];
@@ -196,6 +228,7 @@ const ContributorLineChart = ({
           justifyContent: "center"
         }}
       >
+        <Dialog />
         <div className="right" style={{ width: "90%", marginTop: "10px" }}>
           <div style={{ marginTop: "10px" }}>
             <CompareComponent
@@ -279,7 +312,6 @@ const ContributorLineChart = ({
                       </div>
                       <ReactECharts
                         option={option}
-                        opts={{ renderer: "svg" }}
                         ref={e => {
                           if (e) {
                             const echartInstance = e.getEchartsInstance();
@@ -296,25 +328,6 @@ const ContributorLineChart = ({
                 </Col>
               </Row>
             </Tab.Container>
-            {Boolean(repoList.length) && (
-              <div>
-                <p>
-                  You can include the chart on your repository's README.md as
-                  follows:
-                </p>
-                <SyntaxHighlighter language="markdown" style={a11yDark}>
-                  {`
-## Contributor over time
-
-[![Contributor over time](https://contributor-graph-api.apiseven.com/contributors-svg?repo=${
-                    isMerge ? mergeRepo + "&merge=true" : repoList.join(",")
-                  })](https://www.apiseven.com/en/contributor-graph?repo=${
-                    isMerge ? mergeRepo + "&merge=true" : repoList.join(",")
-                  })
-`}
-                </SyntaxHighlighter>
-              </div>
-            )}
           </div>
         </div>
       </div>
