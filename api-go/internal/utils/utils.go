@@ -53,8 +53,8 @@ var (
 		"794b296a221cf6b9c08ddcc41de5ef33f45d46d7",
 	}
 	RepoPath         = "./config/repo_list.md"
+	MultiRepoPath    = "./config/multi-repo.yaml"
 	Token            = "794b296a221cf6b9c08ddcc41de5ef33f45d46d7"
-	MultiRepoList    = []string{"apache/apisix", "apache/skywalking"}
 	ErrSVGNeedUpdate = errors.New("SVG need to upddate")
 
 	//concurrency limit to avoid Github API abuse

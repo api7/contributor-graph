@@ -14,6 +14,7 @@ import (
 	"cloud.google.com/go/datastore"
 	"github.com/google/go-github/v33/github"
 	"github.com/schollz/progressbar/v3"
+	"gopkg.in/yaml.v2"
 
 	"github.com/api7/contributor-graph/api/internal/ghapi"
 	"github.com/api7/contributor-graph/api/internal/graph"
@@ -131,18 +132,26 @@ func SingleCon(repoInput string) ([]utils.ReturnCon, int, error) {
 }
 
 func MultiCon(repoInput string) ([]utils.ReturnCon, int, error) {
-	repos := strings.Split(repoInput, ",")
+	repoList, err := ReadMultiRepoYaml()
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
 	conMap := make(map[string]time.Time)
 
-	for _, r := range repos {
-		conLists, code, err := UpdateDB(r)
-		if err != nil {
-			return nil, code, err
-		}
-		for _, c := range conLists {
-			t, ok := conMap[c.Author]
-			if !ok || t.After(c.Date) {
-				conMap[c.Author] = c.Date
+	if repos, ok := repoList[repoInput]; !ok {
+		return nil, http.StatusNotFound, fmt.Errorf("Not supported, please file a issue/PR in github.com/api7/contributor-graph to include your repo list in")
+	} else {
+		for _, r := range repos {
+			conLists, code, err := UpdateDB(r)
+			if err != nil {
+				return nil, code, err
+			}
+			for _, c := range conLists {
+				t, ok := conMap[c.Author]
+				if !ok || t.After(c.Date) {
+					conMap[c.Author] = c.Date
+				}
 			}
 		}
 	}
@@ -354,4 +363,17 @@ func minInt(x, y int) int {
 		return x
 	}
 	return y
+}
+
+func ReadMultiRepoYaml() (map[string][]string, error) {
+	var multiRepoList map[string][]string
+	yamlFile, err := ioutil.ReadFile(utils.MultiRepoPath)
+	if err != nil {
+		return nil, err
+	}
+	err = yaml.Unmarshal(yamlFile, &multiRepoList)
+	if err != nil {
+		return nil, err
+	}
+	return multiRepoList, nil
 }

@@ -187,8 +187,14 @@ func refreshMonthly(w http.ResponseWriter, r *http.Request) {
 }
 
 func refreshMultiRepo(w http.ResponseWriter, r *http.Request) {
+	repoList, err := gcpdb.ReadMultiRepoYaml()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err.Error())
+		return
+	}
 	merge := true
-	for _, repo := range utils.MultiRepoList {
+	for repo := range repoList {
 		_, err := graph.GenerateAndSaveSVG(context.Background(), repo, merge)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
