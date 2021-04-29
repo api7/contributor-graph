@@ -132,26 +132,25 @@ func SingleCon(repoInput string) ([]utils.ReturnCon, int, error) {
 }
 
 func MultiCon(repoInput string) ([]utils.ReturnCon, int, error) {
-	repoList, err := ReadMultiRepoYaml()
-	if err != nil {
-		return nil, http.StatusInternalServerError, err
-	}
-
 	conMap := make(map[string]time.Time)
 
-	if repos, ok := repoList[repoInput]; !ok {
-		return nil, http.StatusNotFound, fmt.Errorf("Not supported, please file a issue/PR in github.com/api7/contributor-graph to include your repo list in")
+	if strings.Contains(repoInput, ",") {
+		repos := strings.Split(repoInput, ",")
+		if code, err := getConFromMultiRepo(conMap, repos); err != nil {
+			return nil, code, err
+		}
 	} else {
-		for _, r := range repos {
-			conLists, code, err := UpdateDB(r)
-			if err != nil {
+		// if repoInput only contains one repo, use our own list
+		var repoList map[string][]string
+		if err := ReadMultiRepoYaml(&repoList); err != nil {
+			return nil, http.StatusInternalServerError, err
+		}
+
+		if repos, ok := repoList[repoInput]; !ok {
+			return nil, http.StatusNotFound, fmt.Errorf("Not supported, please file a issue/PR in github.com/api7/contributor-graph to include your repo list in")
+		} else {
+			if code, err := getConFromMultiRepo(conMap, repos); err != nil {
 				return nil, code, err
-			}
-			for _, c := range conLists {
-				t, ok := conMap[c.Author]
-				if !ok || t.After(c.Date) {
-					conMap[c.Author] = c.Date
-				}
 			}
 		}
 	}
@@ -365,15 +364,30 @@ func minInt(x, y int) int {
 	return y
 }
 
-func ReadMultiRepoYaml() (map[string][]string, error) {
-	var multiRepoList map[string][]string
+func ReadMultiRepoYaml(repoList *map[string][]string) error {
 	yamlFile, err := ioutil.ReadFile(utils.MultiRepoPath)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	err = yaml.Unmarshal(yamlFile, &multiRepoList)
+	err = yaml.Unmarshal(yamlFile, &repoList)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return multiRepoList, nil
+	return nil
+}
+
+func getConFromMultiRepo(conMap map[string]time.Time, repos []string) (int, error) {
+	for _, r := range repos {
+		conLists, code, err := UpdateDB(r)
+		if err != nil {
+			return code, err
+		}
+		for _, c := range conLists {
+			t, ok := conMap[c.Author]
+			if !ok || t.After(c.Date) {
+				conMap[c.Author] = c.Date
+			}
+		}
+	}
+	return http.StatusOK, nil
 }

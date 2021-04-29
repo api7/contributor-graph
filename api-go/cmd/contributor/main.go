@@ -187,8 +187,8 @@ func refreshMonthly(w http.ResponseWriter, r *http.Request) {
 }
 
 func refreshMultiRepo(w http.ResponseWriter, r *http.Request) {
-	repoList, err := gcpdb.ReadMultiRepoYaml()
-	if err != nil {
+	var repoList map[string][]string
+	if err := gcpdb.ReadMultiRepoYaml(&repoList); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err.Error())
 		return
