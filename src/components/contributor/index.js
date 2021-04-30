@@ -32,6 +32,23 @@ const ContributorLineChart = ({
   );
 
   const [viewMerge, setViewMerge] = React.useState(false);
+  
+  const showMergeButton = React.useMemo(() => {
+    const lastItem = repoList[repoList.length - 1];
+    return lastItem === "apache/apisix" || lastItem === "apache/skywalking";
+  }, [repoList]);
+
+  const mergeRepo = React.useMemo(() => {
+    if (showMergeButton) {
+      return repoList[repoList.length - 1];
+    }
+    return "";
+  }, [repoList, showMergeButton]);
+
+  React.useEffect(() => {
+    // reset viewmerge when repo list change
+    setViewMerge(false);
+  }, [repoList.length]);
 
   const getShareParams = () => {
     if (viewMerge) {
@@ -146,10 +163,6 @@ const ContributorLineChart = ({
   };
 
   React.useEffect(() => {
-    console.log("shareModalVisible: ", shareModalVisible);
-  }, [shareModalVisible]);
-
-  React.useEffect(() => {
     switch (activeDate) {
       case "1month":
         setXAxis(getMonths(1));
@@ -222,9 +235,9 @@ const ContributorLineChart = ({
           setLoading(false);
         });
     } else {
-      if (!repoList.length) return;
+      if (!mergeRepo.length) return;
       setLoading(true);
-      fetchMergeContributor(repoList, showAlert, onDelete)
+      fetchMergeContributor([mergeRepo], showAlert, onDelete)
         .then(_data => {
           const tmpDataSouce = {};
           const { Contributors = [], repo } = _data;
@@ -350,21 +363,23 @@ const ContributorLineChart = ({
                           </Button>
                         </ButtonGroup>
 
-                        {repoList.length > 1 && (
+                        {showMergeButton && (
                           <Button
                             color="primary"
                             variant="outlined"
+                            size="smalls"
                             onClick={() => {
                               setViewMerge(viewMerge => !viewMerge);
                             }}
                           >
-                            {!viewMerge ? "view merge" : "cancel merge view"}
+                            {!viewMerge
+                              ? `view all repos related to ${mergeRepo}`
+                              : "cancel merge view"}
                           </Button>
                         )}
                       </div>
                       <ReactECharts
                         option={option}
-                        // opts={{ renderer: "svg" }}
                         ref={e => {
                           if (e) {
                             const echartInstance = e.getEchartsInstance();
