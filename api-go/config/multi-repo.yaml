@@ -10,7 +10,6 @@ apache/apisix:
     - apache/apisix-ingress-docker
     - api7/lua-resty-etcd
     - api7/lua-resty-radixtree
-    - api7/jsonschema
     - api7/lua-resty-ipmatcher
     - api7/lua-var-nginx-module
     - api7/envoy-apisix

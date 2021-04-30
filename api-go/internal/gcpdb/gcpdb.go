@@ -315,6 +315,35 @@ func GetRepoList() ([]string, int, error) {
 	return repos, http.StatusOK, nil
 }
 
+// Currently for manually add anonymous contributors due to repo's request
+// Not a good idea to expose it as API or it would ruin datastore
+func AddAnonCon(ctx context.Context, ghcli *github.Client, dbCli *datastore.Client, repoName string) {
+	anonCon, _, err := ghapi.GetAnonCon(ctx, ghcli, repoName)
+	if err != nil {
+		panic(err)
+	}
+	var conLists []*utils.ConList
+	for i, c := range anonCon {
+		listCommitOpts := &github.CommitsListOptions{Author: c}
+		comList, _, _, err := ghapi.GetCommits(ctx, ghcli, repoName, listCommitOpts)
+		if err != nil {
+			panic(err)
+		}
+		firstCommitTime := comList[len(comList)-1].GetCommit().GetAuthor().GetDate()
+		conLists = append(conLists, &utils.ConList{c, firstCommitTime})
+		fmt.Println(i, utils.ConList{c, firstCommitTime})
+	}
+	keys := make([]*datastore.Key, len(conLists))
+	for i, c := range conLists {
+		keys[i] = datastore.NameKey(repoName, c.Author, utils.ConParentKey)
+	}
+
+	if _, err := dbCli.PutMulti(ctx, keys, conLists); err != nil {
+		panic(err)
+	}
+	panic("Successfully add anonymous contributors. STOP here.")
+}
+
 func getUpdateRepoList(ctx context.Context, dbCli *datastore.Client) ([]string, error) {
 	var repoReturn []string
 	repoMap := make(map[string]bool)
