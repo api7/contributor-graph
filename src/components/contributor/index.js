@@ -32,17 +32,19 @@ const ContributorLineChart = ({
   );
 
   const [viewMerge, setViewMerge] = React.useState(false);
-  
+  const [mergeRepo, setMergerRepo] = React.useState("");
+
   const showMergeButton = React.useMemo(() => {
     const lastItem = repoList[repoList.length - 1];
     return lastItem === "apache/apisix" || lastItem === "apache/skywalking";
   }, [repoList]);
 
-  const mergeRepo = React.useMemo(() => {
+  React.useEffect(() => {
     if (showMergeButton) {
-      return repoList[repoList.length - 1];
+      setMergerRepo(repoList[repoList.length - 1]);
+      return;
     }
-    return "";
+    setMergerRepo("");
   }, [repoList, showMergeButton]);
 
   React.useEffect(() => {
