@@ -6,14 +6,14 @@ import * as echarts from "echarts";
 import omit from "lodash.omit";
 
 import { Button, ButtonGroup } from "@material-ui/core";
-import { getMonths } from "../../utils";
+import { getMonths, getParameterByName } from "../../utils";
 import { generateDefaultOption } from "../../constants";
 import { fetchData, fetchMergeContributor } from "./service";
 import CustomizedDialogs from "../shareDialog";
 import { DEFAULT_COLOR } from "../../constants";
 
 const ContributorLineChart = ({
-  repoList = ["apache/apisix"],
+  repoList = [],
   showAlert,
   onDelete,
   onLoading
@@ -49,12 +49,14 @@ const ContributorLineChart = ({
 
   React.useEffect(() => {
     // reset viewmerge when repo list change
-    setViewMerge(false);
+    if (!showMergeButton) {
+      setViewMerge(false);
+    }
   }, [repoList.length]);
 
   const getShareParams = () => {
     if (viewMerge) {
-      return `?chart=contributorOverTime&repo=${repoList.join(",")}&merge=true`;
+      return `?chart=contributorOverTime&repo=${mergeRepo}&merge=true`;
     }
     return `?chart=contributorOverTime&repo=${repoList.join(",")}`;
   };
@@ -262,6 +264,18 @@ const ContributorLineChart = ({
     }
   }, [repoList, viewMerge]);
 
+  React.useEffect(() => {
+    const merge = getParameterByName("merge");
+    const repo = getParameterByName("repo");
+    if (
+      (merge === "true" && repo === "apache/apisix") ||
+      repo === "apache/skywalking"
+    ) {
+      setMergerRepo(repo);
+      setViewMerge(true);
+    }
+  }, []);
+
   return (
     <>
       <div
@@ -273,17 +287,6 @@ const ContributorLineChart = ({
       >
         <Dialog />
         <div className="right" style={{ width: "100%" }}>
-          {/* <div style={{ marginTop: "10px" }}>
-            <CompareComponent
-              list={Object.keys(dataSource)}
-              onDelete={e => {
-                const clonedDataSource = cloneDeep(dataSource);
-                const newDataSource = omit(clonedDataSource, [e]);
-                setDataSource(newDataSource);
-                onDelete(e);
-              }}
-            />
-          </div> */}
           <div
             id="chart"
             style={{
@@ -369,7 +372,7 @@ const ContributorLineChart = ({
                           <Button
                             color="primary"
                             variant="outlined"
-                            size="smalls"
+                            size="small"
                             onClick={() => {
                               setViewMerge(viewMerge => !viewMerge);
                             }}

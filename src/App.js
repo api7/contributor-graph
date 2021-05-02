@@ -19,8 +19,6 @@ const Alert = props => {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 };
 
-const ALLOW_MERGE_LIST = ["skywalking", "apisix"];
-
 const useStyles = makeStyles(theme => ({
   button: {
     margin: theme.spacing(1)
@@ -94,7 +92,6 @@ const App = () => {
   const [contributorRepoList, setContributorRepoList] = React.useState([]);
   const [value, setValue] = React.useState(0);
   const [tabdisabled, setTabDisabled] = React.useState(false);
-  const [mergeStatus, setMergeStatus] = React.useState(false);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -117,10 +114,6 @@ const App = () => {
   };
 
   const updateChart = repo => {
-    const index = ALLOW_MERGE_LIST.findIndex(item => repo.includes(item));
-    if (index === -1) {
-      setMergeStatus(false);
-    }
     if (!contributorRepoList.includes(repo)) {
       setContributorRepoList([...contributorRepoList, repo]);
     }
@@ -147,24 +140,14 @@ const App = () => {
   React.useEffect(() => {
     getSearchOptions();
     const repo = getParameterByName("repo") || "apache/apisix";
+    const repoArr = repo.split(",").filter(Boolean);
+    setContributorRepoList(repoArr);
+
     const chart = getParameterByName("chart");
     if (chart === "contributorMonthlyActivity") {
       setValue(1);
     } else {
-      const merge = getParameterByName("merge");
-      setRepo(repo);
-      const index = ALLOW_MERGE_LIST.findIndex(item => repo.includes(item));
-      if (merge === "true" && index !== -1) {
-        setTimeout(() => {
-          setMergeStatus(true);
-        }, 500);
-      }
-    }
-    if (repo) {
-      const repoArr = repo.split(",").filter(Boolean);
-      setContributorRepoList(repoArr);
-    } else {
-      setContributorRepoList(["apache/apisix"]);
+      setValue(0);
     }
   }, []);
 
@@ -285,25 +268,6 @@ const App = () => {
                 flexDirection: "column"
               }}
             >
-              {/* {Boolean(!value) && Boolean(showMergeButton) && (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  onClick={() => {
-                    setMergeStatus(!mergeStatus);
-                  }}
-                  style={{ width: "260px", marginLeft: "8px" }}
-                >
-                  {Boolean(!mergeStatus)
-                    ? `View all repos related to ${
-                        repo.includes("skywalking")
-                          ? "apache/skywalking"
-                          : "apache/apisix"
-                      }`
-                    : "Cancel merge view"}
-                </Button>
-              )} */}
             </div>
           </div>
 
@@ -349,10 +313,6 @@ const App = () => {
                   setTabDisabled(e);
                 }}
                 onDelete={e => {
-                  if (mergeStatus) {
-                    setMergeStatus(false);
-                    return;
-                  }
                   setContributorRepoList(
                     contributorRepoList.filter(item => item !== e)
                   );
