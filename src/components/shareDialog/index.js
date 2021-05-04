@@ -213,7 +213,6 @@ export default function CustomizedDialogs({
   params = ""
 }) {
   const handleClose = () => {
-    console.log("close");
     onChange(false);
   };
   return (

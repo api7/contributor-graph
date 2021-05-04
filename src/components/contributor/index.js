@@ -1,6 +1,5 @@
 import React from "react";
 import cloneDeep from "lodash.clonedeep";
-import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
 import omit from "lodash.omit";

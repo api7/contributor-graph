@@ -14,6 +14,7 @@ import (
 	"cloud.google.com/go/datastore"
 	"github.com/google/go-github/v33/github"
 	"github.com/schollz/progressbar/v3"
+	"gopkg.in/yaml.v2"
 
 	"github.com/api7/contributor-graph/api/internal/ghapi"
 	"github.com/api7/contributor-graph/api/internal/graph"
@@ -84,30 +85,33 @@ func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 			// get last page
 			lastPage := 0
 			listCommitOpts := &github.CommitsListOptions{Since: lastModifiedTimeDB, ListOptions: ghapi.ListOpts}
-			_, resp, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
+			lastCommits, resp, statusCode, err := ghapi.GetCommits(ctx, ghCli, repoName, listCommitOpts)
 			if err != nil {
 				return nil, statusCode, err
 			}
-			if resp.LastPage != 0 {
-				lastPage = resp.LastPage
-			}
+			if len(lastCommits) != 0 {
+				if resp.LastPage != 0 {
+					lastPage = resp.LastPage
+				}
 
-			newConLists, code, err := updateContributorList(ctx, dbCli, ghCli, conMap, repoName, lastPage, listCommitOpts, isSearch)
-			if err != nil {
-				return nil, code, err
-			}
-			conLists = append(conLists, newConLists...)
+				var code int
+				conLists, code, err = updateContributorList(ctx, dbCli, ghCli, conMap, repoName, lastPage, listCommitOpts, isSearch)
+				if err != nil {
+					return nil, code, err
+				}
 
+				if repoInput == "" {
+					merge := false
+					if _, err := graph.GenerateAndSaveSVG(ctx, repoName, merge); err != nil {
+						return nil, http.StatusInternalServerError, err
+					}
+				}
+			}
 			updateFlag := repoInput == ""
 			if err := updateRepoList(ctx, dbCli, repoName, len(conLists), updateFlag); err != nil {
 				return nil, http.StatusInternalServerError, err
 			}
 
-			if repoInput == "" {
-				if err := graph.GenerateAndSaveSVG(ctx, repoName); err != nil {
-					return nil, http.StatusInternalServerError, err
-				}
-			}
 		}
 	}
 
@@ -128,18 +132,25 @@ func SingleCon(repoInput string) ([]utils.ReturnCon, int, error) {
 }
 
 func MultiCon(repoInput string) ([]utils.ReturnCon, int, error) {
-	repos := strings.Split(repoInput, ",")
 	conMap := make(map[string]time.Time)
 
-	for _, r := range repos {
-		conLists, code, err := UpdateDB(r)
-		if err != nil {
+	if strings.Contains(repoInput, ",") {
+		repos := strings.Split(repoInput, ",")
+		if code, err := getConFromMultiRepo(conMap, repos); err != nil {
 			return nil, code, err
 		}
-		for _, c := range conLists {
-			t, ok := conMap[c.Author]
-			if !ok || t.After(c.Date) {
-				conMap[c.Author] = c.Date
+	} else {
+		// if repoInput only contains one repo, use our own list
+		var repoList map[string][]string
+		if err := ReadMultiRepoYaml(&repoList); err != nil {
+			return nil, http.StatusInternalServerError, err
+		}
+
+		if repos, ok := repoList[repoInput]; !ok {
+			return nil, http.StatusNotFound, fmt.Errorf("Not supported, please file a issue/PR in github.com/api7/contributor-graph to include your repo list in")
+		} else {
+			if code, err := getConFromMultiRepo(conMap, repos); err != nil {
+				return nil, code, err
 			}
 		}
 	}
@@ -245,10 +256,6 @@ func updateContributorList(
 		return commitLists[i].Date.Before(commitLists[j].Date)
 	})
 
-	for _, c := range commitLists {
-		fmt.Printf("%s %s\n", c.Date.String(), c.Author)
-	}
-
 	// at most write 500 entities in a single call
 	rangeMax := 500
 	rangeNeeded := int(math.Ceil(float64(len(commitLists)) / float64(rangeMax)))
@@ -308,6 +315,35 @@ func GetRepoList() ([]string, int, error) {
 	return repos, http.StatusOK, nil
 }
 
+// Currently for manually add anonymous contributors due to repo's request
+// Not a good idea to expose it as API or it would ruin datastore
+func AddAnonCon(ctx context.Context, ghcli *github.Client, dbCli *datastore.Client, repoName string) {
+	anonCon, _, err := ghapi.GetAnonCon(ctx, ghcli, repoName)
+	if err != nil {
+		panic(err)
+	}
+	var conLists []*utils.ConList
+	for i, c := range anonCon {
+		listCommitOpts := &github.CommitsListOptions{Author: c}
+		comList, _, _, err := ghapi.GetCommits(ctx, ghcli, repoName, listCommitOpts)
+		if err != nil {
+			panic(err)
+		}
+		firstCommitTime := comList[len(comList)-1].GetCommit().GetAuthor().GetDate()
+		conLists = append(conLists, &utils.ConList{c, firstCommitTime})
+		fmt.Println(i, utils.ConList{c, firstCommitTime})
+	}
+	keys := make([]*datastore.Key, len(conLists))
+	for i, c := range conLists {
+		keys[i] = datastore.NameKey(repoName, c.Author, utils.ConParentKey)
+	}
+
+	if _, err := dbCli.PutMulti(ctx, keys, conLists); err != nil {
+		panic(err)
+	}
+	panic("Successfully add anonymous contributors. STOP here.")
+}
+
 func getUpdateRepoList(ctx context.Context, dbCli *datastore.Client) ([]string, error) {
 	var repoReturn []string
 	repoMap := make(map[string]bool)
@@ -355,4 +391,32 @@ func minInt(x, y int) int {
 		return x
 	}
 	return y
+}
+
+func ReadMultiRepoYaml(repoList *map[string][]string) error {
+	yamlFile, err := ioutil.ReadFile(utils.MultiRepoPath)
+	if err != nil {
+		return err
+	}
+	err = yaml.Unmarshal(yamlFile, &repoList)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getConFromMultiRepo(conMap map[string]time.Time, repos []string) (int, error) {
+	for _, r := range repos {
+		conLists, code, err := UpdateDB(r)
+		if err != nil {
+			return code, err
+		}
+		for _, c := range conLists {
+			t, ok := conMap[c.Author]
+			if !ok || t.After(c.Date) {
+				conMap[c.Author] = c.Date
+			}
+		}
+	}
+	return http.StatusOK, nil
 }

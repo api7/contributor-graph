@@ -4,11 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"strings"
 
+	"cloud.google.com/go/storage"
 	"github.com/api7/contributor-graph/api/internal/activities"
 	"github.com/api7/contributor-graph/api/internal/contributor"
 	"github.com/api7/contributor-graph/api/internal/gcpdb"
@@ -43,6 +42,7 @@ func main() {
 	http.HandleFunc("/contributors-multi", getMultiContributor)
 	http.HandleFunc("/refreshAll", refreshAll)
 	http.HandleFunc("/refreshMonthly", refreshMonthly)
+	http.HandleFunc("/refreshMultiRepo", refreshMultiRepo)
 	http.HandleFunc("/repos", getRepos)
 	http.HandleFunc("/activities", getActivities)
 	http.HandleFunc("/monthly-contributor", getMonthlyContributor)
@@ -111,30 +111,25 @@ func getMultiContributor(w http.ResponseWriter, r *http.Request) {
 func getContributorSVG(w http.ResponseWriter, r *http.Request) {
 	v := r.URL.Query()
 	repo := v.Get("repo")
+	merge := v.Get("merge") != ""
 
-	w.Header().Add("content-type", "image/svg+xml;charset=utf-8")
-	w.Header().Add("cache-control", "public, max-age=86400")
-
-	svg, err := subGetSVG(w, repo)
-	if err != nil {
+	svg, err := graph.SubGetSVG(w, repo, merge)
+	if err != nil && err != storage.ErrObjectNotExist && err != utils.ErrSVGNeedUpdate {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err.Error())
 		return
 	}
 
-	if strings.Contains(svg, "AccessDenied") {
-		if err = graph.GenerateAndSaveSVG(context.Background(), repo); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			json.NewEncoder(w).Encode(err.Error())
-			return
-		}
-		svg, err = subGetSVG(w, repo)
+	if svg == "" {
+		svg, err = graph.GenerateAndSaveSVG(context.Background(), repo, merge)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(err.Error())
 			return
 		}
 	}
+	w.Header().Add("content-type", "image/svg+xml;charset=utf-8")
+	w.Header().Add("cache-control", "public, max-age=86400")
 
 	fmt.Fprintf(w, svg)
 }
@@ -191,15 +186,20 @@ func refreshMonthly(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func subGetSVG(w http.ResponseWriter, repo string) (string, error) {
-	resp, err := http.Get("https://storage.googleapis.com/api7-301102.appspot.com/" + utils.RepoNameToFileName(repo) + ".svg")
-	if err != nil {
-		return "", err
+func refreshMultiRepo(w http.ResponseWriter, r *http.Request) {
+	var repoList map[string][]string
+	if err := gcpdb.ReadMultiRepoYaml(&repoList); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err.Error())
+		return
 	}
-	defer resp.Body.Close()
-	svg, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
+	merge := true
+	for repo := range repoList {
+		_, err := graph.GenerateAndSaveSVG(context.Background(), repo, merge)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(err.Error())
+			return
+		}
 	}
-	return string(svg), nil
 }
