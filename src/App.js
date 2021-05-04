@@ -8,6 +8,9 @@ import Tab from "@material-ui/core/Tab";
 import PropTypes from "prop-types";
 import Typography from "@material-ui/core/Typography";
 import Box from "@material-ui/core/Box";
+import IconButton from "@material-ui/core/IconButton";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import SearchIcon from "@material-ui/icons/Search";
 import cloneDeep from "lodash.clonedeep";
 
 import ContirbutorLineChart from "./components/contributor";
@@ -222,19 +225,23 @@ const App = () => {
                       ev.preventDefault();
                     }
                   }}
-                  InputProps={{ ...params.InputProps, type: "search" }}
+                  InputProps={{
+                    ...params.InputProps,
+                    endAdornment: (
+                      <InputAdornment>
+                        <IconButton
+                          onClick={() => {
+                            updateChart(repo);
+                          }}
+                        >
+                          <SearchIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    )
+                  }}
                 />
               )}
             />
-            {/* <IconButton
-                className={classes.iconButton}
-                aria-label="search"
-                onClick={() => {
-                  updateChart(repo);
-                }}
-              >
-                <SearchIcon />
-              </IconButton> */}
           </Paper>
           <div>
             <CompareComponent
@@ -267,8 +274,7 @@ const App = () => {
                 justifyContent: "center",
                 flexDirection: "column"
               }}
-            >
-            </div>
+            ></div>
           </div>
 
           <div>

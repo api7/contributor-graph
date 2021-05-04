@@ -294,113 +294,89 @@ const ContributorLineChart = ({
               padding: "0px 40px"
             }}
           >
-            <Tab.Container defaultActiveKey="contributor">
-              <Row>
-                <Col>
-                  <Tab.Content>
-                    <Tab.Pane eventKey="contributor">
-                      <div
-                        style={{
-                          marginBottom: "5px",
-                          display: "flex",
-                          justifyContent: "space-between"
-                        }}
-                      >
-                        <ButtonGroup color="secondary" size="small">
-                          <Button
-                            variant={
-                              activeDate === "1month" ? "contained" : "outlined"
-                            }
-                            value="1month"
-                            onClick={e => {
-                              setActiveDate(e.currentTarget.value);
-                            }}
-                          >
-                            1 Month
-                          </Button>
-                          <Button
-                            variant={
-                              activeDate === "3months"
-                                ? "contained"
-                                : "outlined"
-                            }
-                            value="3months"
-                            onClick={e => {
-                              setActiveDate(e.currentTarget.value);
-                            }}
-                          >
-                            3 Months
-                          </Button>
-                          <Button
-                            variant={
-                              activeDate === "6months"
-                                ? "contained"
-                                : "outlined"
-                            }
-                            value="6months"
-                            onClick={e => {
-                              setActiveDate(e.currentTarget.value);
-                            }}
-                          >
-                            6 Months
-                          </Button>
-                          <Button
-                            variant={
-                              activeDate === "1year" ? "contained" : "outlined"
-                            }
-                            value="1year"
-                            onClick={e => {
-                              setActiveDate(e.currentTarget.value);
-                            }}
-                          >
-                            1 Year
-                          </Button>
-                          <Button
-                            variant={
-                              activeDate === "max" ? "contained" : "outlined"
-                            }
-                            value="max"
-                            onClick={e => {
-                              setActiveDate(e.currentTarget.value);
-                            }}
-                          >
-                            Max
-                          </Button>
-                        </ButtonGroup>
+            <div
+              style={{
+                marginBottom: "5px",
+                display: document.body.clientWidth > 670 ? "flex" : "unset",
+                justifyContent: "space-between"
+              }}
+            >
+              <ButtonGroup color="secondary" size="small">
+                <Button
+                  variant={activeDate === "1month" ? "contained" : "outlined"}
+                  value="1month"
+                  onClick={e => {
+                    setActiveDate(e.currentTarget.value);
+                  }}
+                >
+                  1 Month
+                </Button>
+                <Button
+                  variant={activeDate === "3months" ? "contained" : "outlined"}
+                  value="3months"
+                  onClick={e => {
+                    setActiveDate(e.currentTarget.value);
+                  }}
+                >
+                  3 Months
+                </Button>
+                <Button
+                  variant={activeDate === "6months" ? "contained" : "outlined"}
+                  value="6months"
+                  onClick={e => {
+                    setActiveDate(e.currentTarget.value);
+                  }}
+                >
+                  6 Months
+                </Button>
+                <Button
+                  variant={activeDate === "1year" ? "contained" : "outlined"}
+                  value="1year"
+                  onClick={e => {
+                    setActiveDate(e.currentTarget.value);
+                  }}
+                >
+                  1 Year
+                </Button>
+                <Button
+                  variant={activeDate === "max" ? "contained" : "outlined"}
+                  value="max"
+                  onClick={e => {
+                    setActiveDate(e.currentTarget.value);
+                  }}
+                >
+                  Max
+                </Button>
+              </ButtonGroup>
 
-                        {showMergeButton && (
-                          <Button
-                            color="primary"
-                            variant="outlined"
-                            size="small"
-                            onClick={() => {
-                              setViewMerge(viewMerge => !viewMerge);
-                            }}
-                          >
-                            {!viewMerge
-                              ? `view all repos related to ${mergeRepo}`
-                              : "cancel merge view"}
-                          </Button>
-                        )}
-                      </div>
-                      <ReactECharts
-                        option={option}
-                        ref={e => {
-                          if (e) {
-                            const echartInstance = e.getEchartsInstance();
-                            // then you can use any API of echarts.
-                            window.echartInstance = echartInstance;
-                          }
-                        }}
-                        style={{ height: 550 }}
-                        showLoading={loading}
-                        notMerge
-                      />
-                    </Tab.Pane>
-                  </Tab.Content>
-                </Col>
-              </Row>
-            </Tab.Container>
+              {showMergeButton && (
+                <Button
+                  color="primary"
+                  variant="outlined"
+                  size="small"
+                  onClick={() => {
+                    setViewMerge(viewMerge => !viewMerge);
+                  }}
+                >
+                  {!viewMerge
+                    ? `view all repos related to ${mergeRepo}`
+                    : "cancel merge view"}
+                </Button>
+              )}
+            </div>
+            <ReactECharts
+              option={option}
+              ref={e => {
+                if (e) {
+                  const echartInstance = e.getEchartsInstance();
+                  // then you can use any API of echarts.
+                  window.echartInstance = echartInstance;
+                }
+              }}
+              style={{ height: 550 }}
+              showLoading={loading}
+              notMerge
+            />
           </div>
         </div>
       </div>
