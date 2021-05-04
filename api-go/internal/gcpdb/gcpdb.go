@@ -33,6 +33,11 @@ func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 	}
 	defer dbCli.Close()
 
+	tokens, err := GetTokens(dbCli)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
 	var repos []string
 	var isSearch bool
 	if repoInput == "" {
@@ -52,9 +57,9 @@ func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 
 		var ghToken string
 		if repoInput == "" {
-			ghToken = utils.UpdateToken[i%len(utils.UpdateToken)]
+			ghToken = tokens[i%len(tokens)].Token
 		} else {
-			ghToken = utils.Token
+			ghToken = tokens[0].Token
 		}
 		ghCli := ghapi.GetGithubClient(ctx, ghToken)
 
@@ -390,4 +395,21 @@ func getConFromMultiRepo(conMap map[string]time.Time, repos []string) (int, erro
 		}
 	}
 	return http.StatusOK, nil
+}
+
+func GetTokens(dbCli *datastore.Client) ([]*utils.Token, error) {
+	ctx := context.Background()
+	if dbCli == nil {
+		dbCli, err := datastore.NewClient(ctx, utils.ProjectID)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to create client: %v", err)
+		}
+		defer dbCli.Close()
+	}
+	tokens := []*utils.Token{}
+	_, err := dbCli.GetAll(ctx, datastore.NewQuery("token"), &tokens)
+	if err != nil {
+		return nil, err
+	}
+	return tokens, nil
 }

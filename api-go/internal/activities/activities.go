@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/go-github/v33/github"
 
+	"github.com/api7/contributor-graph/api/internal/gcpdb"
 	"github.com/api7/contributor-graph/api/internal/ghapi"
 	"github.com/api7/contributor-graph/api/internal/utils"
 )
@@ -25,7 +26,13 @@ type Activities struct {
 
 func GetActivities(repoName string) (Activities, int, error) {
 	ctx := context.Background()
-	ghCli := ghapi.GetGithubClient(ctx, utils.Token)
+
+	tokens, err := gcpdb.GetTokens(nil)
+	if err != nil {
+		return Activities{}, http.StatusInternalServerError, err
+	}
+
+	ghCli := ghapi.GetGithubClient(ctx, tokens[0].Token)
 
 	issues, prs, code, err := getIssuesAndPRs(ctx, ghCli, repoName)
 	if err != nil {

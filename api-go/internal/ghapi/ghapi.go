@@ -3,7 +3,6 @@ package ghapi
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -68,17 +67,7 @@ func GetCommits(ctx context.Context, ghCli *github.Client, repoName string, list
 		if strings.Contains(err.Error(), "404 Not Found") {
 			return nil, nil, http.StatusNotFound, fmt.Errorf("Repo not found")
 		}
-		if _, ok := err.(*github.RateLimitError); ok || strings.Contains(err.Error(), "403 API rate limit exceeded") {
-			// give it another random chance to see if magic happens
-			*ghCli = *GetGithubClient(ctx, utils.UpdateToken[rand.Intn(len(utils.UpdateToken))])
-			commits, resp, err = ghCli.Repositories.ListCommits(ctx, owner, repo, listCommitOpts)
-			if err != nil {
-				return nil, nil, http.StatusForbidden, fmt.Errorf("Hit rate limit")
-			}
-			fmt.Println("MAGIC happens and let's rolling again!")
-		} else {
-			return nil, nil, resp.StatusCode, err
-		}
+		return nil, nil, resp.StatusCode, err
 	}
 	return commits, resp, http.StatusOK, nil
 }

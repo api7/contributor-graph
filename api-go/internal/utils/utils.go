@@ -42,25 +42,18 @@ type ErrorWithCode struct {
 	Code int
 }
 
+type Token struct {
+	Token string
+}
+
 var (
-	DBName       = "contributor"
-	RepoDBName   = "Repo"
-	ConParentKey = datastore.NameKey("Contributors", "con", nil)
-	ProjectID    = "api7-301102"
-	UpdateToken  = []string{
-		"d5cb5a94b6eb03d0518dece280095891a900b6a3",
-		"4be342dc78138f46eb0f17bfd9a192d3142170da",
-		"794b296a221cf6b9c08ddcc41de5ef33f45d46d7",
-	}
+	DBName           = "contributor"
+	RepoDBName       = "Repo"
+	ConParentKey     = datastore.NameKey("Contributors", "con", nil)
+	ProjectID        = "api7-301102"
 	RepoPath         = "./config/repo_list.md"
 	MultiRepoPath    = "./config/multi-repo.yaml"
-	Token            = "794b296a221cf6b9c08ddcc41de5ef33f45d46d7"
 	ErrSVGNeedUpdate = errors.New("SVG need to upddate")
-
-	//concurrency limit to avoid Github API abuse
-	// UpdateLimit     = 1
-	// LargeRepoLimit  = 10
-	// NormalRepoLimit = 100
 )
 
 func RepoNameToFileName(str string, merge bool) string {
