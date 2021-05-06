@@ -104,7 +104,11 @@ func SubGetSVG(w http.ResponseWriter, repo string, merge bool) (string, error) {
 	// if we want to cut off this payment, we could toss a dice here and do the record in a certain probability
 	// when people really put the image in their README/website, since the click times is a lot
 	// we could still tell if people are using it
-	key := datastore.NameKey("GraphTraffic", repo, nil)
+	storeName := repo
+	if merge {
+		storeName = "merge-" + repo
+	}
+	key := datastore.NameKey("GraphTraffic", storeName, nil)
 	traffic := utils.GraphTraffic{}
 	err = dbCli.Get(ctx, key, &traffic)
 	if err != nil {
