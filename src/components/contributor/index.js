@@ -3,35 +3,67 @@ import cloneDeep from "lodash.clonedeep";
 import { Row, Col, Tab } from "react-bootstrap";
 import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
-import moment from "moment";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 import CompareComponent from "../../components/compare";
 import { Button, ButtonGroup } from "@material-ui/core";
-import { getMonths, isSameDay } from "../../utils";
-import { DEFAULT_OPTIONS } from "../../constants";
+import { getMonths } from "../../utils";
+import { generateDefaultOption } from "../../constants";
+import { fetchData, fetchMergeContributor } from "./service";
+import CustomizedDialogs from "../shareDialog";
 
 const ContributorLineChart = ({
   repoList = ["apache/apisix"],
   showAlert,
   onDelete,
-  onLoading
+  onLoading,
+  isMerge = false,
+  mergeRepo = ""
 }) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
   const [xAxis, setXAxis] = React.useState([]);
-  const [option, setOption] = React.useState(DEFAULT_OPTIONS);
+  const [shareModalVisible, setShareModalVisible] = React.useState(false);
+  const [option, setOption] = React.useState(
+    generateDefaultOption({
+      handleShareClick: () => {
+        setShareModalVisible(true);
+      }
+    })
+  );
+
+  const getShareParams = () => {
+    if (isMerge) {
+      return `?chart=contributorOverTime&repo=${mergeRepo}&merge=true`;
+    }
+    return `?chart=contributorOverTime&repo=${repoList.join(",")}`;
+  };
+
+  const Dialog = React.useCallback(() => {
+    return (
+      <CustomizedDialogs
+        open={shareModalVisible}
+        params={getShareParams()}
+        onChange={() => {
+          setShareModalVisible(false);
+        }}
+      />
+    );
+  }, [shareModalVisible]);
 
   const updateSeries = passXAxis => {
-    const newClonedOption = cloneDeep(DEFAULT_OPTIONS);
+    const newClonedOption = cloneDeep(
+      generateDefaultOption({
+        handleShareClick: () => {
+          setShareModalVisible(true);
+        }
+      })
+    );
     const datasetWithFilters = [
       ["ContributorNum", "Repo", "Date", "DateValue"]
     ];
     const legend = [];
     const limitDate = new Date(passXAxis[0]).getTime();
-
     Object.entries(dataSource).forEach(([key, value]) => {
       legend.push(key);
       value.forEach(item => {
@@ -89,114 +121,6 @@ const ContributorLineChart = ({
     setOption(newClonedOption);
   };
 
-  const fetchData = repo => {
-    if (repo === "null" || repo === null) {
-      repo = "apache/apisix";
-    }
-    return new Promise((resolve, reject) => {
-      fetch(
-        `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
-      )
-        .then(response => {
-          if (!response.ok) {
-            onDelete(repo);
-            let message = "";
-            switch (response.status) {
-              case 403:
-                message = "Hit rate limit";
-                break;
-              case 404:
-                message = "Repo format error / Repo not found";
-                break;
-              default:
-                message = "Request Error";
-                break;
-            }
-            throw message;
-          }
-          return response.json();
-        })
-        .then(myJson => {
-          const { Contributors = [] } = myJson;
-          const sortContributors = Contributors.map(item => ({
-            ...item,
-            date: item.date.substring(0, 10)
-          })).sort(
-            (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-          );
-          if (
-            !isSameDay(
-              new Date(sortContributors[sortContributors.length - 1].date),
-              new Date()
-            )
-          ) {
-            sortContributors.push({
-              repo,
-              idx: sortContributors[sortContributors.length - 1].idx,
-              date: moment(new Date()).format("YYYY-MM-DD")
-            });
-          }
-
-          const processContributors = [];
-          sortContributors.forEach((item, index) => {
-            processContributors.push(item);
-
-            if (index !== sortContributors.length - 1) {
-              const diffDays = moment(sortContributors[index + 1].date).diff(
-                item.date,
-                "days"
-              );
-              if (diffDays > 1) {
-                for (let index = 1; index < diffDays; index++) {
-                  processContributors.push({
-                    ...item,
-                    date: moment(item.date)
-                      .add(index, "days")
-                      .format()
-                      .substring(0, 10)
-                  });
-                }
-              }
-            }
-          });
-          const filterData = processContributors.filter(
-            (item, index) =>
-              index === 0 ||
-              index === processContributors.length - 1 ||
-              new Date(item.date).getDate() % 10 === 5
-          );
-          resolve({ repo, ...{ Contributors: filterData } });
-        })
-        .catch(e => {
-          showAlert(e, "error");
-          reject();
-        });
-    });
-  };
-
-  const updateChart = repo => {
-    if (dataSource[repo]) return;
-    setLoading(true);
-    fetchData(repo)
-      .then(myJson => {
-        const { Contributors = [] } = myJson;
-        const data = Contributors.map(item => ({
-          repo,
-          contributorNum: item.idx,
-          date: item.date
-        }));
-
-        const clonedDatasource = cloneDeep(dataSource);
-        if (!clonedDatasource[repo]) {
-          setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
-  };
-
   React.useEffect(() => {
     switch (activeDate) {
       case "1month":
@@ -245,33 +169,55 @@ const ContributorLineChart = ({
       return;
     }
 
-    const updateList = repoList.filter(item => !datasourceList.includes(item));
+    if (!isMerge) {
+      setLoading(true);
+      Promise.all(repoList.map(item => fetchData(item, showAlert, onDelete)))
+        .then(data => {
+          const tmpDataSouce = {};
+          data.forEach(item => {
+            const { Contributors = [], repo } = item;
+            const data = Contributors.map(item => ({
+              repo,
+              contributorNum: item.idx,
+              date: item.date
+            }));
 
-    setLoading(true);
-    Promise.all(updateList.map(item => fetchData(item)))
-      .then(data => {
-        const tmpDataSouce = {};
-        data.forEach(item => {
-          const { Contributors = [], repo } = item;
+            if (!tmpDataSouce[item.repo]) {
+              tmpDataSouce[repo] = data;
+            }
+          });
+
+          setDataSource(tmpDataSouce);
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+        });
+    } else {
+      if (!mergeRepo.length) return;
+      setLoading(true);
+      fetchMergeContributor(mergeRepo, showAlert, onDelete)
+        .then(_data => {
+          const tmpDataSouce = {};
+          const { Contributors = [], repo } = _data;
           const data = Contributors.map(item => ({
             repo,
             contributorNum: item.idx,
             date: item.date
           }));
 
-          if (!tmpDataSouce[item.repo]) {
+          if (!tmpDataSouce[_data.repo]) {
             tmpDataSouce[repo] = data;
           }
-        });
 
-        const clonedDatasource = cloneDeep(dataSource);
-        setDataSource({ ...clonedDatasource, ...tmpDataSouce });
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
-  }, [repoList]);
+          setDataSource(tmpDataSouce);
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+        });
+    }
+  }, [repoList, isMerge]);
 
   return (
     <>
@@ -282,6 +228,7 @@ const ContributorLineChart = ({
           justifyContent: "center"
         }}
       >
+        <Dialog />
         <div className="right" style={{ width: "90%", marginTop: "10px" }}>
           <div style={{ marginTop: "10px" }}>
             <CompareComponent
@@ -291,10 +238,6 @@ const ContributorLineChart = ({
                 const newDataSource = omit(clonedDataSource, [e]);
                 setDataSource(newDataSource);
                 onDelete(e);
-              }}
-              onConfirm={e => {
-                if (!e) return;
-                updateChart(e);
               }}
             />
           </div>
@@ -369,7 +312,6 @@ const ContributorLineChart = ({
                       </div>
                       <ReactECharts
                         option={option}
-                        opts={{ renderer: "svg" }}
                         ref={e => {
                           if (e) {
                             const echartInstance = e.getEchartsInstance();
@@ -386,25 +328,6 @@ const ContributorLineChart = ({
                 </Col>
               </Row>
             </Tab.Container>
-            {Boolean(repoList.length) && (
-              <div>
-                <p>
-                  You can include the chart on your repository's README.md as
-                  follows:
-                </p>
-                <SyntaxHighlighter language="markdown" style={a11yDark}>
-                  {`
-## Contributor over time
-
-[![Contributor over time](https://contributor-graph-api.apiseven.com/contributors-svg?repo=${repoList.join(
-                    ","
-                  )})](https://www.apiseven.com/en/contributor-graph?repo=${repoList.join(
-                    ","
-                  )})
-`}
-                </SyntaxHighlighter>
-              </div>
-            )}
           </div>
         </div>
       </div>

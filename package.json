@@ -7,6 +7,7 @@
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.57",
     "bootstrap": "^4.6.0",
+    "copy-to-clipboard": "^3.3.1",
     "echarts": "^5.0.2",
     "echarts-for-react": "^3.0.1",
     "lodash.clonedeep": "^4.5.0",

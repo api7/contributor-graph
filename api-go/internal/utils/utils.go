@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"strings"
 	"time"
 
@@ -45,28 +46,26 @@ type GraphTraffic struct {
 	Num           int
 	LastVisitTime time.Time
 }
+type Token struct {
+	Token string
+}
 
 var (
-	DBName       = "contributor"
-	RepoDBName   = "Repo"
-	ConParentKey = datastore.NameKey("Contributors", "con", nil)
-	ProjectID    = "api7-301102"
-	UpdateToken  = []string{
-		"d5cb5a94b6eb03d0518dece280095891a900b6a3",
-		"4be342dc78138f46eb0f17bfd9a192d3142170da",
-		"794b296a221cf6b9c08ddcc41de5ef33f45d46d7",
-	}
-	RepoPath = "./config/repo_list.md"
-	Token    = "794b296a221cf6b9c08ddcc41de5ef33f45d46d7"
-
-	//concurrency limit to avoid Github API abuse
-	// UpdateLimit     = 1
-	// LargeRepoLimit  = 10
-	// NormalRepoLimit = 100
+	DBName           = "contributor"
+	RepoDBName       = "Repo"
+	ConParentKey     = datastore.NameKey("Contributors", "con", nil)
+	ProjectID        = "api7-301102"
+	RepoPath         = "./config/repo_list.md"
+	MultiRepoPath    = "./config/multi-repo.yaml"
+	ErrSVGNeedUpdate = errors.New("SVG need to upddate")
 )
 
-func RepoNameToFileName(str string) string {
-	return strings.ReplaceAll(strings.ReplaceAll(str, ",", "+"), "/", "+")
+func RepoNameToFileName(str string, merge bool) string {
+	filename := strings.ReplaceAll(strings.ReplaceAll(str, ",", "+"), "/", "+")
+	if merge {
+		filename = "merge/" + filename
+	}
+	return filename
 }
 
 func FileNameToRepoName(str string) string {
