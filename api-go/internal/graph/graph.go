@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"cloud.google.com/go/datastore"
 	"cloud.google.com/go/storage"
 	"github.com/api7/contributor-graph/api/internal/utils"
 )
@@ -92,5 +93,32 @@ func SubGetSVG(w http.ResponseWriter, repo string, merge bool) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	dbCli, err := datastore.NewClient(ctx, utils.ProjectID)
+	if err != nil {
+		return "", fmt.Errorf("Failed to create client: %v", err)
+	}
+	defer dbCli.Close()
+
+	// note, to record traffic, we need to pay 15 RMB per 1M click
+	// if we want to cut off this payment, we could toss a dice here and do the record in a certain probability
+	// when people really put the image in their README/website, since the click times is a lot
+	// we could still tell if people are using it
+	storeName := repo
+	if merge {
+		storeName = "merge-" + repo
+	}
+	key := datastore.NameKey("GraphTraffic", storeName, nil)
+	traffic := utils.GraphTraffic{}
+	err = dbCli.Get(ctx, key, &traffic)
+	if err != nil {
+		if err != datastore.ErrNoSuchEntity {
+			return "", err
+		}
+	}
+	if _, err = dbCli.Put(ctx, key, &utils.GraphTraffic{traffic.Num + 1, time.Now()}); err != nil {
+		return "", err
+	}
+
 	return string(svg), nil
 }

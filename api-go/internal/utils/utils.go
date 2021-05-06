@@ -42,6 +42,10 @@ type ErrorWithCode struct {
 	Code int
 }
 
+type GraphTraffic struct {
+	Num           int
+	LastVisitTime time.Time
+}
 type Token struct {
 	Token string
 }
