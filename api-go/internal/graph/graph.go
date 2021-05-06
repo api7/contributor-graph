@@ -31,13 +31,21 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 	if err != nil {
 		return "", err
 	}
+	if resp.StatusCode != http.StatusOK {
+		// add a simple retry
+		fmt.Println("Oops something went wrong when getting svg. Retry now.")
+		resp, err = http.Get(graphFunctionUrl)
+		if err != nil {
+			return "", err
+		}
+		if resp.StatusCode != http.StatusOK {
+			return "", fmt.Errorf("get svg failed with %d", resp.StatusCode)
+		}
+	}
 	defer resp.Body.Close()
 	svg, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("%d %s", resp.StatusCode, string(svg[:]))
 	}
 
 	wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
