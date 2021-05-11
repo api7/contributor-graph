@@ -109,7 +109,7 @@ export const DEFAULT_ACTIVITY_OPTIONS = {
   },
   series: [],
   grid: {
-    x: 30,
+    x: 31,
     x2: 13,
     y: 80
   }

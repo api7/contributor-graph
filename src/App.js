@@ -191,7 +191,7 @@ const App = () => {
             display: "flex",
             justifyContent: "center",
             flexDirection: "column",
-            width: "70%"
+            width: "40%"
           }}
         >
           <Paper className={classes.root} elevation={0}>
