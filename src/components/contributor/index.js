@@ -10,6 +10,8 @@ import { generateDefaultOption } from "../../constants";
 import { fetchData, fetchMergeContributor } from "./service";
 import CustomizedDialogs from "../shareDialog";
 import { DEFAULT_COLOR } from "../../constants";
+import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/default-highlight";
+import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 const ContributorLineChart = ({
   repoList = [],
@@ -37,6 +39,27 @@ const ContributorLineChart = ({
     const lastItem = repoList[repoList.length - 1];
     return lastItem === "apache/apisix" || lastItem === "apache/skywalking";
   }, [repoList]);
+
+  const SHARE_BASE_URL = "https://www.apiseven.com/en/contributor-graph";
+  const IMG_BASE_URL =
+    "https://contributor-graph-api.apiseven.com/contributors-svg";
+
+  const MarkdownLink = ({ params = "" }) => {
+    return (
+      <div>
+        <p>
+          You can include the chart on your repository's README.md as follows:
+        </p>
+        <SyntaxHighlighter language="markdown" style={a11yDark}>
+          {`
+  ## Contributor over time
+  
+  [![Contributor over time](${IMG_BASE_URL + params})[${SHARE_BASE_URL +
+            params}]]`}
+        </SyntaxHighlighter>
+      </div>
+    );
+  };
 
   React.useEffect(() => {
     if (showMergeButton) {
@@ -376,6 +399,7 @@ const ContributorLineChart = ({
               showLoading={loading}
               notMerge
             />
+            <MarkdownLink params={getShareParams()} />
           </div>
         </div>
       </div>
