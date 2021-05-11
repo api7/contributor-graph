@@ -16,6 +16,7 @@ import TextField from "@material-ui/core/TextField";
 import copy from "copy-to-clipboard";
 
 import { inIframe } from "../../utils";
+import "./index.css";
 
 const styles = theme => ({
   root: {
@@ -43,13 +44,15 @@ const ShareLink = ({ params = "" }) => {
             id="standard-basic"
             label="Share Link"
             variant="outlined"
+            className="shareInput"
             value={`${SHARE_BASE_URL}${params}`}
             size="small"
-            style={{ width: "400px" }}
+            style={{ width: "400px", borderRadius: "0px" }}
           />
           <Button
             variant="contained"
             color="primary"
+            style={{ borderRadius: "0px" }}
             onClick={() => {
               copy(SHARE_BASE_URL + params);
             }}
@@ -59,9 +62,9 @@ const ShareLink = ({ params = "" }) => {
         </div>
         <div style={{ display: "flex" }}>
           <TextField
-            id="standard-basic"
             label="Image Link"
             variant="outlined"
+            className="shareInput"
             value={`${IMG_BASE_URL}${params}`}
             size="small"
             style={{ width: "400px" }}
@@ -69,6 +72,7 @@ const ShareLink = ({ params = "" }) => {
           <Button
             variant="contained"
             color="primary"
+            style={{ borderRadius: "0px" }}
             onClick={() => {
               copy(IMG_BASE_URL + params);
             }}
