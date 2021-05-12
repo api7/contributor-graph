@@ -9,13 +9,12 @@ import Typography from "@material-ui/core/Typography";
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
 import { makeStyles } from "@material-ui/core/styles";
-import SyntaxHighlighter from "react-syntax-highlighter";
-import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import copy from "copy-to-clipboard";
 
 import { inIframe } from "../../utils";
+import "./index.css";
 
 const styles = theme => ({
   root: {
@@ -43,13 +42,15 @@ const ShareLink = ({ params = "" }) => {
             id="standard-basic"
             label="Share Link"
             variant="outlined"
+            className="shareInput"
             value={`${SHARE_BASE_URL}${params}`}
             size="small"
-            style={{ width: "400px" }}
+            style={{ width: "400px", borderRadius: "0px" }}
           />
           <Button
             variant="contained"
             color="primary"
+            style={{ borderRadius: "0px" }}
             onClick={() => {
               copy(SHARE_BASE_URL + params);
             }}
@@ -59,9 +60,9 @@ const ShareLink = ({ params = "" }) => {
         </div>
         <div style={{ display: "flex" }}>
           <TextField
-            id="standard-basic"
             label="Image Link"
             variant="outlined"
+            className="shareInput"
             value={`${IMG_BASE_URL}${params}`}
             size="small"
             style={{ width: "400px" }}
@@ -69,6 +70,7 @@ const ShareLink = ({ params = "" }) => {
           <Button
             variant="contained"
             color="primary"
+            style={{ borderRadius: "0px" }}
             onClick={() => {
               copy(IMG_BASE_URL + params);
             }}
@@ -166,23 +168,6 @@ function CenteredGrid({ params = "" }) {
   );
 }
 
-const MarkdownLink = ({ params = "" }) => {
-  return (
-    <div>
-      <p>
-        You can include the chart on your repository's README.md as follows:
-      </p>
-      <SyntaxHighlighter language="markdown" style={a11yDark}>
-        {`
-## Contributor over time
-
-[![Contributor over time](${IMG_BASE_URL + params})[${SHARE_BASE_URL +
-          params}]]`}
-      </SyntaxHighlighter>
-    </div>
-  );
-};
-
 const DialogTitle = withStyles(styles)(props => {
   const { children, classes, onClose, ...other } = props;
   return (
@@ -228,7 +213,6 @@ export default function CustomizedDialogs({
         <DialogContent dividers>
           <CenteredGrid params={params} />
           <ShareLink params={params} />
-          <MarkdownLink params={params} />
         </DialogContent>
       </Dialog>
     </div>

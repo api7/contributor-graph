@@ -5,7 +5,7 @@ export const generateDefaultOption = ({ handleShareClick = () => {} }) => {
       top: "5%",
       data: [],
       textStyle: {
-        fontSize: 16
+        fontSize: 14
       }
     },
     toolbox: {
@@ -18,10 +18,6 @@ export const generateDefaultOption = ({ handleShareClick = () => {} }) => {
           onclick: function() {
             handleShareClick();
           }
-        },
-        saveAsImage: {
-          show: true,
-          type: "png"
         }
       }
     },
@@ -51,26 +47,26 @@ export const generateDefaultOption = ({ handleShareClick = () => {} }) => {
         }
       }
     },
-    series: []
+    series: [],
+    grid: {
+      x: 40,
+      x2: 15,
+      y: 80
+    }
   };
 };
 
 export const DEFAULT_ACTIVITY_OPTIONS = {
   color: ["#39a85a", "#4385ee", "#fabc37", "#2dc1dd", "#f972cf", "#8331c8"],
   legend: {
-    top: "5%",
+    top: "10%",
     data: [],
     textStyle: {
       fontSize: 16
     }
   },
   toolbox: {
-    feature: {
-      saveAsImage: {
-        show: true,
-        type: "png"
-      }
-    }
+    feature: {}
   },
   dataset: [],
   title: {
@@ -100,7 +96,12 @@ export const DEFAULT_ACTIVITY_OPTIONS = {
       }
     }
   },
-  series: []
+  series: [],
+  grid: {
+    x: 31,
+    x2: 13,
+    y: 80
+  }
 };
 
 export const DEFAULT_COLOR = "#39a85a";

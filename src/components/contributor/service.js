@@ -1,6 +1,5 @@
 import moment from "moment";
 import { isSameDay } from "../../utils";
-import { getGithubRepoList } from "../../api/service";
 
 export const fetchData = (repo, showAlert, onDelete) => {
   if (repo === "null" || repo === null) {
@@ -89,37 +88,36 @@ export const fetchData = (repo, showAlert, onDelete) => {
 
 export const fetchMergeContributor = (repo, showAlert) => {
   return new Promise((resolve, reject) => {
-    getGithubRepoList(repo).then(data => {
-      fetch(
-        `https://contributor-graph-api.apiseven.com/contributors-multi?repo=${data.join(
-          ","
-        )}`
-      )
-        .then(response => {
-          if (!response.ok) {
-            let message = "";
-            switch (response.status) {
-              case 403:
-                message = "Hit rate limit";
-                break;
-              case 404:
-                message = "Repo format error / Repo not found";
-                break;
-              default:
-                message = "Request Error";
-                break;
-            }
-            throw message;
+    fetch(
+      `https://contributor-graph-api.apiseven.com/contributors-multi?repo=${repo.join(
+        ","
+      )}`
+    )
+      .then(response => {
+        if (!response.ok) {
+          let message = "";
+          switch (response.status) {
+            case 403:
+              message = "Hit rate limit";
+              break;
+            case 404:
+              message = "Repo format error / Repo not found";
+              break;
+            default:
+              message = "Request Error";
+              break;
           }
-          return response.json();
-        })
-        .then(myJson => {
-          resolve({ repo, ...myJson });
-        })
-        .catch(e => {
-          showAlert(e, "error");
-          reject();
-        });
-    });
+          throw message;
+        }
+        return response.json();
+      })
+      .then(myJson => {
+        console.log('myJson: ', myJson);
+        resolve({ repo, ...myJson });
+      })
+      .catch(e => {
+        showAlert(e, "error");
+        reject();
+      });
   });
 };
