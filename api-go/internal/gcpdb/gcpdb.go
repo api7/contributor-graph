@@ -265,7 +265,7 @@ func updateContributorList(
 	rangeMax := 500
 	rangeNeeded := int(math.Ceil(float64(len(commitLists)) / float64(rangeMax)))
 	for i := 0; i < rangeNeeded; i++ {
-		tmpList := commitLists[i*rangeMax : minInt((i+1)*rangeMax, len(commitLists))]
+		tmpList := commitLists[i*rangeMax : MinInt((i+1)*rangeMax, len(commitLists))]
 		keys := make([]*datastore.Key, len(tmpList))
 		for i, c := range tmpList {
 			keys[i] = datastore.NameKey(repoName, c.Author, utils.ConParentKey)
@@ -391,7 +391,7 @@ func getUpdateRepoList(ctx context.Context, dbCli *datastore.Client) ([]string, 
 	return repoReturn, nil
 }
 
-func minInt(x, y int) int {
+func MinInt(x, y int) int {
 	if x < y {
 		return x
 	}
