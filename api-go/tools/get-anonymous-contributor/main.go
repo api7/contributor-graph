@@ -10,6 +10,7 @@ import (
 	"cloud.google.com/go/datastore"
 	"github.com/api7/contributor-graph/api/internal/gcpdb"
 	"github.com/api7/contributor-graph/api/internal/ghapi"
+	"github.com/api7/contributor-graph/api/internal/graph"
 	"github.com/api7/contributor-graph/api/internal/utils"
 	"github.com/google/go-github/v33/github"
 )
@@ -23,8 +24,17 @@ func main() {
 		panic(err)
 	}
 	defer dbCli.Close()
-	_ = getAnonymous(ctx, dbCli)
-	//updateAnonymous(con, ctx, dbCli)
+	fmt.Println("Getting anonymous contributors")
+	con := getAnonymous(ctx, dbCli)
+	fmt.Println("Waiting 5 seconds to stop it, if something works wrong")
+	time.Sleep(5 * time.Second)
+	fmt.Println("Updating anonymous contributors to datastore")
+	updateAnonymous(ctx, dbCli, con)
+
+	_, err = graph.GenerateAndSaveSVG(context.Background(), repoName, false)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func getAnonymous(ctx context.Context, dbCli *datastore.Client) []*utils.ConList {
@@ -41,7 +51,8 @@ func getAnonymous(ctx context.Context, dbCli *datastore.Client) []*utils.ConList
 		panic(err)
 	}
 	var contributors []*utils.ConList
-	i := 0
+	conMap := make(map[string]time.Time)
+	numContainsDuplicate := 0
 	for {
 		cons, resp, err := ghCli.Repositories.ListContributors(ctx, owner, repo, listConOpts)
 		if err != nil {
@@ -54,24 +65,32 @@ func getAnonymous(ctx context.Context, dbCli *datastore.Client) []*utils.ConList
 			panic(err)
 		}
 		for _, c := range cons {
-			var con utils.ConList
-			if c.Email != nil {
-				con.Author = *c.Email
-				commitTime, err := getFirstCommitTime(ctx, ghCli, *c.Email, owner, repo)
-				con.Date = commitTime
+			email := c.GetEmail()
+			if email != "" {
+				numContainsDuplicate++
+				commitTime, err := getFirstCommitTime(ctx, ghCli, email, owner, repo)
 				if err != nil {
 					panic(err)
 				}
-				fmt.Printf("%d: %s\n", i, con)
-				i++
+				if t, ok := conMap[email]; ok && t.Before(commitTime) {
+					continue
+				}
+				conMap[email] = commitTime
 			}
-			contributors = append(contributors, &con)
 		}
 		if resp.NextPage == 0 {
 			break
 		}
 		listConOpts.Page = resp.NextPage
 	}
+	i := 0
+	for email, time := range conMap {
+		con := utils.ConList{email, time}
+		contributors = append(contributors, &con)
+		fmt.Printf("%d: %v\n", i, con)
+		i++
+	}
+	fmt.Printf("Got %d anonymous contributors, after remove duplicate, %d ones left\n", numContainsDuplicate, len(contributors))
 	return contributors
 }
 
