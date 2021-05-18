@@ -388,6 +388,12 @@ const ContributorLineChart = ({
             </div>
             <ReactECharts
               option={option}
+              opts={{ renderer: "svg" }}
+              onEvents={{
+                finished: () => {
+                  window.echartsRenderFinished = true;
+                }
+              }}
               ref={e => {
                 if (e) {
                   const echartInstance = e.getEchartsInstance();
