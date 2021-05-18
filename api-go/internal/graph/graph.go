@@ -7,12 +7,16 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/datastore"
 	"cloud.google.com/go/storage"
 	"github.com/api7/contributor-graph/api/internal/utils"
 )
+
+// base on experiments :(
+var minSuccessfulSVGLen = 10000
 
 func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, error) {
 	bucket := "api7-301102.appspot.com"
@@ -48,6 +52,21 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 	if err != nil {
 		return "", err
 	}
+	if len(string(svg[:])) < minSuccessfulSVGLen {
+		fmt.Println("Oops something went wrong when getting svg since it's too small. Retry now.")
+		resp, err = http.Get(graphFunctionUrl)
+		if err != nil {
+			return "", err
+		}
+		defer resp.Body.Close()
+		svg, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return "", err
+		}
+		if len(string(svg[:])) < minSuccessfulSVGLen {
+			return "", fmt.Errorf("get svg failed since size too small %d", len(string(svg[:])))
+		}
+	}
 
 	wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
 	wc.CacheControl = "public, max-age=86400"
@@ -61,7 +80,16 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 	}
 
 	fmt.Printf("New SVG generated with %s\n", repo)
-	return string(svg[:]), nil
+
+	// remove stop feature
+	svgList := strings.Split(string(svg[:]), "\n")
+	newSvg := ""
+	for _, l := range svgList {
+		if !strings.Contains(l, "stop") {
+			newSvg += (l + "\n")
+		}
+	}
+	return newSvg, nil
 }
 
 func SubGetSVG(w http.ResponseWriter, repo string, merge bool) (string, error) {
