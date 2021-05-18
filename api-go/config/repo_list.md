@@ -42,7 +42,7 @@ apache/cassandra
 apache/tvm
 apache/storm
 apache/tomcat
-apache/incubator-dolphinscheduler
+apache/dolphinscheduler
 apache/openwhisk
 apache/zeppelin
 apache/jmeter

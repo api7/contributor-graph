@@ -5,7 +5,6 @@ import * as echarts from "echarts";
 import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
 
-import CompareComponent from "../compare";
 import { DEFAULT_ACTIVITY_OPTIONS, DEFAULT_COLOR } from "../../constants";
 
 const ActivityChart = ({
@@ -171,29 +170,6 @@ const ActivityChart = ({
     });
   };
 
-  const updateChart = repo => {
-    if (dataSource[repo]) return;
-    setLoading(true);
-    fetchData(repo)
-      .then(myJson => {
-        const { Contributors = [] } = myJson;
-        const data = Contributors.map(item => ({
-          repo,
-          contributorNum: item.Num,
-          date: item.Month
-        }));
-
-        const clonedDatasource = cloneDeep(dataSource);
-        if (!clonedDatasource[repo]) {
-          setDataSource({ ...clonedDatasource, ...{ [repo]: data } });
-        }
-        setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-      });
-  };
-
   React.useEffect(() => {
     updateSeries(xAxis);
     window.parent.postMessage({ legend: Object.keys(dataSource) }, "*");
@@ -254,22 +230,7 @@ const ActivityChart = ({
         }}
       >
         <div className="right" style={{ width: "90%", marginTop: "10px" }}>
-          <div style={{ marginTop: "10px" }}>
-            <CompareComponent
-              list={Object.keys(dataSource)}
-              onDelete={e => {
-                const clonedDataSource = cloneDeep(dataSource);
-                const newDataSource = omit(clonedDataSource, [e]);
-                setDataSource(newDataSource);
-                onDelete(e);
-              }}
-              onConfirm={e => {
-                if (!e) return;
-                updateChart(e);
-              }}
-            />
-          </div>
-          <div id="chart" style={{ marginTop: "30px" }}>
+          <div id="chart">
             <Tab.Container defaultActiveKey="contributor">
               <Row>
                 <Col>
@@ -290,7 +251,7 @@ const ActivityChart = ({
                             window.echartInstance = echartInstance;
                           }
                         }}
-                        style={{ height: 700, width: "100%" }}
+                        style={{ height: 550 }}
                         showLoading={loading}
                         notMerge
                       />

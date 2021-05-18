@@ -1,6 +1,5 @@
 import moment from "moment";
 import { isSameDay } from "../../utils";
-import { getGithubRepoList } from "../../api/service";
 
 export const fetchData = (repo, showAlert, onDelete) => {
   if (repo === "null" || repo === null) {
@@ -90,7 +89,9 @@ export const fetchData = (repo, showAlert, onDelete) => {
 export const fetchMergeContributor = (repo, showAlert) => {
   return new Promise((resolve, reject) => {
     fetch(
-      `https://contributor-graph-api.apiseven.com/contributors-multi?repo=${repo}&merge=true`
+      `https://contributor-graph-api.apiseven.com/contributors-multi?repo=${repo.join(
+        ","
+      )}`
     )
       .then(response => {
         if (!response.ok) {

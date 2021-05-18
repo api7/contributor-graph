@@ -43,6 +43,11 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 	}
 	defer dbCli.Close()
 
+	tokens, err := gcpdb.GetTokens(dbCli)
+	if err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
 	var repos []string
 	var isSearch bool
 	if repoInput == "" {
@@ -71,7 +76,7 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 		})
 
 		if len(monthlyConLists) == 0 || monthlyConLists[len(monthlyConLists)-1].Month.AddDate(0, 2, 0).Before(time.Now()) {
-			ghCli := ghapi.GetGithubClient(ctx, utils.UpdateToken[i%len(utils.UpdateToken)])
+			ghCli := ghapi.GetGithubClient(ctx, tokens[i%len(tokens)].Token)
 
 			var firstDay time.Time
 			if len(monthlyConLists) > 0 {

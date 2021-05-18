@@ -10,7 +10,7 @@ const useStyles = makeStyles(theme => ({
     "& > *": {
       margin: theme.spacing(0.5)
     }
-  }
+  },
 }));
 
 export default function OutlinedChips({ list = [], onDelete }) {
@@ -23,6 +23,7 @@ export default function OutlinedChips({ list = [], onDelete }) {
           icon={<GitHubIcon />}
           label={item}
           key={item}
+          size="small"
           onDelete={() => onDelete(item)}
           color="primary"
           variant="outlined"
