@@ -68,19 +68,6 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 		}
 	}
 
-	wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
-	wc.CacheControl = "public, max-age=86400"
-	wc.ContentType = "image/svg+xml;charset=utf-8"
-
-	if _, err = io.Copy(wc, bytes.NewReader(svg)); err != nil {
-		return "", fmt.Errorf("upload svg failed: io.Copy: %v", err)
-	}
-	if err := wc.Close(); err != nil {
-		return "", fmt.Errorf("upload svg failed: Writer.Close: %v", err)
-	}
-
-	fmt.Printf("New SVG generated with %s\n", repo)
-
 	// remove stop feature
 	svgList := strings.Split(string(svg[:]), "\n")
 	newSvg := ""
@@ -89,6 +76,20 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 			newSvg += (l + "\n")
 		}
 	}
+
+	wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
+	wc.CacheControl = "public, max-age=86400"
+	wc.ContentType = "image/svg+xml;charset=utf-8"
+
+	if _, err = io.Copy(wc, bytes.NewReader([]byte(newSvg))); err != nil {
+		return "", fmt.Errorf("upload svg failed: io.Copy: %v", err)
+	}
+	if err := wc.Close(); err != nil {
+		return "", fmt.Errorf("upload svg failed: Writer.Close: %v", err)
+	}
+
+	fmt.Printf("New SVG generated with %s\n", repo)
+
 	return newSvg, nil
 }
 
