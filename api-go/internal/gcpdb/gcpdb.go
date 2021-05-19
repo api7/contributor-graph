@@ -113,7 +113,7 @@ func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 				}
 			}
 			updateFlag := repoInput == ""
-			if err := updateRepoList(ctx, dbCli, repoName, len(conLists), updateFlag); err != nil {
+			if err := UpdateRepoList(ctx, dbCli, repoName, len(conLists), updateFlag); err != nil {
 				return nil, http.StatusInternalServerError, err
 			}
 
@@ -261,25 +261,32 @@ func updateContributorList(
 		return commitLists[i].Date.Before(commitLists[j].Date)
 	})
 
+	if err := PutMultiWithLimit(ctx, dbCli, repoName, commitLists); err != nil {
+		return nil, http.StatusInternalServerError, err
+	}
+
+	return commitLists, http.StatusOK, nil
+}
+
+func PutMultiWithLimit(ctx context.Context, dbCli *datastore.Client, repoName string, conLists []*utils.ConList) error {
 	// at most write 500 entities in a single call
 	rangeMax := 500
-	rangeNeeded := int(math.Ceil(float64(len(commitLists)) / float64(rangeMax)))
+	rangeNeeded := int(math.Ceil(float64(len(conLists)) / float64(rangeMax)))
 	for i := 0; i < rangeNeeded; i++ {
-		tmpList := commitLists[i*rangeMax : MinInt((i+1)*rangeMax, len(commitLists))]
+		tmpList := conLists[i*rangeMax : MinInt((i+1)*rangeMax, len(conLists))]
 		keys := make([]*datastore.Key, len(tmpList))
 		for i, c := range tmpList {
 			keys[i] = datastore.NameKey(repoName, c.Author, utils.ConParentKey)
 		}
 
 		if _, err := dbCli.PutMulti(ctx, keys, tmpList); err != nil {
-			return nil, http.StatusInternalServerError, err
+			return err
 		}
 	}
-
-	return commitLists, http.StatusOK, nil
+	return nil
 }
 
-func updateRepoList(ctx context.Context, dbCli *datastore.Client, repoName string, conNumGH int, updateFlag bool) error {
+func UpdateRepoList(ctx context.Context, dbCli *datastore.Client, repoName string, conNumGH int, updateFlag bool) error {
 	updatedRepo := &utils.RepoNum{conNumGH, time.Now()}
 	key := datastore.NameKey("Repo", repoName, nil)
 	if _, err := dbCli.Put(ctx, key, updatedRepo); err != nil {
