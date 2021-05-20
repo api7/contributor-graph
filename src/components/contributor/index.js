@@ -52,10 +52,10 @@ const ContributorLineChart = ({
         </p>
         <SyntaxHighlighter language="markdown" style={a11yDark}>
           {`
-  ## Contributor over time
-  
-  [![Contributor over time](${IMG_BASE_URL + params})[${SHARE_BASE_URL +
-            params}]]`}
+  ### Contributor over time
+
+  [![Contributor over time](${IMG_BASE_URL + params})](${SHARE_BASE_URL +
+            params})`}
         </SyntaxHighlighter>
       </div>
     );
