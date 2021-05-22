@@ -37,7 +37,7 @@ const ContributorLineChart = ({
 
   const showMergeButton = React.useMemo(() => {
     const lastItem = repoList[repoList.length - 1];
-    return lastItem === "apache/apisix" || lastItem === "apache/skywalking";
+    return lastItem === "apache/apisix" || lastItem === "apache/skywalking" || lastItem === "apache/openwhisk";
   }, [repoList]);
 
   const SHARE_BASE_URL = "https://www.apiseven.com/en/contributor-graph";
@@ -52,10 +52,10 @@ const ContributorLineChart = ({
         </p>
         <SyntaxHighlighter language="markdown" style={a11yDark}>
           {`
-  ## Contributor over time
-  
-  [![Contributor over time](${IMG_BASE_URL + params})[${SHARE_BASE_URL +
-            params}]]`}
+  ### Contributor over time
+
+  [![Contributor over time](${IMG_BASE_URL + params})](${SHARE_BASE_URL +
+            params})`}
         </SyntaxHighlighter>
       </div>
     );
@@ -291,7 +291,7 @@ const ContributorLineChart = ({
     const repo = getParameterByName("repo");
     if (
       (merge === "true" && repo === "apache/apisix") ||
-      repo === "apache/skywalking"
+      repo === "apache/skywalking" || repo === "apache/openwhisk"
     ) {
       setMergerRepo(repo);
       setViewMerge(true);

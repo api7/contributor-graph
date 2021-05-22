@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"math"
 	"strings"
 	"time"
 
@@ -29,7 +28,9 @@ func main() {
 	fmt.Println("Waiting 5 seconds to stop it, if something works wrong")
 	time.Sleep(5 * time.Second)
 	fmt.Println("Updating anonymous contributors to datastore")
-	updateAnonymous(ctx, dbCli, con)
+	if err := gcpdb.PutMultiWithLimit(ctx, dbCli, repoName, con); err != nil {
+		panic(err)
+	}
 
 	_, err = graph.GenerateAndSaveSVG(context.Background(), repoName, false)
 	if err != nil {
@@ -92,22 +93,6 @@ func getAnonymous(ctx context.Context, dbCli *datastore.Client) []*utils.ConList
 	}
 	fmt.Printf("Got %d anonymous contributors, after remove duplicate, %d ones left\n", numContainsDuplicate, len(contributors))
 	return contributors
-}
-
-func updateAnonymous(ctx context.Context, dbCli *datastore.Client, con []*utils.ConList) {
-	rangeMax := 500
-	rangeNeeded := int(math.Ceil(float64(len(con)) / float64(rangeMax)))
-	for i := 0; i < rangeNeeded; i++ {
-		tmpList := con[i*rangeMax : gcpdb.MinInt((i+1)*rangeMax, len(con))]
-		keys := make([]*datastore.Key, len(tmpList))
-		for i, c := range tmpList {
-			keys[i] = datastore.NameKey(repoName, c.Author, utils.ConParentKey)
-		}
-
-		if _, err := dbCli.PutMulti(ctx, keys, tmpList); err != nil {
-			panic(err)
-		}
-	}
 }
 
 func getFirstCommitTime(ctx context.Context, ghCli *github.Client, author string, owner string, repo string) (time.Time, error) {
