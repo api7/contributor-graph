@@ -16,7 +16,7 @@ import (
 )
 
 // base on experiments :(
-var minSuccessfulSVGLen = 10000
+var minSuccessfulSVGLen = 8000
 
 func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, error) {
 	bucket := "api7-301102.appspot.com"
