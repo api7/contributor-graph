@@ -10,6 +10,7 @@ const querystring = require('querystring');
 exports.svg = async (req, res) => {
   const repo = req.query.repo;
   const merge = req.query.merge;
+  const chart = req.query.chart;
 
   const browser = await puppeteer.launch({
     args: ['--no-sandbox',]
@@ -21,6 +22,10 @@ exports.svg = async (req, res) => {
   if (merge) {
     graphUrl += "&merge=true"
   }
+  if (chart) {
+    graphUrl += "&chart=" + chart
+  }
+
   await page.goto(graphUrl);
 
   var getSVG = function () {

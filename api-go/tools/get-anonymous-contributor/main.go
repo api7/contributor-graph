@@ -32,7 +32,8 @@ func main() {
 		panic(err)
 	}
 
-	_, err = graph.GenerateAndSaveSVG(context.Background(), repoName, false)
+	merge := false
+	_, err = graph.GenerateAndSaveSVG(context.Background(), repoName, merge, utils.ContributorOverTime)
 	if err != nil {
 		panic(err)
 	}
