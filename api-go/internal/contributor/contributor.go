@@ -16,6 +16,7 @@ import (
 
 	"github.com/api7/contributor-graph/api/internal/gcpdb"
 	"github.com/api7/contributor-graph/api/internal/ghapi"
+	"github.com/api7/contributor-graph/api/internal/graph"
 	"github.com/api7/contributor-graph/api/internal/utils"
 )
 
@@ -170,6 +171,12 @@ func GetContributorMonthly(repoInput string) ([]utils.MonthlyConList, int, error
 			}
 
 			monthlyConLists = append(monthlyConLists, newMonthlyConLists...)
+
+			merge := false
+			_, err := graph.GenerateAndSaveSVG(ctx, repoName, merge, utils.ContributorMonthlyActivity)
+			if err != nil {
+				return nil, http.StatusInternalServerError, err
+			}
 		}
 
 		retMonthlyConLists := make([]utils.MonthlyConList, len(monthlyConLists))

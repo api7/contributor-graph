@@ -17,11 +17,11 @@ import (
 )
 
 // base on experiments :(
-var minSuccessfulSVGLen = 8000
+var minSuccessfulSVGLen = 7000
 
-func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, error) {
+func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool, chartType string) (string, error) {
 	bucket := "api7-301102.appspot.com"
-	object := utils.RepoNameToFileName(repo, merge) + ".svg"
+	object := utils.RepoNameToFileName(repo, merge, chartType)
 
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -32,6 +32,9 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 	graphFunctionUrl := "https://cloudfunction.contributor-graph.com/svg?repo=" + repo
 	if merge {
 		graphFunctionUrl += "&merge=true"
+	}
+	if chartType != "" {
+		graphFunctionUrl += "&chart=" + string(chartType)
 	}
 	resp, err := http.Get(graphFunctionUrl)
 	if err != nil {
@@ -85,14 +88,14 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 		return "", fmt.Errorf("upload svg failed: Writer.Close: %v", err)
 	}
 
-	fmt.Printf("New SVG generated with %s\n", repo)
+	fmt.Printf("New SVG generated with %s, merge=%v, char=%v\n", repo, merge, chartType)
 
 	return string(svg[:]), nil
 }
 
-func SubGetSVG(w http.ResponseWriter, repo string, merge bool) (string, error) {
+func SubGetSVG(w http.ResponseWriter, repo string, merge bool, charType string) (string, error) {
 	bucket := "api7-301102.appspot.com"
-	object := utils.RepoNameToFileName(repo, merge) + ".svg"
+	object := utils.RepoNameToFileName(repo, merge, charType)
 
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
@@ -133,6 +136,9 @@ func SubGetSVG(w http.ResponseWriter, repo string, merge bool) (string, error) {
 	storeName := repo
 	if merge {
 		storeName = "merge-" + repo
+	}
+	if charType == utils.ContributorMonthlyActivity {
+		storeName = "monthly-" + repo
 	}
 	key := datastore.NameKey("GraphTraffic", storeName, nil)
 	traffic := utils.GraphTraffic{}
