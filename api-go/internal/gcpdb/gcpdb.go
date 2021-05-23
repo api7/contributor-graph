@@ -107,7 +107,7 @@ func UpdateDB(repoInput string) ([]*utils.ConList, int, error) {
 
 				if repoInput == "" {
 					merge := false
-					if _, err := graph.GenerateAndSaveSVG(ctx, repoName, merge); err != nil {
+					if _, err := graph.GenerateAndSaveSVG(ctx, repoName, merge, utils.ContributorOverTime); err != nil {
 						return nil, http.StatusInternalServerError, err
 					}
 				}

@@ -58,14 +58,20 @@ var (
 	RepoPath         = "./config/repo_list.md"
 	MultiRepoPath    = "./config/multi-repo.yaml"
 	ErrSVGNeedUpdate = errors.New("SVG need to upddate")
+
+	ContributorOverTime        = "contributorOverTime"
+	ContributorMonthlyActivity = "contributorMonthlyActivity"
 )
 
-func RepoNameToFileName(str string, merge bool) string {
+func RepoNameToFileName(str string, merge bool, charType string) string {
 	filename := strings.ReplaceAll(strings.ReplaceAll(str, ",", "+"), "/", "+")
 	if merge {
 		filename = "merge/" + filename
 	}
-	return filename
+	if charType != "" {
+		filename = "monthly/" + filename
+	}
+	return filename + ".svg"
 }
 
 func FileNameToRepoName(str string) string {
