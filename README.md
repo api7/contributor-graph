@@ -13,6 +13,10 @@ We maintain a [list](api-go/config/multi-repo.md) which you could directly add y
 
 [![Contributor over time](https://contributor-graph-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=apache/apisix&merge=true)](https://www.apiseven.com/en/contributor-graph?chart=contributorOverTime&repo=apache/apisix&merge=true)
 
+### Monthly Active Contributors
+
+[![Monthly Active Contributors](https://contributor-graph-api.apiseven.com/contributors-svg?chart=contributorMonthlyActivity&repo=apache/apisix&merge=true)](https://www.apiseven.com/en/contributor-graph?chart=contributorMonthlyActivity&repo=apache/apisix&merge=true)
+
 ## Feature request
 
 If you have any requests, including but not limited to:
