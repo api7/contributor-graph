@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -52,8 +53,13 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 	if err != nil {
 		return "", err
 	}
-	if len(string(svg[:])) < minSuccessfulSVGLen {
-		fmt.Println("Oops something went wrong when getting svg since it's too small. Retry now.")
+
+	if ok, err := svgSucceed(string(svg[:])); !ok {
+		fmt.Println("Oops something went wrong. Retry now.")
+		if err != nil {
+			fmt.Printf("Error: %s\n", err.Error())
+		}
+		fmt.Println(graphFunctionUrl)
 		resp, err = http.Get(graphFunctionUrl)
 		if err != nil {
 			return "", err
@@ -63,17 +69,8 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 		if err != nil {
 			return "", err
 		}
-		if len(string(svg[:])) < minSuccessfulSVGLen {
-			return "", fmt.Errorf("get svg failed since size too small %d", len(string(svg[:])))
-		}
-	}
-
-	// remove stop feature
-	svgList := strings.Split(string(svg[:]), "\n")
-	newSvg := ""
-	for _, l := range svgList {
-		if !strings.Contains(l, "stop") {
-			newSvg += (l + "\n")
+		if ok, err := svgSucceed(string(svg[:])); !ok {
+			return "", fmt.Errorf("get svg failed since %s", err.Error())
 		}
 	}
 
@@ -81,7 +78,7 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 	wc.CacheControl = "public, max-age=86400"
 	wc.ContentType = "image/svg+xml;charset=utf-8"
 
-	if _, err = io.Copy(wc, bytes.NewReader([]byte(newSvg))); err != nil {
+	if _, err = io.Copy(wc, bytes.NewReader(svg)); err != nil {
 		return "", fmt.Errorf("upload svg failed: io.Copy: %v", err)
 	}
 	if err := wc.Close(); err != nil {
@@ -90,7 +87,7 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 
 	fmt.Printf("New SVG generated with %s\n", repo)
 
-	return newSvg, nil
+	return string(svg[:]), nil
 }
 
 func SubGetSVG(w http.ResponseWriter, repo string, merge bool) (string, error) {
@@ -150,4 +147,46 @@ func SubGetSVG(w http.ResponseWriter, repo string, merge bool) (string, error) {
 	}
 
 	return string(svg), nil
+}
+
+// Since currently front-end can not give concise time svg got rendered,
+// we need to also tell if the graph is ready to use on this side.
+// Try to get the endpoint of the line drawn and tell if it's on the right-most side
+func svgSucceed(svg string) (bool, error) {
+	lines := strings.Split(svg, "\n")
+	var svgWidth int
+	for _, l := range lines {
+		if strings.Contains(l, "<rect") {
+			words := strings.Split(l, " ")
+			for _, w := range words {
+				if strings.Contains(w, "width") {
+					parts := strings.Split(w, `"`)
+					var err error
+					svgWidth, err = strconv.Atoi(parts[1])
+					if err != nil {
+						return false, err
+					}
+					break
+				}
+			}
+		}
+	}
+	if svgWidth == 0 {
+		return false, fmt.Errorf("could not get svg width")
+	}
+	lineColor := "39a85a"
+	for _, l := range lines {
+		if strings.Contains(l, lineColor) {
+			lineDrawn := strings.Split(strings.Split(l, `"`)[1], " ")
+			endPointX, err := strconv.Atoi(lineDrawn[len(lineDrawn)-2])
+			if err != nil {
+				return false, err
+			}
+			if float64(endPointX) > 0.95*float64(svgWidth) {
+				return true, nil
+			}
+			return false, fmt.Errorf("the line is not reach its end")
+		}
+	}
+	return false, fmt.Errorf("could not get endpoint")
 }
