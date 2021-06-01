@@ -49,9 +49,10 @@ export const generateDefaultOption = ({ handleShareClick = () => {} }) => {
     },
     series: [],
     grid: {
-      x: 40,
+      x: 10,
       x2: 15,
-      y: 80
+      y: 80,
+      containLabel: true
     }
   };
 };
@@ -98,9 +99,10 @@ export const DEFAULT_ACTIVITY_OPTIONS = {
   },
   series: [],
   grid: {
-    x: 31,
-    x2: 13,
-    y: 80
+    x: 10,
+    x2: 15,
+    y: 80,
+    containLabel: true
   }
 };
 
