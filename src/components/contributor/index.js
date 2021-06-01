@@ -19,6 +19,8 @@ const ContributorLineChart = ({
   onDelete,
   onLoading
 }) => {
+  var mergeRepoList = ["apache/apisix", "apache/skywalking", "apache/openwhisk", "apache/dubbo"]
+
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
@@ -37,7 +39,9 @@ const ContributorLineChart = ({
 
   const showMergeButton = React.useMemo(() => {
     const lastItem = repoList[repoList.length - 1];
-    return lastItem === "apache/apisix" || lastItem === "apache/skywalking" || lastItem === "apache/openwhisk";
+    mergeRepoList.forEach(function (item) {
+      return lastItem === item
+    });
   }, [repoList]);
 
   const SHARE_BASE_URL = "https://www.apiseven.com/en/contributor-graph";
@@ -289,10 +293,7 @@ const ContributorLineChart = ({
   React.useEffect(() => {
     const merge = getParameterByName("merge");
     const repo = getParameterByName("repo");
-    if (
-      (merge === "true" && repo === "apache/apisix") ||
-      repo === "apache/skywalking" || repo === "apache/openwhisk"
-    ) {
+    if (merge === "true" && mergeRepoList.includes(repo)) {
       setMergerRepo(repo);
       setViewMerge(true);
     }
