@@ -39,9 +39,7 @@ const ContributorLineChart = ({
 
   const showMergeButton = React.useMemo(() => {
     const lastItem = repoList[repoList.length - 1];
-    mergeRepoList.forEach(function (item) {
-      return lastItem === item
-    });
+    return mergeRepoList.includes(lastItem)
   }, [repoList]);
 
   const SHARE_BASE_URL = "https://www.apiseven.com/en/contributor-graph";
