@@ -82,3 +82,26 @@ apache/openwhisk:
     - apache/openwhisk-website
     - apache/openwhisk-wskdebug
     - apache/openwhisk-wskdeploy
+apache/dubbo:
+    - apache/dubbo
+    - apache/dubbo-admin
+    - apache/dubbo-awesome
+    - apache/dubbo-benchmark
+    - apache/dubbo-erlang
+    - apache/dubbo-getty
+    - apache/dubbo-go
+    - apache/dubbo-go-hessian2
+    - apache/dubbo-go-pixiu
+    - apache/dubbo-go-samples
+    - apache/dubbo-hessian-lite
+    - apache/dubbo-js
+    - apache/dubbo-kubernetes
+    - apache/dubbo-php-framework
+    - apache/dubbo-proxy
+    - apache/dubbo-python
+    - apache/dubbo-python2
+    - apache/dubbo-samples
+    - apache/dubbo-spi-extensions
+    - apache/dubbo-spring-boot-project
+    - apache/dubbo-website
+
