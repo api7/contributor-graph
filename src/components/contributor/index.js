@@ -41,11 +41,7 @@ const ContributorLineChart = ({
 
   const [viewMerge, setViewMerge] = React.useState(false);
   const [mergeRepo, setMergerRepo] = React.useState("");
-
-  const showMergeButton = React.useMemo(() => {
-    const lastItem = repoList[repoList.length - 1];
-    return mergeRepoList.includes(lastItem);
-  }, [repoList]);
+  const [showMergeButton, setShowMergeButton] = React.useState(false);
 
   const SHARE_BASE_URL = "https://www.apiseven.com/en/contributor-graph";
   const IMG_BASE_URL =
@@ -69,19 +65,13 @@ const ContributorLineChart = ({
   };
 
   React.useEffect(() => {
-    if (showMergeButton) {
-      setMergerRepo(repoList[repoList.length - 1]);
-      return;
-    }
-    setMergerRepo("");
-  }, [repoList, showMergeButton]);
+    setViewMerge(false);
+    setMergerRepo(repoList[repoList.length - 1]);
 
-  React.useEffect(() => {
-    // reset viewmerge when repo list change
-    if (!showMergeButton) {
-      setViewMerge(false);
-    }
-  }, [repoList.length]);
+    const lastItem = repoList[repoList.length - 1];
+    const showMerge = mergeRepoList.includes(lastItem);
+    setShowMergeButton(showMerge);
+  }, [repoList]);
 
   const getShareParams = () => {
     if (viewMerge) {
@@ -269,7 +259,6 @@ const ContributorLineChart = ({
         });
     } else {
       if (!mergeRepo.length) return;
-      if (mergeRepo !== repoList[repoList.length - 1]) return;
       setLoading(true);
       fetchMergeContributor([mergeRepo], showAlert, onDelete)
         .then(_data => {
