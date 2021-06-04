@@ -259,6 +259,8 @@ const ContributorLineChart = ({
         });
     } else {
       if (!mergeRepo.length) return;
+      if (mergeRepo !== repoList[repoList.length - 1]) return;
+
       setLoading(true);
       fetchMergeContributor([mergeRepo], showAlert, onDelete)
         .then(_data => {
