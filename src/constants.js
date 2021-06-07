@@ -52,7 +52,8 @@ export const generateDefaultOption = ({ handleShareClick = () => {} }) => {
       x: 10,
       x2: 15,
       y: 80,
-      containLabel: true
+      containLabel: true,
+      y2: 5
     }
   };
 };
@@ -102,7 +103,8 @@ export const DEFAULT_ACTIVITY_OPTIONS = {
     x: 10,
     x2: 15,
     y: 80,
-    containLabel: true
+    containLabel: true,
+    y2: 10
   }
 };
 

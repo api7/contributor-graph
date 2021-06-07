@@ -115,8 +115,8 @@ const App = () => {
   React.useEffect(() => {
     const width = size[0];
     if (width > 996) {
-      setContainerStyle({ ...containerStyle, width: "996px" });
-      setSearchStyle({ ...searchStyle, width: "600px" });
+      setContainerStyle(DEFAULT_CONTAINER_STYLE);
+      setSearchStyle(DEFAULT_SEARCHBAR_STYLE);
     } else {
       setContainerStyle({ ...containerStyle, width: "100%" });
       setSearchStyle({ ...searchStyle, width: "80%" });
@@ -293,7 +293,7 @@ const App = () => {
           <div>
             <div
               style={{
-                width: "100%",
+                width: "90%",
                 display: "flex",
                 justifyContent: "left",
                 padding: "5px"
