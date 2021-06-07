@@ -107,3 +107,16 @@ export const DEFAULT_ACTIVITY_OPTIONS = {
 };
 
 export const DEFAULT_COLOR = "#39a85a";
+
+export const DEFAULT_SEARCHBAR_STYLE = {
+  display: "flex",
+  justifyContent: "center",
+  flexDirection: "column",
+  width: "600px"
+};
+
+export const DEFAULT_CONTAINER_STYLE = {
+  width: "996px",
+  border: "1px solid #dadce0",
+  borderRadius: "12px"
+};
