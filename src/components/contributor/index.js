@@ -304,12 +304,11 @@ const ContributorLineChart = ({
         }}
       >
         <Dialog />
-        <div className="right" style={{ width: "100%" }}>
+        <div className="right" style={{ width: "90%" }}>
           <div
             id="chart"
             style={{
               marginTop: "10px",
-              padding: "0px 40px"
             }}
           >
             <div
@@ -319,7 +318,13 @@ const ContributorLineChart = ({
                 justifyContent: "space-between"
               }}
             >
-              <ButtonGroup color="secondary" size="small">
+              <ButtonGroup
+                color="secondary"
+                size="small"
+                style={{
+                  width: document.body.clientWidth < 670 ? "100%" : "unset"
+                }}
+              >
                 <Button
                   variant={activeDate === "1month" ? "contained" : "outlined"}
                   value="1month"
@@ -375,6 +380,10 @@ const ContributorLineChart = ({
                   onClick={() => {
                     setViewMerge(viewMerge => !viewMerge);
                   }}
+                  style={{
+                    width: document.body.clientWidth < 670 ? "100%" : "unset",
+                    marginTop: document.body.clientWidth < 670 ? "2px" : "unset"
+                  }}
                 >
                   {!viewMerge
                     ? `view all repos related to ${mergeRepo}`
@@ -391,7 +400,7 @@ const ContributorLineChart = ({
                   window.echartInstance = echartInstance;
                 }
               }}
-              style={{ height: 550 }}
+              style={{ height: 550, marginTop: "20px" }}
               showLoading={loading}
               notMerge
             />
