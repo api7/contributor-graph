@@ -304,12 +304,11 @@ const ContributorLineChart = ({
         }}
       >
         <Dialog />
-        <div className="right" style={{ width: "100%" }}>
+        <div className="right" style={{ width: "90%" }}>
           <div
             id="chart"
             style={{
               marginTop: "10px",
-              padding: "0px 40px"
             }}
           >
             <div
