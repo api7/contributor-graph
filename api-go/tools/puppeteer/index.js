@@ -40,7 +40,7 @@ exports.svg = async (req, res) => {
     return new Promise((resolve) => setTimeout(resolve, time));
   }
 
-  sleep(2000).then(() => {
+  sleep(1000).then(() => {
     var _flagCheck = setInterval(async function () {
       if (await page.evaluate(svgReady) === true) {
         clearInterval(_flagCheck);

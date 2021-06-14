@@ -57,7 +57,8 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool, chartType 
 		return "", err
 	}
 
-	if ok, err := svgSucceed(string(svg[:])); !ok {
+	svg, err = svgSucceed(svg)
+	if svg == nil {
 		fmt.Println("Oops something went wrong. Retry now.")
 		if err != nil {
 			fmt.Printf("Error: %s\n", err.Error())
@@ -72,7 +73,8 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool, chartType 
 		if err != nil {
 			return "", err
 		}
-		if ok, err := svgSucceed(string(svg[:])); !ok {
+		svg, err = svgSucceed(svg)
+		if svg == nil {
 			return "", fmt.Errorf("get svg failed since %s", err.Error())
 		}
 	}
@@ -158,7 +160,8 @@ func SubGetSVG(w http.ResponseWriter, repo string, merge bool, charType string) 
 // Since currently front-end can not give concise time svg got rendered,
 // we need to also tell if the graph is ready to use on this side.
 // Try to get the endpoint of the line drawn and tell if it's on the right-most side
-func svgSucceed(svg string) (bool, error) {
+func svgSucceed(svgBytes []byte) ([]byte, error) {
+	svg := string(svgBytes[:])
 	lines := strings.Split(svg, "\n")
 	var svgWidth int
 	for _, l := range lines {
@@ -170,7 +173,7 @@ func svgSucceed(svg string) (bool, error) {
 					var err error
 					svgWidth, err = strconv.Atoi(parts[1])
 					if err != nil {
-						return false, err
+						return nil, err
 					}
 					break
 				}
@@ -178,21 +181,38 @@ func svgSucceed(svg string) (bool, error) {
 		}
 	}
 	if svgWidth == 0 {
-		return false, fmt.Errorf("could not get svg width")
+		return nil, fmt.Errorf("could not get svg width")
 	}
 	lineColor := "39a85a"
-	for _, l := range lines {
+	for i, l := range lines {
 		if strings.Contains(l, lineColor) {
 			lineDrawn := strings.Split(strings.Split(l, `"`)[1], " ")
 			endPointX, err := strconv.Atoi(lineDrawn[len(lineDrawn)-2])
 			if err != nil {
-				return false, err
+				return nil, err
 			}
-			if float64(endPointX) > 0.95*float64(svgWidth) {
-				return true, nil
+			if float64(endPointX) < 0.95*float64(svgWidth) {
+				return nil, fmt.Errorf("the line is not reach its end")
 			}
-			return false, fmt.Errorf("the line is not reach its end")
+			break
+		}
+		if i == len(lines)-1 {
+			return nil, fmt.Errorf("could not get endpoint")
 		}
 	}
-	return false, fmt.Errorf("could not get endpoint")
+	renderLengthMarker := "<path"
+	for i := len(lines) - 1; i >= 0; i-- {
+		if strings.Contains(lines[i], renderLengthMarker) {
+			words := strings.Split(lines[i], " ")
+			svgWidthStr := strconv.Itoa(svgWidth)
+			for j := range words {
+				if words[j] == "L" && j+1 < len(words) && words[j+1] != svgWidthStr {
+					lines[i] = strings.ReplaceAll(lines[i], words[j+1], svgWidthStr)
+					break
+				}
+			}
+			return []byte(strings.Join(lines, "\n")), nil
+		}
+	}
+	return svgBytes, nil
 }
