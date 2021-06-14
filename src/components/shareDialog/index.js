@@ -12,6 +12,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import copy from "copy-to-clipboard";
+import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/default-highlight";
+import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 import { inIframe } from "../../utils";
 import "./index.css";
@@ -191,6 +193,26 @@ const DialogContent = withStyles(theme => ({
     padding: theme.spacing(2)
   }
 }))(MuiDialogContent);
+
+export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
+  const title =
+    type === "contributorOverTime"
+      ? "Contributor over time"
+      : "Monthly Active Contributors";
+  return (
+    <div>
+      <p>
+        You can include the chart on your repository's README.md as follows:
+      </p>
+      <SyntaxHighlighter language="markdown" style={a11yDark}>
+        {`
+### ${title}
+
+[![${title}](${IMG_BASE_URL + params})](${SHARE_BASE_URL + params})`}
+      </SyntaxHighlighter>
+    </div>
+  );
+};
 
 export default function CustomizedDialogs({
   open = false,
