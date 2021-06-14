@@ -14,7 +14,6 @@ import (
 	"cloud.google.com/go/datastore"
 	"github.com/google/go-github/v33/github"
 	"github.com/schollz/progressbar/v3"
-	"gopkg.in/yaml.v2"
 
 	"github.com/api7/contributor-graph/api/internal/ghapi"
 	"github.com/api7/contributor-graph/api/internal/graph"
@@ -147,7 +146,7 @@ func MultiCon(repoInput string) ([]utils.ReturnCon, int, error) {
 	} else {
 		// if repoInput only contains one repo, use our own list
 		var repoList map[string][]string
-		if err := ReadMultiRepoYaml(&repoList); err != nil {
+		if err := utils.ReadMultiRepoYaml(&repoList); err != nil {
 			return nil, http.StatusInternalServerError, err
 		}
 
@@ -403,18 +402,6 @@ func MinInt(x, y int) int {
 		return x
 	}
 	return y
-}
-
-func ReadMultiRepoYaml(repoList *map[string][]string) error {
-	yamlFile, err := ioutil.ReadFile(utils.MultiRepoPath)
-	if err != nil {
-		return err
-	}
-	err = yaml.Unmarshal(yamlFile, &repoList)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func getConFromMultiRepo(conMap map[string]time.Time, repos []string) (int, error) {

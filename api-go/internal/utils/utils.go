@@ -2,10 +2,12 @@ package utils
 
 import (
 	"errors"
+	"io/ioutil"
 	"strings"
 	"time"
 
 	"cloud.google.com/go/datastore"
+	"gopkg.in/yaml.v2"
 )
 
 type ReturnCon struct {
@@ -84,4 +86,16 @@ func FileNameToRepoName(str string) string {
 		}
 	}
 	return str
+}
+
+func ReadMultiRepoYaml(repoList *map[string][]string) error {
+	yamlFile, err := ioutil.ReadFile(MultiRepoPath)
+	if err != nil {
+		return err
+	}
+	err = yaml.Unmarshal(yamlFile, &repoList)
+	if err != nil {
+		return err
+	}
+	return nil
 }
