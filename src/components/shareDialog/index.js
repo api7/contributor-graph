@@ -85,7 +85,7 @@ const ShareLink = ({ params = "" }) => {
   );
 };
 
-function CenteredGrid({ params = "" }) {
+function ShareModal({ params = "" }) {
   const useStyles = makeStyles(theme => ({
     root: {
       flexGrow: 1
@@ -98,6 +98,7 @@ function CenteredGrid({ params = "" }) {
   }));
   const classes = useStyles();
   const shareUrl = SHARE_BASE_URL + params;
+  const shareText = params.includes('contributorMonthlyActivity')?'monthly active contributor':'contributor over time'
 
   return (
     <div className={classes.root}>
@@ -109,7 +110,7 @@ function CenteredGrid({ params = "" }) {
             style={{ cursor: "pointer" }}
             onClick={() => {
               if (!inIframe()) {
-                window.location.href = `https://twitter.com/share?text=Amazing tools to view your repo contributor over time!&url=${shareUrl}`;
+                window.location.href = `https://twitter.com/share?text=Amazing tools to view your repo ${shareText}!&url=${shareUrl}`;
               }
               window.parent.postMessage(
                 {
@@ -217,7 +218,7 @@ export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
 export default function CustomizedDialogs({
   open = false,
   onChange = () => {},
-  params = ""
+  params = "",
 }) {
   const handleClose = () => {
     onChange(false);
@@ -233,7 +234,7 @@ export default function CustomizedDialogs({
           Share
         </DialogTitle>
         <DialogContent dividers>
-          <CenteredGrid params={params} />
+          <ShareModal params={params} />
           <ShareLink params={params} />
         </DialogContent>
       </Dialog>
