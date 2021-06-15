@@ -3,15 +3,13 @@ import cloneDeep from "lodash.clonedeep";
 import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
 import omit from "lodash.omit";
-
 import { Button, ButtonGroup } from "@material-ui/core";
+
 import { getMonths, getParameterByName } from "../../utils";
 import { generateDefaultOption } from "../../constants";
 import { fetchData, fetchMergeContributor } from "./service";
-import CustomizedDialogs from "../shareDialog";
+import CustomizedDialogs, { MarkdownLink } from "../shareDialog";
 import { DEFAULT_COLOR } from "../../constants";
-import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/default-highlight";
-import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 const ContributorLineChart = ({
   repoList = [],
@@ -42,27 +40,6 @@ const ContributorLineChart = ({
   const [viewMerge, setViewMerge] = React.useState(false);
   const [mergeRepo, setMergerRepo] = React.useState("");
   const [showMergeButton, setShowMergeButton] = React.useState(false);
-
-  const SHARE_BASE_URL = "https://www.apiseven.com/en/contributor-graph";
-  const IMG_BASE_URL =
-    "https://contributor-graph-api.apiseven.com/contributors-svg";
-
-  const MarkdownLink = ({ params = "" }) => {
-    return (
-      <div>
-        <p>
-          You can include the chart on your repository's README.md as follows:
-        </p>
-        <SyntaxHighlighter language="markdown" style={a11yDark}>
-          {`
-  ### Contributor over time
-
-  [![Contributor over time](${IMG_BASE_URL + params})](${SHARE_BASE_URL +
-            params})`}
-        </SyntaxHighlighter>
-      </div>
-    );
-  };
 
   React.useEffect(() => {
     setViewMerge(false);
@@ -308,7 +285,7 @@ const ContributorLineChart = ({
           <div
             id="chart"
             style={{
-              marginTop: "10px",
+              marginTop: "10px"
             }}
           >
             <div
@@ -404,7 +381,10 @@ const ContributorLineChart = ({
               showLoading={loading}
               notMerge
             />
-            <MarkdownLink params={getShareParams()} />
+            <MarkdownLink
+              params={getShareParams()}
+              type="contributorOverTime"
+            />
           </div>
         </div>
       </div>
