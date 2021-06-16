@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useLayoutEffect } from "react";
 import { makeStyles, Paper, Snackbar } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import MuiAlert from "@material-ui/lab/Alert";
@@ -17,6 +17,7 @@ import ContirbutorLineChart from "./components/contributor";
 import ActivityChart from "./components/activity";
 import { getParameterByName } from "./utils";
 import CompareComponent from "./components/compare";
+import { DEFAULT_CONTAINER_STYLE, DEFAULT_SEARCHBAR_STYLE } from "./constants";
 
 const Alert = props => {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -95,6 +96,32 @@ const App = () => {
   const [contributorRepoList, setContributorRepoList] = React.useState([]);
   const [value, setValue] = React.useState(0);
   const [tabdisabled, setTabDisabled] = React.useState(false);
+  const [size, setSize] = React.useState([0, 0]);
+  const [searchStyle, setSearchStyle] = React.useState(DEFAULT_SEARCHBAR_STYLE);
+  const [containerStyle, setContainerStyle] = React.useState(
+    DEFAULT_CONTAINER_STYLE
+  );
+
+  // handle screen resize
+  useLayoutEffect(() => {
+    function updateSize() {
+      setSize([window.innerWidth, window.innerHeight]);
+    }
+    window.addEventListener("resize", updateSize);
+    updateSize();
+    return () => window.removeEventListener("resize", updateSize);
+  }, []);
+
+  React.useEffect(() => {
+    const width = size[0];
+    if (width > 996) {
+      setContainerStyle(DEFAULT_CONTAINER_STYLE);
+      setSearchStyle(DEFAULT_SEARCHBAR_STYLE);
+    } else {
+      setContainerStyle({ ...containerStyle, width: "100%" });
+      setSearchStyle({ ...searchStyle, width: "80%" });
+    }
+  }, [size]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -186,14 +213,7 @@ const App = () => {
           alignItems: "center"
         }}
       >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            flexDirection: "column",
-            width: "40%"
-          }}
-        >
+        <div style={searchStyle}>
           <Paper className={classes.root} elevation={0}>
             <Autocomplete
               freeSolo
@@ -258,14 +278,7 @@ const App = () => {
             />
           </div>
         </div>
-        <div
-          className="right"
-          style={{
-            width: "70%",
-            border: "1px solid #dadce0",
-            borderRadius: "12px"
-          }}
-        >
+        <div className="right" style={containerStyle}>
           <div style={{ display: "flex", justifyContent: "center" }}>
             <div
               className="search-container"
@@ -280,7 +293,7 @@ const App = () => {
           <div>
             <div
               style={{
-                width: "100%",
+                width: "90%",
                 display: "flex",
                 justifyContent: "left",
                 padding: "5px"
