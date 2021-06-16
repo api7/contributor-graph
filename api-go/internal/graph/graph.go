@@ -163,7 +163,7 @@ func SubGetSVG(w http.ResponseWriter, repo string, merge bool, charType string) 
 func svgSucceed(svgBytes []byte) ([]byte, error) {
 	svg := string(svgBytes[:])
 	lines := strings.Split(svg, "\n")
-	var svgWidth int
+	var svgWidth float64
 	for _, l := range lines {
 		if strings.Contains(l, "<rect") {
 			words := strings.Split(l, " ")
@@ -171,7 +171,7 @@ func svgSucceed(svgBytes []byte) ([]byte, error) {
 				if strings.Contains(w, "width") {
 					parts := strings.Split(w, `"`)
 					var err error
-					svgWidth, err = strconv.Atoi(parts[1])
+					svgWidth, err = strconv.ParseFloat(parts[1], 64)
 					if err != nil {
 						return nil, err
 					}
@@ -187,7 +187,7 @@ func svgSucceed(svgBytes []byte) ([]byte, error) {
 	for i, l := range lines {
 		if strings.Contains(l, lineColor) {
 			lineDrawn := strings.Split(strings.Split(l, `"`)[1], " ")
-			endPointX, err := strconv.Atoi(lineDrawn[len(lineDrawn)-2])
+			endPointX, err := strconv.ParseFloat(lineDrawn[len(lineDrawn)-2], 64)
 			if err != nil {
 				return nil, err
 			}
@@ -204,7 +204,7 @@ func svgSucceed(svgBytes []byte) ([]byte, error) {
 	for i := len(lines) - 1; i >= 0; i-- {
 		if strings.Contains(lines[i], renderLengthMarker) {
 			words := strings.Split(lines[i], " ")
-			svgWidthStr := strconv.Itoa(svgWidth)
+			svgWidthStr := fmt.Sprintf("%f", svgWidth)
 			for j := range words {
 				if words[j] == "L" && j+1 < len(words) && words[j+1] != svgWidthStr {
 					lines[i] = strings.ReplaceAll(lines[i], words[j+1], svgWidthStr)
