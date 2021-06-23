@@ -12,6 +12,8 @@ import { makeStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
 import copy from "copy-to-clipboard";
+import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/default-highlight";
+import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 import { inIframe } from "../../utils";
 import "./index.css";
@@ -83,7 +85,7 @@ const ShareLink = ({ params = "" }) => {
   );
 };
 
-function CenteredGrid({ params = "" }) {
+function ShareModal({ params = "" }) {
   const useStyles = makeStyles(theme => ({
     root: {
       flexGrow: 1
@@ -96,6 +98,7 @@ function CenteredGrid({ params = "" }) {
   }));
   const classes = useStyles();
   const shareUrl = SHARE_BASE_URL + params;
+  const shareText = params.includes('contributorMonthlyActivity')?'monthly active contributor':'contributor over time'
 
   return (
     <div className={classes.root}>
@@ -107,7 +110,7 @@ function CenteredGrid({ params = "" }) {
             style={{ cursor: "pointer" }}
             onClick={() => {
               if (!inIframe()) {
-                window.location.href = `https://twitter.com/share?text=Amazing tools to view your repo contributor over time!&url=${shareUrl}`;
+                window.location.href = `https://twitter.com/share?text=Amazing tools to view your repo ${shareText}!&url=${shareUrl}`;
               }
               window.parent.postMessage(
                 {
@@ -192,10 +195,30 @@ const DialogContent = withStyles(theme => ({
   }
 }))(MuiDialogContent);
 
+export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
+  const title =
+    type === "contributorOverTime"
+      ? "Contributor over time"
+      : "Monthly Active Contributors";
+  return (
+    <div>
+      <p>
+        You can include the chart on your repository's README.md as follows:
+      </p>
+      <SyntaxHighlighter language="markdown" style={a11yDark}>
+        {`
+### ${title}
+
+[![${title}](${IMG_BASE_URL + params})](${SHARE_BASE_URL + params})`}
+      </SyntaxHighlighter>
+    </div>
+  );
+};
+
 export default function CustomizedDialogs({
   open = false,
   onChange = () => {},
-  params = ""
+  params = "",
 }) {
   const handleClose = () => {
     onChange(false);
@@ -211,7 +234,7 @@ export default function CustomizedDialogs({
           Share
         </DialogTitle>
         <DialogContent dividers>
-          <CenteredGrid params={params} />
+          <ShareModal params={params} />
           <ShareLink params={params} />
         </DialogContent>
       </Dialog>

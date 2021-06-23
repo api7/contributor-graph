@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"cloud.google.com/go/storage"
 	"github.com/api7/contributor-graph/api/internal/activities"
@@ -112,8 +113,9 @@ func getContributorSVG(w http.ResponseWriter, r *http.Request) {
 	v := r.URL.Query()
 	repo := v.Get("repo")
 	merge := v.Get("merge") != ""
+	chartType := v.Get("chart")
 
-	svg, err := graph.SubGetSVG(w, repo, merge)
+	svg, err := graph.SubGetSVG(w, repo, merge, chartType)
 	if err != nil && err != storage.ErrObjectNotExist && err != utils.ErrSVGNeedUpdate {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err.Error())
@@ -121,7 +123,7 @@ func getContributorSVG(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if svg == "" {
-		svg, err = graph.GenerateAndSaveSVG(context.Background(), repo, merge)
+		svg, err = graph.GenerateAndSaveSVG(context.Background(), repo, merge, chartType)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(err.Error())
@@ -131,6 +133,7 @@ func getContributorSVG(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("content-type", "image/svg+xml;charset=utf-8")
 	w.Header().Add("cache-control", "public, max-age=86400")
 
+	svg = strings.Replace(svg, "%", "%%", -1)
 	fmt.Fprintf(w, svg)
 }
 
@@ -195,7 +198,7 @@ func refreshMultiRepo(w http.ResponseWriter, r *http.Request) {
 	}
 	merge := true
 	for repo := range repoList {
-		_, err := graph.GenerateAndSaveSVG(context.Background(), repo, merge)
+		_, err := graph.GenerateAndSaveSVG(context.Background(), repo, merge, utils.ContributorOverTime)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			json.NewEncoder(w).Encode(err.Error())

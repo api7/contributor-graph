@@ -3,15 +3,13 @@ import cloneDeep from "lodash.clonedeep";
 import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
 import omit from "lodash.omit";
-
 import { Button, ButtonGroup } from "@material-ui/core";
+
 import { getMonths, getParameterByName } from "../../utils";
 import { generateDefaultOption } from "../../constants";
 import { fetchData, fetchMergeContributor } from "./service";
-import CustomizedDialogs from "../shareDialog";
+import CustomizedDialogs, { MarkdownLink } from "../shareDialog";
 import { DEFAULT_COLOR } from "../../constants";
-import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/default-highlight";
-import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 const ContributorLineChart = ({
   repoList = [],
@@ -19,6 +17,13 @@ const ContributorLineChart = ({
   onDelete,
   onLoading
 }) => {
+  const mergeRepoList = [
+    "apache/apisix",
+    "apache/skywalking",
+    "apache/openwhisk",
+    "apache/dubbo"
+  ];
+
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
@@ -34,47 +39,18 @@ const ContributorLineChart = ({
 
   const [viewMerge, setViewMerge] = React.useState(false);
   const [mergeRepo, setMergerRepo] = React.useState("");
-
-  const showMergeButton = React.useMemo(() => {
-    const lastItem = repoList[repoList.length - 1];
-    return lastItem === "apache/apisix" || lastItem === "apache/skywalking";
-  }, [repoList]);
-
-  const SHARE_BASE_URL = "https://www.apiseven.com/en/contributor-graph";
-  const IMG_BASE_URL =
-    "https://contributor-graph-api.apiseven.com/contributors-svg";
-
-  const MarkdownLink = ({ params = "" }) => {
-    return (
-      <div>
-        <p>
-          You can include the chart on your repository's README.md as follows:
-        </p>
-        <SyntaxHighlighter language="markdown" style={a11yDark}>
-          {`
-  ## Contributor over time
-  
-  [![Contributor over time](${IMG_BASE_URL + params})[${SHARE_BASE_URL +
-            params}]]`}
-        </SyntaxHighlighter>
-      </div>
-    );
-  };
+  const [showMergeButton, setShowMergeButton] = React.useState(false);
 
   React.useEffect(() => {
-    if (showMergeButton) {
-      setMergerRepo(repoList[repoList.length - 1]);
-      return;
-    }
-    setMergerRepo("");
-  }, [repoList, showMergeButton]);
-
-  React.useEffect(() => {
-    // reset viewmerge when repo list change
-    if (!showMergeButton) {
+    if(repoList.length > 1) {
       setViewMerge(false);
     }
-  }, [repoList.length]);
+    setMergerRepo(repoList[repoList.length - 1]);
+
+    const lastItem = repoList[repoList.length - 1];
+    const showMerge = mergeRepoList.includes(lastItem);
+    setShowMergeButton(showMerge);
+  }, [repoList]);
 
   const getShareParams = () => {
     if (viewMerge) {
@@ -262,6 +238,8 @@ const ContributorLineChart = ({
         });
     } else {
       if (!mergeRepo.length) return;
+      if (mergeRepo !== repoList[repoList.length - 1]) return;
+
       setLoading(true);
       fetchMergeContributor([mergeRepo], showAlert, onDelete)
         .then(_data => {
@@ -289,10 +267,7 @@ const ContributorLineChart = ({
   React.useEffect(() => {
     const merge = getParameterByName("merge");
     const repo = getParameterByName("repo");
-    if (
-      (merge === "true" && repo === "apache/apisix") ||
-      repo === "apache/skywalking"
-    ) {
+    if (merge === "true" && mergeRepoList.includes(repo)) {
       setMergerRepo(repo);
       setViewMerge(true);
     }
@@ -308,12 +283,11 @@ const ContributorLineChart = ({
         }}
       >
         <Dialog />
-        <div className="right" style={{ width: "100%" }}>
+        <div className="right" style={{ width: "90%" }}>
           <div
             id="chart"
             style={{
-              marginTop: "10px",
-              padding: "0px 40px"
+              marginTop: "10px"
             }}
           >
             <div
@@ -323,7 +297,13 @@ const ContributorLineChart = ({
                 justifyContent: "space-between"
               }}
             >
-              <ButtonGroup color="secondary" size="small">
+              <ButtonGroup
+                color="secondary"
+                size="small"
+                style={{
+                  width: document.body.clientWidth < 670 ? "100%" : "unset"
+                }}
+              >
                 <Button
                   variant={activeDate === "1month" ? "contained" : "outlined"}
                   value="1month"
@@ -379,6 +359,10 @@ const ContributorLineChart = ({
                   onClick={() => {
                     setViewMerge(viewMerge => !viewMerge);
                   }}
+                  style={{
+                    width: document.body.clientWidth < 670 ? "100%" : "unset",
+                    marginTop: document.body.clientWidth < 670 ? "2px" : "unset"
+                  }}
                 >
                   {!viewMerge
                     ? `view all repos related to ${mergeRepo}`
@@ -401,11 +385,14 @@ const ContributorLineChart = ({
                   window.echartInstance = echartInstance;
                 }
               }}
-              style={{ height: 550 }}
+              style={{ height: 550, marginTop: "20px" }}
               showLoading={loading}
               notMerge
             />
-            <MarkdownLink params={getShareParams()} />
+            <MarkdownLink
+              params={getShareParams()}
+              type="contributorOverTime"
+            />
           </div>
         </div>
       </div>

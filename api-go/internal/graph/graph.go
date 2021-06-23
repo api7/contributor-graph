@@ -7,6 +7,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/datastore"
@@ -14,9 +16,12 @@ import (
 	"github.com/api7/contributor-graph/api/internal/utils"
 )
 
-func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, error) {
+// base on experiments :(
+var minSuccessfulSVGLen = 7000
+
+func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool, chartType string) (string, error) {
 	bucket := "api7-301102.appspot.com"
-	object := utils.RepoNameToFileName(repo, merge) + ".svg"
+	object := utils.RepoNameToFileName(repo, merge, chartType)
 
 	client, err := storage.NewClient(ctx)
 	if err != nil {
@@ -27,6 +32,9 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 	graphFunctionUrl := "https://cloudfunction.contributor-graph.com/svg?repo=" + repo
 	if merge {
 		graphFunctionUrl += "&merge=true"
+	}
+	if chartType != "" {
+		graphFunctionUrl += "&chart=" + string(chartType)
 	}
 	resp, err := http.Get(graphFunctionUrl)
 	if err != nil {
@@ -49,6 +57,28 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 		return "", err
 	}
 
+	svg, err = svgSucceed(svg)
+	if svg == nil {
+		fmt.Println("Oops something went wrong. Retry now.")
+		if err != nil {
+			fmt.Printf("Error: %s\n", err.Error())
+		}
+		fmt.Println(graphFunctionUrl)
+		resp, err = http.Get(graphFunctionUrl)
+		if err != nil {
+			return "", err
+		}
+		defer resp.Body.Close()
+		svg, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return "", err
+		}
+		svg, err = svgSucceed(svg)
+		if svg == nil {
+			return "", fmt.Errorf("get svg failed since %s", err.Error())
+		}
+	}
+
 	wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
 	wc.CacheControl = "public, max-age=86400"
 	wc.ContentType = "image/svg+xml;charset=utf-8"
@@ -60,13 +90,14 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool) (string, e
 		return "", fmt.Errorf("upload svg failed: Writer.Close: %v", err)
 	}
 
-	fmt.Printf("New SVG generated with %s\n", repo)
+	fmt.Printf("New SVG generated with %s, merge=%v, char=%v\n", repo, merge, chartType)
+
 	return string(svg[:]), nil
 }
 
-func SubGetSVG(w http.ResponseWriter, repo string, merge bool) (string, error) {
+func SubGetSVG(w http.ResponseWriter, repo string, merge bool, charType string) (string, error) {
 	bucket := "api7-301102.appspot.com"
-	object := utils.RepoNameToFileName(repo, merge) + ".svg"
+	object := utils.RepoNameToFileName(repo, merge, charType)
 
 	ctx := context.Background()
 	client, err := storage.NewClient(ctx)
@@ -108,6 +139,9 @@ func SubGetSVG(w http.ResponseWriter, repo string, merge bool) (string, error) {
 	if merge {
 		storeName = "merge-" + repo
 	}
+	if charType == utils.ContributorMonthlyActivity {
+		storeName = "monthly-" + repo
+	}
 	key := datastore.NameKey("GraphTraffic", storeName, nil)
 	traffic := utils.GraphTraffic{}
 	err = dbCli.Get(ctx, key, &traffic)
@@ -121,4 +155,64 @@ func SubGetSVG(w http.ResponseWriter, repo string, merge bool) (string, error) {
 	}
 
 	return string(svg), nil
+}
+
+// Since currently front-end can not give concise time svg got rendered,
+// we need to also tell if the graph is ready to use on this side.
+// Try to get the endpoint of the line drawn and tell if it's on the right-most side
+func svgSucceed(svgBytes []byte) ([]byte, error) {
+	svg := string(svgBytes[:])
+	lines := strings.Split(svg, "\n")
+	var svgWidth float64
+	for _, l := range lines {
+		if strings.Contains(l, "<rect") {
+			words := strings.Split(l, " ")
+			for _, w := range words {
+				if strings.Contains(w, "width") {
+					parts := strings.Split(w, `"`)
+					var err error
+					svgWidth, err = strconv.ParseFloat(parts[1], 64)
+					if err != nil {
+						return nil, err
+					}
+					break
+				}
+			}
+		}
+	}
+	if svgWidth == 0 {
+		return nil, fmt.Errorf("could not get svg width")
+	}
+	lineColor := "39a85a"
+	for i, l := range lines {
+		if strings.Contains(l, lineColor) {
+			lineDrawn := strings.Split(strings.Split(l, `"`)[1], " ")
+			endPointX, err := strconv.ParseFloat(lineDrawn[len(lineDrawn)-2], 64)
+			if err != nil {
+				return nil, err
+			}
+			if float64(endPointX) < 0.95*float64(svgWidth) {
+				return nil, fmt.Errorf("the line is not reach its end")
+			}
+			break
+		}
+		if i == len(lines)-1 {
+			return nil, fmt.Errorf("could not get endpoint")
+		}
+	}
+	renderLengthMarker := "<path"
+	for i := len(lines) - 1; i >= 0; i-- {
+		if strings.Contains(lines[i], renderLengthMarker) {
+			words := strings.Split(lines[i], " ")
+			svgWidthStr := fmt.Sprintf("%f", svgWidth)
+			for j := range words {
+				if words[j] == "L" && j+1 < len(words) && words[j+1] != svgWidthStr {
+					lines[i] = strings.ReplaceAll(lines[i], words[j+1], svgWidthStr)
+					break
+				}
+			}
+			return []byte(strings.Join(lines, "\n")), nil
+		}
+	}
+	return svgBytes, nil
 }

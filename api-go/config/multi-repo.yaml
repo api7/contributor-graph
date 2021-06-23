@@ -42,3 +42,66 @@ apache/skywalking:
     - sourceplusplus/SourceMarker
     - SkyAPM/java-plugin-extensions
     - SkyAPM/uranus
+apache/openwhisk:
+    - apache/openwhisk
+    - apache/openwhisk-apigateway
+    - apache/openwhisk-catalog
+    - apache/openwhisk-cli
+    - apache/openwhisk-client-go
+    - apache/openwhisk-client-js
+    - apache/openwhisk-composer
+    - apache/openwhisk-composer-python
+    - apache/openwhisk-deploy-kube
+    - apache/openwhisk-deploy-mesos
+    - apache/openwhisk-devtools
+    - apache/openwhisk-external-resources
+    - apache/openwhisk-intellij-plugin
+    - apache/openwhisk-package-alarms
+    - apache/openwhisk-package-cloudant
+    - apache/openwhisk-package-deploy
+    - apache/openwhisk-package-kafka
+    - apache/openwhisk-package-pushnotifications
+    - apache/openwhisk-pluggable-provider
+    - apache/openwhisk-release
+    - apache/openwhisk-runtime-ballerina
+    - apache/openwhisk-runtime-deno
+    - apache/openwhisk-runtime-docker
+    - apache/openwhisk-runtime-dotnet
+    - apache/openwhisk-runtime-go
+    - apache/openwhisk-runtime-java
+    - apache/openwhisk-runtime-nodejs
+    - apache/openwhisk-runtime-php
+    - apache/openwhisk-runtime-python
+    - apache/openwhisk-runtime-ruby
+    - apache/openwhisk-runtime-rust
+    - apache/openwhisk-runtime-swift
+    - apache/openwhisk-slackinvite
+    - apache/openwhisk-test
+    - apache/openwhisk-utilities
+    - apache/openwhisk-vscode-extension
+    - apache/openwhisk-website
+    - apache/openwhisk-wskdebug
+    - apache/openwhisk-wskdeploy
+apache/dubbo:
+    - apache/dubbo
+    - apache/dubbo-admin
+    - apache/dubbo-awesome
+    - apache/dubbo-benchmark
+    - apache/dubbo-erlang
+    - apache/dubbo-getty
+    - apache/dubbo-go
+    - apache/dubbo-go-hessian2
+    - apache/dubbo-go-pixiu
+    - apache/dubbo-go-samples
+    - apache/dubbo-hessian-lite
+    - apache/dubbo-js
+    - apache/dubbo-kubernetes
+    - apache/dubbo-php-framework
+    - apache/dubbo-proxy
+    - apache/dubbo-python
+    - apache/dubbo-python2
+    - apache/dubbo-samples
+    - apache/dubbo-spi-extensions
+    - apache/dubbo-spring-boot-project
+    - apache/dubbo-website
+

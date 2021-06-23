@@ -5,7 +5,8 @@ import * as echarts from "echarts";
 import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
 
-import { DEFAULT_ACTIVITY_OPTIONS, DEFAULT_COLOR } from "../../constants";
+import CustomizedDialogs, { MarkdownLink } from "../shareDialog";
+import { DEFAULT_COLOR, generateMonthlyActivityOption } from "../../constants";
 
 const ActivityChart = ({
   repoList = ["apache/apisix"],
@@ -16,38 +17,35 @@ const ActivityChart = ({
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [xAxis] = React.useState(["1970-01-01"]);
-  const [option, setOption] = React.useState({
-    ...DEFAULT_ACTIVITY_OPTIONS,
-    tooltip: {
-      trigger: "axis",
-      formatter: params => {
-        const text = params.map(item => {
-          return `<span>${item.marker}${item.seriesName}&nbsp&nbsp <b>${item.value[0]}</b></span><br>`;
-        });
-
-        return [params[0].value[2].substring(0, 7), text]
-          .join("</br>")
-          .replace(/,/g, "");
+  const [shareModalVisible, setShareModalVisible] = React.useState(false);
+  const [option, setOption] = React.useState(
+    generateMonthlyActivityOption({
+      handleShareClick: () => {
+        setShareModalVisible(true);
       }
-    }
-  });
+    })
+  );
+
+  const Dialog = React.useCallback(() => {
+    return (
+      <CustomizedDialogs
+        open={shareModalVisible}
+        params={getShareParams()}
+        onChange={() => {
+          setShareModalVisible(false);
+        }}
+      />
+    );
+  }, [shareModalVisible]);
 
   const updateSeries = passXAxis => {
-    const newClonedOption = cloneDeep({
-      ...DEFAULT_ACTIVITY_OPTIONS,
-      tooltip: {
-        trigger: "axis",
-        formatter: params => {
-          const text = params.map(item => {
-            return `<span>${item.marker}${item.seriesName}&nbsp&nbsp <b>${item.value[0]}</b></span><br>`;
-          });
-
-          return [params[0].value[2].substring(0, 7), text]
-            .join("</br>")
-            .replace(/,/g, "");
+    const newClonedOption = cloneDeep(
+      generateMonthlyActivityOption({
+        handleShareClick: () => {
+          setShareModalVisible(true);
         }
-      }
-    });
+      })
+    );
     const datasetWithFilters = [
       ["ContributorNum", "Repo", "Date", "DateValue"]
     ];
@@ -220,6 +218,9 @@ const ActivityChart = ({
       });
   }, [repoList]);
 
+  const getShareParams = () =>
+    `?chart=contributorMonthlyActivity&repo=${repoList.join(",")}`;
+
   return (
     <>
       <div
@@ -229,6 +230,7 @@ const ActivityChart = ({
           justifyContent: "center"
         }}
       >
+        <Dialog />
         <div className="right" style={{ width: "90%", marginTop: "10px" }}>
           <div id="chart">
             <Tab.Container defaultActiveKey="contributor">
@@ -254,6 +256,10 @@ const ActivityChart = ({
                         style={{ height: 550 }}
                         showLoading={loading}
                         notMerge
+                      />
+                      <MarkdownLink
+                        params={getShareParams()}
+                        type="contributorMonthlyActivity"
                       />
                     </Tab.Pane>
                   </Tab.Content>
