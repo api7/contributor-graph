@@ -42,7 +42,7 @@ const ContributorLineChart = ({
   const [showMergeButton, setShowMergeButton] = React.useState(false);
 
   React.useEffect(() => {
-    if( repoList.length > 1 ) {
+    if(repoList.length > 1) {
       setViewMerge(false);
     }
     setMergerRepo(repoList[repoList.length - 1]);
