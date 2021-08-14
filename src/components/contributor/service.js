@@ -7,7 +7,7 @@ export const fetchData = (repo, showAlert, onDelete) => {
   }
   return new Promise((resolve, reject) => {
     fetch(
-      `https://contributor-graph-api.apiseven.com/contributors?repo=${repo}`
+      `https://contributor-overtime-api.apiseven.com/contributors?repo=${repo}`
     )
       .then(response => {
         if (!response.ok) {
@@ -89,7 +89,7 @@ export const fetchData = (repo, showAlert, onDelete) => {
 export const fetchMergeContributor = (repo, showAlert) => {
   return new Promise((resolve, reject) => {
     fetch(
-      `https://contributor-graph-api.apiseven.com/contributors-multi?repo=${repo.join(
+      `https://contributor-overtime-api.apiseven.com/contributors-multi?repo=${repo.join(
         ","
       )}`
     )

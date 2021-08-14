@@ -137,7 +137,7 @@ const ActivityChart = ({
     }
     return new Promise((resolve, reject) => {
       fetch(
-        `https://contributor-graph-api.apiseven.com/monthly-contributor?repo=${repo}`
+        `https://contributor-overtime-api.apiseven.com/monthly-contributor?repo=${repo}`
       )
         .then(response => {
           if (!response.ok) {

@@ -150,13 +150,13 @@ const App = () => {
   };
 
   const getSearchOptions = () => {
-    fetch(`https://contributor-graph-api.apiseven.com/repos?`, {
+    fetch(`https://contributor-overtime-api.apiseven.com/repos?`, {
       method: "GET",
       headers: {
         Accept: "application/vnd.github.v3+json"
       }
     })
-      .then(function(response) {
+      .then(function (response) {
         return response.json();
       })
       .then(data => {

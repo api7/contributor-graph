@@ -33,7 +33,7 @@ const styles = theme => ({
 
 const SHARE_BASE_URL = "https://www.apiseven.com/en/contributor-graph";
 const IMG_BASE_URL =
-  "https://contributor-graph-api.apiseven.com/contributors-svg";
+  "https://contributor-overtime-api.apiseven.com/contributors-svg";
 
 const ShareLink = ({ params = "" }) => {
   return (
@@ -98,7 +98,7 @@ function ShareModal({ params = "" }) {
   }));
   const classes = useStyles();
   const shareUrl = SHARE_BASE_URL + params;
-  const shareText = params.includes('contributorMonthlyActivity')?'monthly active contributor':'contributor over time'
+  const shareText = params.includes('contributorMonthlyActivity') ? 'monthly active contributor' : 'contributor over time'
 
   return (
     <div className={classes.root}>
@@ -217,7 +217,7 @@ export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
 
 export default function CustomizedDialogs({
   open = false,
-  onChange = () => {},
+  onChange = () => { },
   params = "",
 }) {
   const handleClose = () => {
