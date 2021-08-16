@@ -130,6 +130,9 @@ const App = () => {
   const classes = useStyles();
 
   const showAlert = (message = "", type = "success") => {
+    if(typeof(message === 'object' && type === 'error')){
+      message = 'Request Error'
+    }
     setMessage(message);
     setAlertType(type);
     setOpen(true);
