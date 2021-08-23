@@ -7,8 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strconv"
-	"strings"
 	"time"
 
 	"cloud.google.com/go/datastore"
@@ -29,7 +27,7 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool, chartType 
 	}
 	defer client.Close()
 
-	graphFunctionUrl := "https://cloudfunction.contributor-graph.com/svg?repo=" + repo
+	graphFunctionUrl := "http://localhost:8081?repo=" + repo
 	if merge {
 		graphFunctionUrl += "&merge=true"
 	}
@@ -81,7 +79,7 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool, chartType 
 
 	wc := client.Bucket(bucket).Object(object).NewWriter(ctx)
 	wc.CacheControl = "public, max-age=86400"
-	wc.ContentType = "image/svg+xml;charset=utf-8"
+	wc.ContentType = "image/png"
 
 	if _, err = io.Copy(wc, bytes.NewReader(svg)); err != nil {
 		return "", fmt.Errorf("upload svg failed: io.Copy: %v", err)
@@ -161,58 +159,58 @@ func SubGetSVG(w http.ResponseWriter, repo string, merge bool, charType string) 
 // we need to also tell if the graph is ready to use on this side.
 // Try to get the endpoint of the line drawn and tell if it's on the right-most side
 func svgSucceed(svgBytes []byte) ([]byte, error) {
-	svg := string(svgBytes[:])
-	lines := strings.Split(svg, "\n")
-	var svgWidth float64
-	for _, l := range lines {
-		if strings.Contains(l, "<rect") {
-			words := strings.Split(l, " ")
-			for _, w := range words {
-				if strings.Contains(w, "width") {
-					parts := strings.Split(w, `"`)
-					var err error
-					svgWidth, err = strconv.ParseFloat(parts[1], 64)
-					if err != nil {
-						return nil, err
-					}
-					break
-				}
-			}
-		}
-	}
-	if svgWidth == 0 {
-		return nil, fmt.Errorf("could not get svg width")
-	}
-	lineColor := "39a85a"
-	for i, l := range lines {
-		if strings.Contains(l, lineColor) {
-			lineDrawn := strings.Split(strings.Split(l, `"`)[1], " ")
-			endPointX, err := strconv.ParseFloat(lineDrawn[len(lineDrawn)-2], 64)
-			if err != nil {
-				return nil, err
-			}
-			if float64(endPointX) < 0.95*float64(svgWidth) {
-				return nil, fmt.Errorf("the line is not reach its end")
-			}
-			break
-		}
-		if i == len(lines)-1 {
-			return nil, fmt.Errorf("could not get endpoint")
-		}
-	}
-	renderLengthMarker := "<path"
-	for i := len(lines) - 1; i >= 0; i-- {
-		if strings.Contains(lines[i], renderLengthMarker) {
-			words := strings.Split(lines[i], " ")
-			svgWidthStr := fmt.Sprintf("%f", svgWidth)
-			for j := range words {
-				if words[j] == "L" && j+1 < len(words) && words[j+1] != svgWidthStr {
-					lines[i] = strings.ReplaceAll(lines[i], words[j+1], svgWidthStr)
-					break
-				}
-			}
-			return []byte(strings.Join(lines, "\n")), nil
-		}
-	}
+	// svg := string(svgBytes[:])
+	// lines := strings.Split(svg, "\n")
+	// var svgWidth float64
+	// for _, l := range lines {
+	// 	if strings.Contains(l, "<rect") {
+	// 		words := strings.Split(l, " ")
+	// 		for _, w := range words {
+	// 			if strings.Contains(w, "width") {
+	// 				parts := strings.Split(w, `"`)
+	// 				var err error
+	// 				svgWidth, err = strconv.ParseFloat(parts[1], 64)
+	// 				if err != nil {
+	// 					return nil, err
+	// 				}
+	// 				break
+	// 			}
+	// 		}
+	// 	}
+	// }
+	// if svgWidth == 0 {
+	// 	return nil, fmt.Errorf("could not get svg width")
+	// }
+	// lineColor := "39a85a"
+	// for i, l := range lines {
+	// 	if strings.Contains(l, lineColor) {
+	// 		lineDrawn := strings.Split(strings.Split(l, `"`)[1], " ")
+	// 		endPointX, err := strconv.ParseFloat(lineDrawn[len(lineDrawn)-2], 64)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 		if float64(endPointX) < 0.95*float64(svgWidth) {
+	// 			return nil, fmt.Errorf("the line is not reach its end")
+	// 		}
+	// 		break
+	// 	}
+	// 	if i == len(lines)-1 {
+	// 		return nil, fmt.Errorf("could not get endpoint")
+	// 	}
+	// }
+	// renderLengthMarker := "<path"
+	// for i := len(lines) - 1; i >= 0; i-- {
+	// 	if strings.Contains(lines[i], renderLengthMarker) {
+	// 		words := strings.Split(lines[i], " ")
+	// 		svgWidthStr := fmt.Sprintf("%f", svgWidth)
+	// 		for j := range words {
+	// 			if words[j] == "L" && j+1 < len(words) && words[j+1] != svgWidthStr {
+	// 				lines[i] = strings.ReplaceAll(lines[i], words[j+1], svgWidthStr)
+	// 				break
+	// 			}
+	// 		}
+	// 		return []byte(strings.Join(lines, "\n")), nil
+	// 	}
+	// }
 	return svgBytes, nil
 }

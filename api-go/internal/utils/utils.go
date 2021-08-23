@@ -71,7 +71,7 @@ func RepoNameToFileName(str string, merge bool, charType string) string {
 	if charType == ContributorMonthlyActivity {
 		filename = "monthly/" + filename
 	}
-	return filename + ".svg"
+	return filename + ".png"
 }
 
 func FileNameToRepoName(str string) string {

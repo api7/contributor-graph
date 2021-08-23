@@ -1,54 +1,66 @@
+const echarts = require("echarts");
+const { createCanvas } = require('canvas');
+const { Storage } = require('@google-cloud/storage');
+const { fetchData } = require('./fetch');
+const { updateSeries } = require('./utils');
+
+const fs = require('fs');
+
+const config = {
+  width: 896,
+  height: 550,
+};
+
 /**
  * Responds to any HTTP request.
  *
  * @param {!express:Request} req HTTP request context.
  * @param {!express:Response} res HTTP response context.
  */
-const puppeteer = require('puppeteer');
-const querystring = require('querystring');
 
-exports.svg = async (req, res) => {
+exports.png = (req, res) => {
   const repo = req.query.repo;
   const merge = req.query.merge;
-  const chart = req.query.chart;
+  const chartType = req.query.chart;
 
-  const browser = await puppeteer.launch({
-    args: ['--no-sandbox',]
+  const storage = new Storage();
+  const myBucket = storage.bucket('api7-301102.appspot.com');
+
+  const ctx = createCanvas(config.width, config.height);
+  echarts.setCanvasCreator(function () {
+    return ctx;
   });
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1920, height: 1080 });
-
-  graphUrl = "https://contributor-graph-git-no-animation-apiseven.vercel.app/?repo=" + repo;
-  if (merge) {
-    graphUrl += "&merge=true"
-  }
-  if (chart) {
-    graphUrl += "&chart=" + chart
-  }
-
-  await page.goto(graphUrl);
-
-  var getSVG = function () {
-    return window.echartInstance.getDataURL();
-  };
-
-  var svgReady = function () {
-    return window.echartsRenderFinished;
-  }
-
-  function sleep(time) {
-    return new Promise((resolve) => setTimeout(resolve, time));
-  }
-
-  sleep(1000).then(() => {
-    var _flagCheck = setInterval(async function () {
-      if (await page.evaluate(svgReady) === true) {
-        clearInterval(_flagCheck);
-        var image = await page.evaluate(getSVG);
-        res.set('Content-Type', 'image/svg+xml');
-        res.send(querystring.unescape(image).split("data:image/svg+xml;charset=UTF-8,")[1]);
-        await browser.close();
+  let repoList = [repo];
+  Promise.all(repoList.map(item => fetchData(item))).then(data => {
+    const tmpDataSouce = {};
+    data.forEach(item => {
+      const { Contributors = [], repo } = item;
+      const data = Contributors.map(item => ({
+        repo,
+        contributorNum: item.idx,
+        date: item.date
+      }));
+  
+      if (!tmpDataSouce[item.repo]) {
+        tmpDataSouce[repo] = data;
       }
-    }, 100);
+    });
+
+    const option = updateSeries(["1970-01-01"], tmpDataSouce);
+    let chart = echarts.init(createCanvas(config.width, config.height));
+    chart.setOption(option, true);
+    const base64 = chart.getDom().toDataURL();
+
+    res.set('Content-Type', 'image/png');
+    res.send(base64);
+    // file.save(buffer, (err) => {
+    //   if (err) {
+    //     console.log('save file error');
+    //     throw err;
+    //   } else {
+    //     console.log(`return filename ${fileName} ok ~`);
+    //     res.status(200).send(fileName);
+    //   }
+    // });
   });
 };
