@@ -30,7 +30,7 @@ exports.png = (req, res) => {
   echarts.setCanvasCreator(function () {
     return ctx;
   });
-  let repoList = [repo];
+  let repoList = repo.split(",");
   Promise.all(repoList.map(item => fetchData(item))).then(data => {
     const tmpDataSouce = {};
     data.forEach(item => {
