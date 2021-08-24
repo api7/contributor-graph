@@ -18,6 +18,53 @@ We maintain a [list](api-go/config/multi-repo.md) which you could directly add y
 
 [![Monthly Active Contributors](https://contributor-overtime-api.apiseven.com/contributors-svg?chart=contributorMonthlyActivity&repo=apache/apisix&merge=true)](https://www.apiseven.com/en/contributor-graph?chart=contributorMonthlyActivity&repo=apache/apisix&merge=true)
 
+## Development
+
+The current project uses Google Cloud deployment, to develop and debug locally, follow the steps below:
+
+This project depends on `Golang` and `Node.js`, please make sure you have the corresponding environment.
+
+Because the read and write functions of Google Clould DataStore and Google Clould DataStorage are used in the project, you need to obtain the corresponding permissions of this.
+
+It is recommended to download the key file of Google Clould in json format, and then set the environment variable locally:
+
+```
+GOOGLE_APPLICATION_CREDENTIALS=/The/path/of/json/key/file
+```
+
+1. Clone the project.
+
+```
+git clone https://github.com/api7/contributor-graph.git
+```
+
+2. Start the front end.
+
+```
+cd contributor-graph
+yarn
+yarn dev
+```
+
+3. Start API Server.
+
+```
+cd api-go
+go run ./cmd/contributor/main.go
+```
+
+4. Start Google Cloud Function locally.
+
+This step depends on [@google-cloud/functions-framework](https://www.npmjs.com/package/@google-cloud/functions-framework) tool, please install the tool first.
+
+```
+cd ./api-go/tools/puppeteer
+yarn
+npx @google-cloud/functions-framework --target=png
+```
+
+Then config this address as Clould Function Trigger link in `api-go`.
+
 ## Feature request
 
 If you have any requests, including but not limited to:
