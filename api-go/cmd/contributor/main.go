@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -130,11 +130,19 @@ func getContributorSVG(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	w.Header().Add("content-type", "image/png;charset=utf-8")
+	w.Header().Add("content-type", "image/png")
 	w.Header().Add("cache-control", "public, max-age=86400")
 
-	svg = strings.Replace(svg, "%", "%%", -1)
-	fmt.Fprintf(w, svg)
+	base64String := strings.Split(svg, "data:image/png;base64,")[1]
+	buffer, err := base64.StdEncoding.DecodeString(base64String)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(err.Error())
+		return
+	}
+
+	w.Write(buffer)
 }
 
 func getRepos(w http.ResponseWriter, r *http.Request) {

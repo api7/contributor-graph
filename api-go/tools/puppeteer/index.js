@@ -62,5 +62,7 @@ exports.png = (req, res) => {
     //     res.status(200).send(fileName);
     //   }
     // });
+  }).catch(error => {
+    console.log(`generate file of ${repo} error`, error);
   });
 };

@@ -70,6 +70,8 @@ const fetchData = (repo) => {
       );
 
       resolve({ repo, ...{ Contributors: filterData } });
+    }).catch(error => {
+      reject(error);
     })
   })
 };

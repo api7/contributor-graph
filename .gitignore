@@ -4,6 +4,7 @@
 /node_modules
 /.pnp
 .pnp.js
+/api-go/tools/puppeteer/node_modules
 
 # testing
 /coverage
