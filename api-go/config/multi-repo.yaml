@@ -33,6 +33,7 @@ apache/skywalking:
     - apache/skywalking-goapi
     - apache/skywalking-agent-test-tool
     - apache/skywalking-eyes
+    - apache/skywalking-banyandb
     - SkyAPM/SkyAPM-dotnet
     - SkyAPM/go2sky
     - SkyAPM/go2sky-plugins
