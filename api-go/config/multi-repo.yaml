@@ -8,6 +8,9 @@ apache/apisix:
     - apache/apisix-website
     - apache/apisix-dashboard-built
     - apache/apisix-ingress-docker
+    - apache/apisix-python-plugin-runner
+    - apache/apisix-go-plugin-runner
+    - apache/apisix-java-plugin-runner
     - api7/lua-resty-etcd
     - api7/lua-resty-radixtree
     - api7/lua-resty-ipmatcher
@@ -34,6 +37,7 @@ apache/skywalking:
     - apache/skywalking-agent-test-tool
     - apache/skywalking-eyes
     - apache/skywalking-banyandb
+    - apache/skywalking-java
     - SkyAPM/SkyAPM-dotnet
     - SkyAPM/go2sky
     - SkyAPM/go2sky-plugins
