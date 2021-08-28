@@ -10,7 +10,7 @@ This tool is used to generate contributor graphs across repositories. We use Git
 
 ### Contributor over time across related repo
 
-We maintain a [list](api-go/config/multi-repo.md) which you could directly add your repo list and commit a PR if needed.
+We maintain a [list](api-go/config/multi-repo.yaml) which you could directly add your repo list and commit a PR if needed.
 
 [![Contributor over time](https://contributor-overtime-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=apache/apisix&merge=true)](https://www.apiseven.com/en/contributor-graph?chart=contributorOverTime&repo=apache/apisix&merge=true)
 
