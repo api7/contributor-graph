@@ -9,7 +9,7 @@ const isSameDay = (d1, d2) => {
   );
 };
 
-const fetchData = (repo) => {
+const fetchContributorsData = (repo) => {
   if (repo === "null" || repo === null) {
     repo = "apache/apisix";
   }
@@ -76,6 +76,63 @@ const fetchData = (repo) => {
   })
 };
 
+const fetchMonthlyData = (repo) => {
+  if (repo === "null" || repo === null) {
+    repo = "apache/apisix";
+  }
+  return new Promise((resolve, reject) => {
+    axios.get(
+      `https://contributor-overtime-api.apiseven.com/monthly-contributor?repo=${repo}`
+    )
+      .then(response => {
+        return response.data;
+      })
+      .then(myJson => {
+        resolve({ repo, ...myJson });
+      })
+      .catch(e => {
+        reject(e);
+      });
+  });
+};
+
+const fetchMergeContributor = (repo) => {
+  return new Promise((resolve, reject) => {
+    axios.get(
+      `https://contributor-overtime-api.apiseven.com/contributors-multi?repo=${repo.join(
+        ","
+      )}`
+    )
+      .then(response => {
+        if (!response.ok) {
+          let message = "";
+          switch (response.status) {
+            case 403:
+              message = "Hit rate limit";
+              break;
+            case 404:
+              message = "Repo format error / Repo not found";
+              break;
+            default:
+              message = "Request Error";
+              break;
+          }
+          throw message;
+        }
+        return response.json();
+      })
+      .then(myJson => {
+        console.log('myJson: ', myJson);
+        resolve({ repo, ...myJson });
+      })
+      .catch(e => {
+        reject();
+      });
+  });
+};
+
 module.exports = {
-  fetchData,
+  fetchContributorsData,
+  fetchMonthlyData,
+  fetchMergeContributor,
 }
