@@ -104,29 +104,14 @@ const fetchMergeContributor = (repo) => {
       )}`
     )
       .then(response => {
-        if (!response.ok) {
-          let message = "";
-          switch (response.status) {
-            case 403:
-              message = "Hit rate limit";
-              break;
-            case 404:
-              message = "Repo format error / Repo not found";
-              break;
-            default:
-              message = "Request Error";
-              break;
-          }
-          throw message;
-        }
-        return response.json();
+        return response.data;
       })
       .then(myJson => {
         console.log('myJson: ', myJson);
         resolve({ repo, ...myJson });
       })
       .catch(e => {
-        reject();
+        reject(e);
       });
   });
 };

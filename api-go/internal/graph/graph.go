@@ -27,7 +27,7 @@ func GenerateAndSaveSVG(ctx context.Context, repo string, merge bool, chartType 
 	}
 	defer client.Close()
 
-	graphFunctionUrl := "http://localhost:8081?repo=" + repo
+	graphFunctionUrl := "https://asia-east2-api7-301102.cloudfunctions.net/png" + repo
 	if merge {
 		graphFunctionUrl += "&merge=true"
 	}
