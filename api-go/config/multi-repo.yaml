@@ -38,6 +38,7 @@ apache/skywalking:
     - apache/skywalking-eyes
     - apache/skywalking-banyandb
     - apache/skywalking-java
+    - apache/skywalking-banyandb-java-client
     - SkyAPM/SkyAPM-dotnet
     - SkyAPM/go2sky
     - SkyAPM/go2sky-plugins
