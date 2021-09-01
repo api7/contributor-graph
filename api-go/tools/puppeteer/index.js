@@ -88,7 +88,8 @@ exports.svg = async (req, res) => {
       }
     });
 
-    const option = updateSeries(["1970-01-01"], tmpDataSouce);
+    const title = chartType === "contributorMonthlyActivity" ? "Monthly Active Contributors" : "Contributor Over Time";
+    const option = updateSeries(["1970-01-01"], tmpDataSouce, title);
     let chart = echarts.init(document.getElementById('echarts'), {}, {renderer: "svg"});
     chart.setOption(option, true);
     const image = chart.getSvgDataURL();

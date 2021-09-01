@@ -3,7 +3,7 @@ const echarts = require("echarts");
 
 const DEFAULT_COLOR = "#39a85a";
 
-const generateDefaultOption = () => {
+const generateDefaultOption = (title) => {
   return {
     color: ["#39a85a", "#4385ee", "#fabc37", "#2dc1dd", "#f972cf", "#8331c8"],
     legend: {
@@ -27,7 +27,7 @@ const generateDefaultOption = () => {
     },
     dataset: [],
     title: {
-      text: "Contributor Over Time"
+      text: title,
     },
     tooltip: {
       trigger: "axis"
@@ -63,9 +63,9 @@ const generateDefaultOption = () => {
   };
 };
 
-const updateSeries = (passXAxis, dataSource) => {
+const updateSeries = (passXAxis, dataSource, title) => {
   const newClonedOption = cloneDeep(
-    generateDefaultOption()
+    generateDefaultOption(title)
   );
   const datasetWithFilters = [
     ["ContributorNum", "Repo", "Date", "DateValue"]
