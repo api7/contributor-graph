@@ -151,18 +151,6 @@ const updateSeries = (passXAxis, dataSource) => {
   return newClonedOption;
 };
 
-const repoNameToFileName = (repo, merge, charType) => {
-  let fileName = repo;
-  if (merge) {
-    fileName = 'merge/' + fileName;
-  }
-  if (charType === 'contributorMonthlyActivity') {
-    fileName = "monthly/" + fileName;
-  }
-  return fileName + ".png";
-};
-
 module.exports = {
   updateSeries,
-  repoNameToFileName,
 }
