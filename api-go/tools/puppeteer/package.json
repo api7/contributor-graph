@@ -2,6 +2,6 @@
     "name": "sample-http",
     "version": "0.0.1",
     "dependencies": {
-        "puppeteer": "8.0.0"
+        "puppeteer": "10.2.0"
     }
 }
