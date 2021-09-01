@@ -7,14 +7,21 @@
 const echarts = require("echarts");
 const { createCanvas } = require('canvas');
 const jsdom = require("jsdom");
-const { fetchContributorsData, fetchMonthlyData } = require('./fetch');
+const { fetchContributorsData, fetchMonthlyData, fetchMergeContributor } = require('./fetch');
 const { updateSeries } = require('./utils');
 const { JSDOM } = jsdom;
 
 const config = {
   width: 896,
   height: 550,
-}
+};
+
+const mergeRepoList = [
+  "apache/apisix",
+  "apache/skywalking",
+  "apache/openwhisk",
+  "apache/dubbo"
+];
 
 exports.svg = async (req, res) => {
   const repo = req.query.repo;
@@ -44,10 +51,17 @@ exports.svg = async (req, res) => {
     return ctx;
   });
   let repoList = repo.split(",");
+
   Promise.all(repoList.map(item => {
     if (chartType === "contributorMonthlyActivity") {
+      console.log(`render contributorMonthlyActivity for ${repo}`);
       return fetchMonthlyData(item);
     };
+    if (merge === "true" && repoList.length === 1 && mergeRepoList.includes(repo)) {
+      console.log(`render merge contributor for ${repo}`);
+      return fetchMergeContributor(repo);
+    }
+    console.log(`render contributorData for ${repo}`);
     return fetchContributorsData(item);
   })).then(data => {
     const tmpDataSouce = {};

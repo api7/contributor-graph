@@ -99,9 +99,7 @@ const fetchMonthlyData = (repo) => {
 const fetchMergeContributor = (repo) => {
   return new Promise((resolve, reject) => {
     axios.get(
-      `https://contributor-overtime-api.apiseven.com/contributors-multi?repo=${repo.join(
-        ","
-      )}`
+      `https://contributor-overtime-api.apiseven.com/contributors-multi?repo=${repo}`
     )
       .then(response => {
         return response.data;
