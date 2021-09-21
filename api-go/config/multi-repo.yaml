@@ -30,7 +30,6 @@ apache/skywalking:
     - apache/skywalking-cli
     - apache/skywalking-kubernetes
     - apache/skywalking-swck
-    - apache/skywalking-docker
     - apache/skywalking-data-collect-protocol
     - apache/skywalking-query-protocol
     - apache/skywalking-goapi
@@ -40,6 +39,9 @@ apache/skywalking:
     - apache/skywalking-java
     - apache/skywalking-banyandb-java-client
     - apache/skywalking-infra-e2e
+    - apache/skywalking-docker
+    - apache/skywalking-ui
+    - apache/skywalking-oal-tool
     - SkyAPM/SkyAPM-dotnet
     - SkyAPM/go2sky
     - SkyAPM/go2sky-plugins
