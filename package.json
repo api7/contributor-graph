@@ -19,7 +19,7 @@
     "react-dom": "16.14.0",
     "react-scripts": "2.1.8",
     "react-syntax-highlighter": "15.4.4",
-    "react-toastify": "8.0.1"
+    "react-toastify": "8.0.3"
   },
   "scripts": {
     "dev": "BROWSER=none react-scripts start",
