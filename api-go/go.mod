@@ -9,7 +9,7 @@ require (
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/go-github/v33 v33.0.0
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/schollz/progressbar/v3 v3.8.1
+	github.com/schollz/progressbar/v3 v3.8.3
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/net v0.0.0-20210326220855-61e056675ecf // indirect
 	golang.org/x/oauth2 v0.0.0-20210220000619-9bb904979d93
