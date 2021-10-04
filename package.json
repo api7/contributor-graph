@@ -15,7 +15,7 @@
     "lodash.throttle": "4.1.1",
     "moment": "2.29.1",
     "react": "16.14.0",
-    "react-bootstrap": "1.6.1",
+    "react-bootstrap": "1.6.4",
     "react-dom": "16.14.0",
     "react-scripts": "2.1.8",
     "react-syntax-highlighter": "15.4.4",
