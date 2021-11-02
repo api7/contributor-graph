@@ -7,6 +7,6 @@
       "echarts": "5.2.1",
       "lodash.clonedeep": "4.5.0",
       "moment": "2.29.1",
-      "jsdom": "17.0.0"
+      "jsdom": "18.0.1"
     }
 }
