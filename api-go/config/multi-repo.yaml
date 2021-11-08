@@ -39,6 +39,7 @@ apache/skywalking:
     - apache/skywalking-java
     - apache/skywalking-banyandb-java-client
     - apache/skywalking-infra-e2e
+    - apache/skywalking-showcase
     - apache/skywalking-docker
     - apache/skywalking-ui
     - apache/skywalking-oal-tool
