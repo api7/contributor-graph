@@ -21,7 +21,8 @@ const ContributorLineChart = ({
     "apache/apisix",
     "apache/skywalking",
     "apache/openwhisk",
-    "apache/dubbo"
+    "apache/dubbo",
+    "apache/pulsar"
   ];
 
   const [loading, setLoading] = React.useState(false);
