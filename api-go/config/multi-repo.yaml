@@ -114,4 +114,18 @@ apache/dubbo:
     - apache/dubbo-spi-extensions
     - apache/dubbo-spring-boot-project
     - apache/dubbo-website
-
+apache/pulsar:
+     - apache/pulsar
+     - apache/pulsar-client-go
+     - apache/pulsar-adapters
+     - apache/pulsar-helm-chart
+     - apache/pulsar-manager
+     - apache/pulsar-client-node
+     - apache/pulsar-dotpulsar
+     - apache/pulsar-site
+     - apache/pulsar-test-infra
+     - apache/pulsar-translation
+     - apache/pulsar-client-ruby
+     - apache/pulsar-release
+     - apache/pulsar-connectors
+     - apache/pulsar-presto
