@@ -152,7 +152,7 @@ func MultiCon(repoInput string) ([]utils.ReturnCon, int, error) {
 		}
 
 		if repos, ok := repoList[repoInput]; !ok {
-			return nil, http.StatusNotFound, fmt.Errorf("Not supported, please file a issue/PR in github.com/api7/contributor-graph to include your repo list in")
+			return nil, http.StatusNotFound, fmt.Errorf("Not supported, please file a PR in github.com/api7/contributor-graph to include your repo list in, refer to https://github.com/api7/contributor-graph/pull/132")
 		} else {
 			if code, err := getConFromMultiRepo(conMap, repos); err != nil {
 				return nil, code, err
