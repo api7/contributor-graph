@@ -2,7 +2,7 @@
     "name": "sample-http",
     "version": "0.0.1",
     "dependencies": {
-      "axios": "0.24.0",
+      "axios": "0.25.0",
       "canvas": "2.9.0",
       "echarts": "5.2.2",
       "lodash.clonedeep": "4.5.0",
