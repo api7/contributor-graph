@@ -29,6 +29,7 @@ apache/skywalking:
     - apache/skywalking-satellite
     - apache/skywalking-cli
     - apache/skywalking-kubernetes
+    - apache/skywalking-kubernetes-event-exporter
     - apache/skywalking-swck
     - apache/skywalking-data-collect-protocol
     - apache/skywalking-query-protocol
@@ -54,6 +55,7 @@ apache/skywalking:
     - sourceplusplus/SourceMarker
     - SkyAPM/java-plugin-extensions
     - SkyAPM/uranus
+    - SkyAPM/transporter-plugin-for-skywalking
 apache/openwhisk:
     - apache/openwhisk
     - apache/openwhisk-apigateway
