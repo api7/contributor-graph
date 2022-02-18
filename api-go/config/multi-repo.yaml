@@ -42,6 +42,7 @@ apache/skywalking:
     - apache/skywalking-infra-e2e
     - apache/skywalking-showcase
     - apache/skywalking-docker
+    - apache/skywalking-booster-ui
     - apache/skywalking-rust
     - apache/skywalking-ui
     - apache/skywalking-oal-tool
