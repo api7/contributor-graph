@@ -14,21 +14,22 @@ import TextField from "@material-ui/core/TextField";
 import copy from "copy-to-clipboard";
 import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/default-highlight";
 import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import useClipboard from "react-use-clipboard";
 
 import { inIframe } from "../../utils";
 import "./index.css";
 
-const styles = theme => ({
+const styles = (theme) => ({
   root: {
     margin: 0,
-    padding: theme.spacing(2)
+    padding: theme.spacing(2),
   },
   closeButton: {
     position: "absolute",
     right: theme.spacing(1),
     top: theme.spacing(1),
-    color: theme.palette.grey[500]
-  }
+    color: theme.palette.grey[500],
+  },
 });
 
 const SHARE_BASE_URL = "https://www.apiseven.com/en/contributor-graph";
@@ -86,19 +87,21 @@ const ShareLink = ({ params = "" }) => {
 };
 
 function ShareModal({ params = "" }) {
-  const useStyles = makeStyles(theme => ({
+  const useStyles = makeStyles((theme) => ({
     root: {
-      flexGrow: 1
+      flexGrow: 1,
     },
     paper: {
       padding: 0,
       textAlign: "center",
-      color: theme.palette.text.secondary
-    }
+      color: theme.palette.text.secondary,
+    },
   }));
   const classes = useStyles();
   const shareUrl = SHARE_BASE_URL + params;
-  const shareText = params.includes('contributorMonthlyActivity') ? 'monthly active contributor' : 'contributor over time'
+  const shareText = params.includes("contributorMonthlyActivity")
+    ? "monthly active contributor"
+    : "contributor over time";
 
   return (
     <div className={classes.root}>
@@ -116,8 +119,8 @@ function ShareModal({ params = "" }) {
                 {
                   share: {
                     to: "twitter",
-                    url: shareUrl
-                  }
+                    url: shareUrl,
+                  },
                 },
                 "*"
               );
@@ -127,7 +130,7 @@ function ShareModal({ params = "" }) {
               style={{
                 display: "flex",
                 justifyContent: "center",
-                marginBottom: "8px"
+                marginBottom: "8px",
               }}
             >
               <svg
@@ -139,7 +142,7 @@ function ShareModal({ params = "" }) {
                   pointerEvents: "none",
                   display: "block",
                   width: "60px",
-                  height: "60px"
+                  height: "60px",
                 }}
               >
                 <g class="style-scope yt-icon">
@@ -171,7 +174,7 @@ function ShareModal({ params = "" }) {
   );
 }
 
-const DialogTitle = withStyles(styles)(props => {
+const DialogTitle = withStyles(styles)((props) => {
   const { children, classes, onClose, ...other } = props;
   return (
     <MuiDialogTitle disableTypography className={classes.root} {...other}>
@@ -189,10 +192,10 @@ const DialogTitle = withStyles(styles)(props => {
   );
 });
 
-const DialogContent = withStyles(theme => ({
+const DialogContent = withStyles((theme) => ({
   root: {
-    padding: theme.spacing(2)
-  }
+    padding: theme.spacing(2),
+  },
 }))(MuiDialogContent);
 
 export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
@@ -200,24 +203,48 @@ export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
     type === "contributorOverTime"
       ? "Contributor over time"
       : "Monthly Active Contributors";
+
+  const value = `
+### ${title}
+
+[![${title}](${IMG_BASE_URL + params})](${SHARE_BASE_URL + params})`;
+
+  const [isCopied, setCopied] = useClipboard(value);
+
   return (
     <div>
       <p>
         You can include the chart on your repository's README.md as follows:
       </p>
-      <SyntaxHighlighter language="markdown" style={a11yDark}>
-        {`
+      <div style={{ display: "flex" }}>
+        <SyntaxHighlighter language="markdown" style={a11yDark}>
+          {`
 ### ${title}
 
 [![${title}](${IMG_BASE_URL + params})](${SHARE_BASE_URL + params})`}
-      </SyntaxHighlighter>
+        </SyntaxHighlighter>
+        <div
+          style={{
+            margin: "16px 0 16px 0",
+            backgroundColor: "#2b2b2b",
+            cursor: "pointer",
+          }}
+          onClick={setCopied}
+        >
+          {isCopied ? (
+            <img width="28px" height="28px" src="/icon/copy-done.svg" />
+          ) : (
+            <img width="28px" height="28px" src="/icon/copy.svg" />
+          )}
+        </div>
+      </div>
     </div>
   );
 };
 
 export default function CustomizedDialogs({
   open = false,
-  onChange = () => { },
+  onChange = () => {},
   params = "",
 }) {
   const handleClose = () => {

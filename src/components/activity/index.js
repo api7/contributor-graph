@@ -12,7 +12,7 @@ const ActivityChart = ({
   repoList = ["apache/apisix"],
   showAlert,
   onDelete,
-  onLoading
+  onLoading,
 }) => {
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
@@ -22,7 +22,7 @@ const ActivityChart = ({
     generateMonthlyActivityOption({
       handleShareClick: () => {
         setShareModalVisible(true);
-      }
+      },
     })
   );
 
@@ -38,28 +38,28 @@ const ActivityChart = ({
     );
   }, [shareModalVisible]);
 
-  const updateSeries = passXAxis => {
+  const updateSeries = (passXAxis) => {
     const newClonedOption = cloneDeep(
       generateMonthlyActivityOption({
         handleShareClick: () => {
           setShareModalVisible(true);
-        }
+        },
       })
     );
     const datasetWithFilters = [
-      ["ContributorNum", "Repo", "Date", "DateValue"]
+      ["ContributorNum", "Repo", "Date", "DateValue"],
     ];
     const legend = [];
     const limitDate = new Date(passXAxis[0]).getTime();
 
     Object.entries(dataSource).forEach(([key, value]) => {
       legend.push(key);
-      value.forEach(item => {
+      value.forEach((item) => {
         datasetWithFilters.push([
           item.contributorNum,
           item.repo,
           item.date,
-          new Date(item.date).getTime()
+          new Date(item.date).getTime(),
         ]);
       });
     });
@@ -68,7 +68,7 @@ const ActivityChart = ({
       (a, b) => new Date(a[2]) - new Date(b[2])
     );
 
-    const filterDataset = legend.map(item => ({
+    const filterDataset = legend.map((item) => ({
       id: item,
       fromDatasetId: "dataset_raw",
       transform: {
@@ -76,13 +76,13 @@ const ActivityChart = ({
         config: {
           and: [
             { dimension: "Repo", "=": item },
-            { dimension: "DateValue", gte: limitDate }
-          ]
-        }
-      }
+            { dimension: "DateValue", gte: limitDate },
+          ],
+        },
+      },
     }));
 
-    const series = legend.map(item => ({
+    const series = legend.map((item) => ({
       name: item,
       type: "line",
       datasetId: item,
@@ -91,8 +91,8 @@ const ActivityChart = ({
         x: "Date",
         y: "ContributorNum",
         itemName: "Repo",
-        tooltip: ["ContributorNum"]
-      }
+        tooltip: ["ContributorNum"],
+      },
     }));
 
     if (series.length === 1) {
@@ -100,29 +100,29 @@ const ActivityChart = ({
         color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
           {
             offset: 0,
-            color: DEFAULT_COLOR + "80"
+            color: DEFAULT_COLOR + "80",
           },
           {
             offset: 1,
-            color: DEFAULT_COLOR + "00"
-          }
-        ])
+            color: DEFAULT_COLOR + "00",
+          },
+        ]),
       };
       series[0].itemStyle = {
         normal: {
           color: DEFAULT_COLOR,
           lineStyle: {
-            color: DEFAULT_COLOR
-          }
-        }
+            color: DEFAULT_COLOR,
+          },
+        },
       };
     }
 
     newClonedOption.dataset = [
       {
         id: "dataset_raw",
-        source: newDateSet
-      }
+        source: newDateSet,
+      },
     ].concat(filterDataset);
 
     newClonedOption.series = series;
@@ -131,7 +131,7 @@ const ActivityChart = ({
     setOption(newClonedOption);
   };
 
-  const fetchData = repo => {
+  const fetchData = (repo) => {
     if (repo === "null" || repo === null) {
       repo = "apache/apisix";
     }
@@ -139,7 +139,7 @@ const ActivityChart = ({
       fetch(
         `https://contributor-overtime-api.apiseven.com/monthly-contributor?repo=${repo}`
       )
-        .then(response => {
+        .then((response) => {
           if (!response.ok) {
             onDelete(repo);
             let message = "";
@@ -158,10 +158,10 @@ const ActivityChart = ({
           }
           return response.json();
         })
-        .then(myJson => {
+        .then((myJson) => {
           resolve({ repo, ...myJson });
         })
-        .catch(e => {
+        .catch((e) => {
           showAlert(e, "error");
           reject();
         });
@@ -182,7 +182,7 @@ const ActivityChart = ({
 
     if (datasourceList.length > repoList.length) {
       const deleteList = datasourceList.filter(
-        item => !repoList.includes(item)
+        (item) => !repoList.includes(item)
       );
       console.log("deleteList: ", deleteList);
       const clonedDatasource = cloneDeep(dataSource);
@@ -190,18 +190,20 @@ const ActivityChart = ({
       return;
     }
 
-    const updateList = repoList.filter(item => !datasourceList.includes(item));
+    const updateList = repoList.filter(
+      (item) => !datasourceList.includes(item)
+    );
     setLoading(true);
-    Promise.all(updateList.map(item => fetchData(item)))
-      .then(data => {
+    Promise.all(updateList.map((item) => fetchData(item)))
+      .then((data) => {
         const tmpDataSouce = {};
-        data.forEach(item => {
+        data.forEach((item) => {
           const { Contributors = [], repo } = item;
 
-          const data = Contributors.map(item => ({
+          const data = Contributors.map((item) => ({
             repo,
             contributorNum: item.Num,
-            date: item.Month
+            date: item.Month,
           }));
 
           if (!tmpDataSouce[item.repo]) {
@@ -227,7 +229,7 @@ const ActivityChart = ({
         className="content"
         style={{
           display: "flex",
-          justifyContent: "center"
+          justifyContent: "center",
         }}
       >
         <Dialog />
@@ -240,7 +242,7 @@ const ActivityChart = ({
                     <Tab.Pane eventKey="contributor">
                       <ReactECharts
                         option={option}
-                        ref={e => {
+                        ref={(e) => {
                           if (e) {
                             const echartInstance = e.getEchartsInstance();
                             // then you can use any API of echarts.

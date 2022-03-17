@@ -9,7 +9,7 @@ export const fetchData = (repo, showAlert, onDelete) => {
     fetch(
       `https://contributor-overtime-api.apiseven.com/contributors?repo=${repo}`
     )
-      .then(response => {
+      .then((response) => {
         if (!response.ok) {
           onDelete(repo);
           let message = "";
@@ -28,11 +28,11 @@ export const fetchData = (repo, showAlert, onDelete) => {
         }
         return response.json();
       })
-      .then(myJson => {
+      .then((myJson) => {
         const { Contributors = [] } = myJson;
-        const sortContributors = Contributors.map(item => ({
+        const sortContributors = Contributors.map((item) => ({
           ...item,
-          date: item.date.substring(0, 10)
+          date: item.date.substring(0, 10),
         })).sort(
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
         );
@@ -45,7 +45,7 @@ export const fetchData = (repo, showAlert, onDelete) => {
           sortContributors.push({
             repo,
             idx: sortContributors[sortContributors.length - 1].idx,
-            date: moment(new Date()).format("YYYY-MM-DD")
+            date: moment(new Date()).format("YYYY-MM-DD"),
           });
         }
 
@@ -65,7 +65,7 @@ export const fetchData = (repo, showAlert, onDelete) => {
                   date: moment(item.date)
                     .add(index, "days")
                     .format()
-                    .substring(0, 10)
+                    .substring(0, 10),
                 });
               }
             }
@@ -79,7 +79,7 @@ export const fetchData = (repo, showAlert, onDelete) => {
         );
         resolve({ repo, ...{ Contributors: filterData } });
       })
-      .catch(e => {
+      .catch((e) => {
         showAlert(e, "error");
         reject();
       });
@@ -93,7 +93,7 @@ export const fetchMergeContributor = (repo, showAlert) => {
         ","
       )}`
     )
-      .then(response => {
+      .then((response) => {
         if (!response.ok) {
           let message = "";
           switch (response.status) {
@@ -111,11 +111,11 @@ export const fetchMergeContributor = (repo, showAlert) => {
         }
         return response.json();
       })
-      .then(myJson => {
-        console.log('myJson: ', myJson);
+      .then((myJson) => {
+        console.log("myJson: ", myJson);
         resolve({ repo, ...myJson });
       })
-      .catch(e => {
+      .catch((e) => {
         showAlert(e, "error");
         reject();
       });
