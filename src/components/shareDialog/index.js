@@ -11,6 +11,7 @@ import Grid from "@material-ui/core/Grid";
 import { makeStyles } from "@material-ui/core/styles";
 import Button from "@material-ui/core/Button";
 import TextField from "@material-ui/core/TextField";
+import Tooltip from "@material-ui/core/Tooltip";
 import copy from "copy-to-clipboard";
 import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/default-highlight";
 import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
@@ -209,7 +210,7 @@ export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
 
 [![${title}](${IMG_BASE_URL + params})](${SHARE_BASE_URL + params})`;
 
-  const [isCopied, setCopied] = useClipboard(value);
+  const [isCopied, setCopied] = useClipboard(value, {successDuration: 3000});
 
   return (
     <div>
@@ -232,7 +233,9 @@ export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
           onClick={setCopied}
         >
           {isCopied ? (
-            <img width="28px" height="28px" src="/icon/copy-done.svg" />
+            <Tooltip title="Copied!" placement="top" arrow>
+              <img width="28px" height="28px" src="/icon/copy-done.svg" />
+            </Tooltip>
           ) : (
             <img width="28px" height="28px" src="/icon/copy.svg" />
           )}
