@@ -30,3 +30,5 @@ yarn-error.log*
 
 # golang bin
 /api-go/bin
+
+.prettierignore

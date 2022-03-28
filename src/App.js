@@ -19,39 +19,39 @@ import { getParameterByName } from "./utils";
 import CompareComponent from "./components/compare";
 import { DEFAULT_CONTAINER_STYLE, DEFAULT_SEARCHBAR_STYLE } from "./constants";
 
-const Alert = props => {
+const Alert = (props) => {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 };
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   button: {
-    margin: theme.spacing(1)
+    margin: theme.spacing(1),
   },
   textField: {
     marginLeft: theme.spacing(1),
     marginRight: theme.spacing(1),
-    width: "50ch"
+    width: "50ch",
   },
   searchTextField: {
-    margin: 0
+    margin: 0,
   },
   root: {
     display: "flex",
     flexWrap: "wrap",
     alignItems: "center",
-    width: "100%"
+    width: "100%",
   },
   autocomplete: {
     flex: 1,
-    paddingTop: "5px"
+    paddingTop: "5px",
   },
   iconButton: {
-    padding: 10
+    padding: 10,
   },
   divider: {
     height: 28,
-    margin: 4
-  }
+    margin: 4,
+  },
 }));
 
 function TabPanel(props) {
@@ -77,13 +77,13 @@ function TabPanel(props) {
 TabPanel.propTypes = {
   children: PropTypes.node,
   index: PropTypes.any.isRequired,
-  value: PropTypes.any.isRequired
+  value: PropTypes.any.isRequired,
 };
 
 function a11yProps(index) {
   return {
     id: `scrollable-force-tab-${index}`,
-    "aria-controls": `scrollable-force-tabpanel-${index}`
+    "aria-controls": `scrollable-force-tabpanel-${index}`,
   };
 }
 
@@ -130,8 +130,8 @@ const App = () => {
   const classes = useStyles();
 
   const showAlert = (message = "", type = "success") => {
-    if(typeof(message === 'object' && type === 'error')){
-      message = 'Request Error'
+    if (typeof (message === "object" && type === "error")) {
+      message = "Request Error";
     }
     setMessage(message);
     setAlertType(type);
@@ -146,7 +146,7 @@ const App = () => {
     setOpen(false);
   };
 
-  const updateChart = repo => {
+  const updateChart = (repo) => {
     if (!contributorRepoList.includes(repo)) {
       setContributorRepoList([...contributorRepoList, repo]);
     }
@@ -156,16 +156,16 @@ const App = () => {
     fetch(`https://contributor-overtime-api.apiseven.com/repos?`, {
       method: "GET",
       headers: {
-        Accept: "application/vnd.github.v3+json"
-      }
+        Accept: "application/vnd.github.v3+json",
+      },
     })
       .then(function (response) {
         return response.json();
       })
-      .then(data => {
+      .then((data) => {
         setSearchOption(data.Repos || []);
       })
-      .catch(e => {
+      .catch((e) => {
         console.log("e: ", e);
       });
   };
@@ -188,7 +188,7 @@ const App = () => {
     window.parent.postMessage(
       {
         chartType:
-          value === 0 ? "contributorOverTime" : "contributorMonthlyActivity"
+          value === 0 ? "contributorOverTime" : "contributorMonthlyActivity",
       },
       "*"
     );
@@ -213,7 +213,7 @@ const App = () => {
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
-          alignItems: "center"
+          alignItems: "center",
         }}
       >
         <div style={searchStyle}>
@@ -231,7 +231,7 @@ const App = () => {
                   updateChart(value);
                 }
               }}
-              renderInput={params => (
+              renderInput={(params) => (
                 <TextField
                   {...params}
                   label="Search Github Repository Name"
@@ -239,10 +239,10 @@ const App = () => {
                   variant="outlined"
                   helperText="Keep searching to complete the comparison"
                   className={classes.searchTextField}
-                  onChange={e => {
+                  onChange={(e) => {
                     setRepo(e.target.value);
                   }}
-                  onKeyPress={ev => {
+                  onKeyPress={(ev) => {
                     if (ev.key === "Enter") {
                       updateChart(repo);
                       ev.preventDefault();
@@ -260,7 +260,7 @@ const App = () => {
                           <SearchIcon />
                         </IconButton>
                       </InputAdornment>
-                    )
+                    ),
                   }}
                 />
               )}
@@ -269,12 +269,11 @@ const App = () => {
           <div>
             <CompareComponent
               list={contributorRepoList}
-              onDelete={e => {
-                const clonedContributorRepoList = cloneDeep(
-                  contributorRepoList
-                );
+              onDelete={(e) => {
+                const clonedContributorRepoList =
+                  cloneDeep(contributorRepoList);
                 const newContributorRepoList = clonedContributorRepoList.filter(
-                  item => item !== e
+                  (item) => item !== e
                 );
                 setContributorRepoList(newContributorRepoList);
               }}
@@ -288,7 +287,7 @@ const App = () => {
               style={{
                 display: "flex",
                 justifyContent: "center",
-                flexDirection: "column"
+                flexDirection: "column",
               }}
             ></div>
           </div>
@@ -299,7 +298,7 @@ const App = () => {
                 width: "90%",
                 display: "flex",
                 justifyContent: "left",
-                padding: "5px"
+                padding: "5px",
               }}
             >
               <Paper color="default" elevation={0}>
@@ -331,12 +330,12 @@ const App = () => {
               <ContirbutorLineChart
                 repoList={contributorRepoList}
                 showAlert={showAlert}
-                onLoading={e => {
+                onLoading={(e) => {
                   setTabDisabled(e);
                 }}
-                onDelete={e => {
+                onDelete={(e) => {
                   setContributorRepoList(
-                    contributorRepoList.filter(item => item !== e)
+                    contributorRepoList.filter((item) => item !== e)
                   );
                 }}
               />
@@ -345,12 +344,12 @@ const App = () => {
               <ActivityChart
                 repoList={contributorRepoList}
                 showAlert={showAlert}
-                onLoading={e => {
+                onLoading={(e) => {
                   setTabDisabled(e);
                 }}
-                onDelete={e => {
+                onDelete={(e) => {
                   setContributorRepoList(
-                    contributorRepoList.filter(item => item !== e)
+                    contributorRepoList.filter((item) => item !== e)
                   );
                 }}
               />

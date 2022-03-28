@@ -3,13 +3,13 @@ import { makeStyles } from "@material-ui/core/styles";
 import Chip from "@material-ui/core/Chip";
 import GitHubIcon from "@material-ui/icons/GitHub";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
     flexWrap: "wrap",
     "& > *": {
-      margin: theme.spacing(0.5)
-    }
+      margin: theme.spacing(0.5),
+    },
   },
 }));
 
@@ -18,7 +18,7 @@ export default function OutlinedChips({ list = [], onDelete }) {
 
   return (
     <div className={classes.root}>
-      {list.map(item => (
+      {list.map((item) => (
         <Chip
           icon={<GitHubIcon />}
           label={item}

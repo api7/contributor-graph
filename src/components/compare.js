@@ -4,17 +4,17 @@ import Grid from "@material-ui/core/Grid";
 
 import Chips from "./chip";
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     display: "flex",
     flexWrap: "wrap",
     flexGrow: 1,
     "& > *": {
-      margin: '0 0 8px 0',
+      margin: "0 0 8px 0",
       width: "100%",
-      height: theme.spacing(8)
-    }
-  }
+      height: theme.spacing(8),
+    },
+  },
 }));
 
 export default function CompareComponent({ list = [], onDelete }) {
@@ -25,7 +25,7 @@ export default function CompareComponent({ list = [], onDelete }) {
       <Grid container spacing={1} style={{ height: "100%" }}>
         <Chips
           list={list}
-          onDelete={e => {
+          onDelete={(e) => {
             onDelete(e);
           }}
         />

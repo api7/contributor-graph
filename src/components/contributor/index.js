@@ -15,14 +15,14 @@ const ContributorLineChart = ({
   repoList = [],
   showAlert,
   onDelete,
-  onLoading
+  onLoading,
 }) => {
   const mergeRepoList = [
     "apache/apisix",
     "apache/skywalking",
     "apache/openwhisk",
     "apache/dubbo",
-    "apache/pulsar"
+    "apache/pulsar",
   ];
 
   const [loading, setLoading] = React.useState(false);
@@ -34,7 +34,7 @@ const ContributorLineChart = ({
     generateDefaultOption({
       handleShareClick: () => {
         setShareModalVisible(true);
-      }
+      },
     })
   );
 
@@ -43,7 +43,7 @@ const ContributorLineChart = ({
   const [showMergeButton, setShowMergeButton] = React.useState(false);
 
   React.useEffect(() => {
-    if(repoList.length > 1) {
+    if (repoList.length > 1) {
       setViewMerge(false);
     }
     setMergerRepo(repoList[repoList.length - 1]);
@@ -72,27 +72,27 @@ const ContributorLineChart = ({
     );
   }, [shareModalVisible]);
 
-  const updateSeries = passXAxis => {
+  const updateSeries = (passXAxis) => {
     const newClonedOption = cloneDeep(
       generateDefaultOption({
         handleShareClick: () => {
           setShareModalVisible(true);
-        }
+        },
       })
     );
     const datasetWithFilters = [
-      ["ContributorNum", "Repo", "Date", "DateValue"]
+      ["ContributorNum", "Repo", "Date", "DateValue"],
     ];
     const legend = [];
     const limitDate = new Date(passXAxis[0]).getTime();
     Object.entries(dataSource).forEach(([key, value]) => {
       legend.push(key);
-      value.forEach(item => {
+      value.forEach((item) => {
         datasetWithFilters.push([
           item.contributorNum,
           item.repo,
           item.date,
-          new Date(item.date).getTime()
+          new Date(item.date).getTime(),
         ]);
       });
     });
@@ -101,7 +101,7 @@ const ContributorLineChart = ({
       (a, b) => new Date(a[2]) - new Date(b[2])
     );
 
-    const filterDataset = legend.map(item => ({
+    const filterDataset = legend.map((item) => ({
       id: item,
       fromDatasetId: "dataset_raw",
       transform: {
@@ -109,13 +109,13 @@ const ContributorLineChart = ({
         config: {
           and: [
             { dimension: "Repo", "=": item },
-            { dimension: "DateValue", gte: limitDate }
-          ]
-        }
-      }
+            { dimension: "DateValue", gte: limitDate },
+          ],
+        },
+      },
     }));
 
-    const series = legend.map(item => ({
+    const series = legend.map((item) => ({
       name: item,
       type: "line",
       datasetId: item,
@@ -125,8 +125,8 @@ const ContributorLineChart = ({
         x: "Date",
         y: "ContributorNum",
         itemName: "Repo",
-        tooltip: ["ContributorNum"]
-      }
+        tooltip: ["ContributorNum"],
+      },
     }));
 
     if (series.length === 1) {
@@ -134,29 +134,29 @@ const ContributorLineChart = ({
         color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
           {
             offset: 0,
-            color: DEFAULT_COLOR + "80"
+            color: DEFAULT_COLOR + "80",
           },
           {
             offset: 1,
-            color: DEFAULT_COLOR + "00"
-          }
-        ])
+            color: DEFAULT_COLOR + "00",
+          },
+        ]),
       };
       series[0].itemStyle = {
         normal: {
           color: DEFAULT_COLOR,
           lineStyle: {
-            color: DEFAULT_COLOR
-          }
-        }
+            color: DEFAULT_COLOR,
+          },
+        },
       };
     }
 
     newClonedOption.dataset = [
       {
         id: "dataset_raw",
-        source: newDateSet
-      }
+        source: newDateSet,
+      },
     ].concat(filterDataset);
 
     newClonedOption.series = series;
@@ -191,7 +191,7 @@ const ContributorLineChart = ({
     updateSeries(xAxis);
     window.parent.postMessage(
       {
-        legend: Object.keys(dataSource)
+        legend: Object.keys(dataSource),
       },
       "*"
     );
@@ -206,7 +206,7 @@ const ContributorLineChart = ({
 
     if (datasourceList.length > repoList.length) {
       const deleteList = datasourceList.filter(
-        item => !repoList.includes(item)
+        (item) => !repoList.includes(item)
       );
       const clonedDatasource = cloneDeep(dataSource);
       setDataSource(omit(clonedDatasource, deleteList));
@@ -215,15 +215,15 @@ const ContributorLineChart = ({
 
     if (!viewMerge) {
       setLoading(true);
-      Promise.all(repoList.map(item => fetchData(item, showAlert, onDelete)))
-        .then(data => {
+      Promise.all(repoList.map((item) => fetchData(item, showAlert, onDelete)))
+        .then((data) => {
           const tmpDataSouce = {};
-          data.forEach(item => {
+          data.forEach((item) => {
             const { Contributors = [], repo } = item;
-            const data = Contributors.map(item => ({
+            const data = Contributors.map((item) => ({
               repo,
               contributorNum: item.idx,
-              date: item.date
+              date: item.date,
             }));
 
             if (!tmpDataSouce[item.repo]) {
@@ -243,13 +243,13 @@ const ContributorLineChart = ({
 
       setLoading(true);
       fetchMergeContributor([mergeRepo], showAlert, onDelete)
-        .then(_data => {
+        .then((_data) => {
           const tmpDataSouce = {};
           const { Contributors = [], repo } = _data;
-          const data = Contributors.map(item => ({
+          const data = Contributors.map((item) => ({
             repo: repo.join(","),
             contributorNum: item.idx,
-            date: item.date
+            date: item.date,
           }));
 
           if (!tmpDataSouce[repo.join(",")]) {
@@ -259,7 +259,7 @@ const ContributorLineChart = ({
           setDataSource(tmpDataSouce);
           setLoading(false);
         })
-        .catch(e => {
+        .catch((e) => {
           setLoading(false);
         });
     }
@@ -280,7 +280,7 @@ const ContributorLineChart = ({
         className="content"
         style={{
           display: "flex",
-          justifyContent: "center"
+          justifyContent: "center",
         }}
       >
         <Dialog />
@@ -288,27 +288,27 @@ const ContributorLineChart = ({
           <div
             id="chart"
             style={{
-              marginTop: "10px"
+              marginTop: "10px",
             }}
           >
             <div
               style={{
                 marginBottom: "5px",
                 display: document.body.clientWidth > 670 ? "flex" : "unset",
-                justifyContent: "space-between"
+                justifyContent: "space-between",
               }}
             >
               <ButtonGroup
                 color="secondary"
                 size="small"
                 style={{
-                  width: document.body.clientWidth < 670 ? "100%" : "unset"
+                  width: document.body.clientWidth < 670 ? "100%" : "unset",
                 }}
               >
                 <Button
                   variant={activeDate === "1month" ? "contained" : "outlined"}
                   value="1month"
-                  onClick={e => {
+                  onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
                 >
@@ -317,7 +317,7 @@ const ContributorLineChart = ({
                 <Button
                   variant={activeDate === "3months" ? "contained" : "outlined"}
                   value="3months"
-                  onClick={e => {
+                  onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
                 >
@@ -326,7 +326,7 @@ const ContributorLineChart = ({
                 <Button
                   variant={activeDate === "6months" ? "contained" : "outlined"}
                   value="6months"
-                  onClick={e => {
+                  onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
                 >
@@ -335,7 +335,7 @@ const ContributorLineChart = ({
                 <Button
                   variant={activeDate === "1year" ? "contained" : "outlined"}
                   value="1year"
-                  onClick={e => {
+                  onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
                 >
@@ -344,7 +344,7 @@ const ContributorLineChart = ({
                 <Button
                   variant={activeDate === "max" ? "contained" : "outlined"}
                   value="max"
-                  onClick={e => {
+                  onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
                 >
@@ -358,11 +358,12 @@ const ContributorLineChart = ({
                   variant="outlined"
                   size="small"
                   onClick={() => {
-                    setViewMerge(viewMerge => !viewMerge);
+                    setViewMerge((viewMerge) => !viewMerge);
                   }}
                   style={{
                     width: document.body.clientWidth < 670 ? "100%" : "unset",
-                    marginTop: document.body.clientWidth < 670 ? "2px" : "unset"
+                    marginTop:
+                      document.body.clientWidth < 670 ? "2px" : "unset",
                   }}
                 >
                   {!viewMerge
@@ -373,7 +374,7 @@ const ContributorLineChart = ({
             </div>
             <ReactECharts
               option={option}
-              ref={e => {
+              ref={(e) => {
                 if (e) {
                   const echartInstance = e.getEchartsInstance();
                   // then you can use any API of echarts.
