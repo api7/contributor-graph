@@ -13,6 +13,8 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import SearchIcon from "@material-ui/icons/Search";
 import cloneDeep from "lodash.clonedeep";
 
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import ContirbutorLineChart from "./components/contributor";
 import ActivityChart from "./components/activity";
 import { getParameterByName } from "./utils";
@@ -216,6 +218,7 @@ const App = () => {
           alignItems: "center",
         }}
       >
+        { window.self === window.top ? <Navbar /> :  []}
         <div style={searchStyle}>
           <Paper className={classes.root} elevation={0}>
             <Autocomplete
@@ -356,6 +359,7 @@ const App = () => {
             </TabPanel>
           </div>
         </div>
+        <Footer />
       </div>
     </>
   );
