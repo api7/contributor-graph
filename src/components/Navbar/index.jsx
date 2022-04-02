@@ -5,10 +5,10 @@ import './style.css'
 
 const App = () => {
 
-  const [open, setOpen] = useState(true)
+  const [showNavContent, setShowNavContent] = useState(true)
 
   const switchBtn = () => {
-    setOpen(open => !open)
+    setShowNavContent(showNavContent => !showNavContent)
   }
 
   const navLeftList = [
@@ -111,14 +111,14 @@ const App = () => {
             className="switchbtn"
             onClick={switchBtn}
           >
-            <span className={open ? "navMobile" : 'navDesktop'}></span>
-            <span className={open ? "navMobile" : 'navDesktoprotate'}></span>
-            <span className={open ? "navMobile" : ''}></span>
+            <span className={showNavContent ? "navMobile" : 'navDesktop'}></span>
+            <span className={showNavContent ? "navMobile" : 'navDesktoprotate'}></span>
+            <span className={showNavContent ? "navMobile" : ''}></span>
           </div>
         </div>
       </div>
       <div
-        className={open ? 'closebox' : 'openbox'}
+        className={showNavContent ? 'closebox' : 'openbox'}
       >
         {
           navRightList.map((item) => {
