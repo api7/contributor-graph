@@ -6,7 +6,7 @@ const App = () => {
 
   const footerLinks = [
     {
-      label: '',
+      label: 'API7.ai Logo',
       icon: <img alt="Logo" src="https://static.apiseven.com/202108/1640917868852-37633689-5279-48d6-a13a-189054e4d15b.png" width='120px' height='auto' loading="lazy" class="chakra-image css-1s16w59"></img>,
       href: '/'
     },
@@ -55,11 +55,11 @@ const App = () => {
             }}
           >
             {
-              footerLinks.map((item, idx) => {
+              footerLinks.map((item) => {
                 return (
                   <a
                     className='leftbottomtext'
-                    key={idx}
+                    key={item.label}
                     href={item.href}
                     style={{
                       color: '#4b5563',

@@ -71,14 +71,14 @@
   height: 100%;
 }
 
-.line {
+.navMobile {
   width: 1rem;
   height: 1px;
   background-color: RGB(245, 245, 245);
   margin-bottom: 0.2rem;
 }
 
-.line1 {
+.navDesktop {
   width: 1rem;
   height: 1px;
   background-color: RGB(245, 245, 245);
@@ -89,7 +89,7 @@
   -o-transform: rotate(45deg);
 }
 
-.line2 {
+.navDesktoprotate {
   width: 1rem;
   height: 1px;
   background-color: RGB(245, 245, 245);
