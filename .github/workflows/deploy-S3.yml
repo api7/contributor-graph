@@ -24,15 +24,6 @@ jobs:
 
       - name: Build website
         run: yarn build
-        
-      - name: Upload files to AWS S3
-        uses: fangbinwei/aliyun-oss-website-action@v1
-        with:
-            accessKeyId: ${{ secrets }}
-            accessKeySecret: ${{ secrets }}
-            bucket: "contributor-graph"
-            endpoint: "http://oss-accelerate.aliyuncs.com/" 
-            folder: "build"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
