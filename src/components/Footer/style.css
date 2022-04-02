@@ -1,0 +1,13 @@
+.leftbottomtext:hover {
+  opacity: 0.8;
+}
+
+.rightbottomtext:hover {
+  opacity: 0.8;
+}
+
+@media only screen and (max-width:768px) {
+  .footbox {
+    flex-direction: column
+  }
+}

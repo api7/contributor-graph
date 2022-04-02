@@ -359,7 +359,7 @@ const App = () => {
             </TabPanel>
           </div>
         </div>
-        <Footer />
+        { window.self === window.top ? <Footer /> :  []}
       </div>
     </>
   );

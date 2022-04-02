@@ -1,17 +1,14 @@
 import React from 'react'
 
+import './style.css'
 
 const App = () => {
 
-
-
 	const footerLinks = [
 		{
-			label:'',
-			icon:<img alt="Logo" src="https://static.apiseven.com/202108/1640917868852-37633689-5279-48d6-a13a-189054e4d15b.png" width='120px' height='auto' loading="lazy" class="chakra-image css-1s16w59"></img>,
-			href:'/'
-
-
+			label: '',
+			icon: <img alt="Logo" src="https://static.apiseven.com/202108/1640917868852-37633689-5279-48d6-a13a-189054e4d15b.png" width='120px' height='auto' loading="lazy" class="chakra-image css-1s16w59"></img>,
+			href: '/'
 		},
 		{
 			label: 'Twitter',
@@ -36,68 +33,62 @@ const App = () => {
 					width: '100%',
 					height: 'auto',
 					display: 'flex',
-					justifyContent:'center',
-					margin:'1.5rem 0 0',
+					justifyContent: 'center',
+					margin: '1.5rem 0 0',
 				}}
 
 			>
 				<div
+					className='footbox'
 					style={{
 						width: '65%',
 						display: 'flex',
 						justifyContent: "space-between",
 						alignItems: 'center',
 						padding: '0.5rem 0.75rem',
-						borderTop:'1px solid #e5e7eb',
+						borderTop: '1px solid #e5e7eb',
 					}}
 				>
-						<div
-							style={{
-								display: 'flex',
-								alignItems: 'center',
-							}}
-						>
-							{
-								footerLinks.map((item, idx) => {
-									return (
-										<a
-											href={item.href}
-											style={{
-												color: '#4b5563',
-												marginLeft:'0.75rem'
-											}}
-										>{item.icon}</a>
-									)
+					<div
+						style={{
+							display: 'flex',
+							alignItems: 'center',
+						}}
+					>
+						{
+							footerLinks.map((item, idx) => {
+								return (
+									<a
+										className='leftbottomtext'
+										href={item.href}
+										style={{
+											color: '#4b5563',
+											marginLeft: '0.75rem'
+										}}
+									>{item.icon}</a>
+								)
 
-								})
-							}
+							})
+						}
 					</div>
 					<div>
-						<span 
-						  style={{
-								fontSize:'12px',
-								color:'#4b5563',
+						<span
+							style={{
+								fontSize: '12px',
+								color: '#4b5563',
 							}}
 						>
-							Sponsored by 
-							<a href='api7.ai' 
-							
-							  style={{
-									fontWeight:'700',
+							Sponsored by
+							<a
+								className='rightbottomtext'
+								href='https://api7.ai'
+								style={{
+									fontWeight: '700',
 									color: 'rgb(59 130 246)',
-									textDecoration:'none'
+									textDecoration: 'none',
+									padding:'0 4px' 
 								}}
 							>API7.ai</a>
-							originally built by
-							<a href="https://twitter.com/tim_qian"
-							  style={{
-									textDecoration:'none',
-									backgroundColor:'#60A5FA',
-									padding:'0.25rem 0.5rem',
-									color:'#fff',
-									borderRadius:'1rem 1rem'
-								}}
-							>@tim_qian</a>
 						</span>
 					</div>
 
