@@ -4,15 +4,15 @@ This tool is used to generate contributor graphs across repositories. We use Git
 
 ## Demo
 
-### Contributor over time for single repo
+### Contributor over Time for single repo
 
-[![Contributor over time](https://contributor-overtime-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=apache/apisix)](https://www.apiseven.com/en/contributor-graph?chart=contributorOverTime&repo=apache/apisix)
+[![Contributor over Time](https://contributor-overtime-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=apache/apisix)](https://www.apiseven.com/en/contributor-graph?chart=contributorOverTime&repo=apache/apisix)
 
-### Contributor over time across related repo
+### Contributor over Time across related repo
 
 We maintain a [list](api-go/config/multi-repo.yaml) which you could directly add your repo list and commit a PR if needed.
 
-[![Contributor over time](https://contributor-overtime-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=apache/apisix&merge=true)](https://www.apiseven.com/en/contributor-graph?chart=contributorOverTime&repo=apache/apisix&merge=true)
+[![Contributor over Time](https://contributor-overtime-api.apiseven.com/contributors-svg?chart=contributorOverTime&repo=apache/apisix&merge=true)](https://www.apiseven.com/en/contributor-graph?chart=contributorOverTime&repo=apache/apisix&merge=true)
 
 ### Monthly Active Contributors
 
