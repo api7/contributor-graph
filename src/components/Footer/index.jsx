@@ -36,7 +36,6 @@ const App = () => {
 					justifyContent: 'center',
 					margin: '1.5rem 0 0',
 				}}
-
 			>
 				<div
 					className='footbox'
@@ -60,6 +59,7 @@ const App = () => {
 								return (
 									<a
 										className='leftbottomtext'
+										key={idx}
 										href={item.href}
 										style={{
 											color: '#4b5563',
@@ -67,7 +67,6 @@ const App = () => {
 										}}
 									>{item.icon}</a>
 								)
-
 							})
 						}
 					</div>
@@ -86,16 +85,15 @@ const App = () => {
 									fontWeight: '700',
 									color: 'rgb(59 130 246)',
 									textDecoration: 'none',
-									padding:'0 4px' 
+									padding: '0 4px'
 								}}
 							>API7.ai</a>
 						</span>
 					</div>
-
 				</div>
 			</div>
-
 		</>
 	)
 }
+
 export default App

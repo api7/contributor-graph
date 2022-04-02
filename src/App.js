@@ -218,7 +218,7 @@ const App = () => {
           alignItems: "center",
         }}
       >
-        { window.self === window.top ? <Navbar /> :  []}
+        { window.self === window.top ? <Navbar /> : null}
         <div style={searchStyle}>
           <Paper className={classes.root} elevation={0}>
             <Autocomplete
@@ -359,7 +359,7 @@ const App = () => {
             </TabPanel>
           </div>
         </div>
-        { window.self === window.top ? <Footer /> :  []}
+        { window.self === window.top ? <Footer /> : null}
       </div>
     </>
   );
