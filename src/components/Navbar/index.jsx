@@ -21,7 +21,7 @@ const App = () => {
       href: 'https://api7.ai/blog',
     },
     {
-      label: 'About Us',
+      label: 'About',
       href: 'https://api7.ai/about'
     }
   ]
