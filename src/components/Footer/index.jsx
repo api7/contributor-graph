@@ -59,6 +59,7 @@ const App = () => {
                 return (
                   <a
                     className='leftbottomtext'
+                    target={item.label !== 'API7.ai Logo' ? '_blank' : null}
                     key={item.label}
                     href={item.href}
                     style={{
@@ -80,6 +81,7 @@ const App = () => {
               Sponsored by
               <a
                 className='rightbottomtext'
+                target='_blank'
                 href='https://api7.ai'
                 style={{
                   fontWeight: '700',
