@@ -30,6 +30,10 @@
   div.navcontent {
     min-width: 100%;
   }
+
+  .leftcontent {
+    padding: 0 6px;
+  }
 }
 
 @media only screen and (max-width:1024px) {
