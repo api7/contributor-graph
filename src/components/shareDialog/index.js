@@ -33,7 +33,7 @@ const styles = (theme) => ({
   },
 });
 
-const SHARE_BASE_URL = "https://www.apiseven.com/en/contributor-graph";
+const SHARE_BASE_URL = "https://git-contributor.com";
 const IMG_BASE_URL =
   "https://contributor-overtime-api.apiseven.com/contributors-svg";
 
@@ -114,7 +114,7 @@ function ShareModal({ params = "" }) {
             style={{ cursor: "pointer" }}
             onClick={() => {
               if (!inIframe()) {
-                window.location.href = `https://twitter.com/share?text=Amazing tools to view your repo ${shareText}!&url=${shareUrl}`;
+                window.open(`https://twitter.com/share?text=Amazing tools to view your repo ${shareText}!&url=${shareUrl}`, '_blank');
               }
               window.parent.postMessage(
                 {

@@ -14,7 +14,7 @@ const App = () => {
   const navLeftList = [
     {
       label: <img alt="Logo" src="https://static.apiseven.com/202108/1648866052600-a71c5469-f81c-4b52-8c20-76eef2987dfc.png" width='120px' height='auto' loading="lazy" class="chakra-image css-1s16w59"></img>,
-      href: '/'
+      href: 'https://api7.ai'
     },
     {
       label: 'Blog',
@@ -71,7 +71,7 @@ const App = () => {
                 return (
                   <a
                     className="leftcontent"
-                    target={item.label === 'Blog' || item.label === 'About' ? "_blank" : null }
+                    target="_blank"
                     href={item.href}
                     key={item.label}
                   >
