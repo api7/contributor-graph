@@ -17,7 +17,7 @@ const App = () => {
       href: 'https://twitter.com/API7ai'
     },
     {
-      label: 'YouTube',
+      label: 'Email',
       icon: <Email />,
       href: 'mailto:support@api7.ai'
     },
