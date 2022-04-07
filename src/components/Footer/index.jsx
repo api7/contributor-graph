@@ -30,26 +30,16 @@ const App = () => {
           <span>API7.ai</span>
         </a>
       </div>
-      <a href='https://api7.ai/' target='_blank' style={{
-        color: '#ffffff',
-        textDecoration: 'none',
-        background: 'url(https://pbs.twimg.com/profile_banners/1471361948562628608/1646228410/1500x500)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'bottom',
-        borderRadius: '4px',
-      }}>
-        <div
-          style={{
-            display: 'flex',
-            width: '430px',
-            height: '150px',
-            justifyContent: 'space-between',
-            alignContent: 'center',
-            border: '1px solid',
-            borderRadius: '4px',
-            overflow: 'hidden',
-            padding: '0 10px',
-          }}>
+      <a
+        href='https://api7.ai/'
+        target='_blank'
+        style={{
+          color: '#ffffff',
+          textDecoration: 'none',
+          borderRadius: '4px',
+        }}
+      >
+        <div className='cardImgBox'>
           <div
             style={{
               width: '40%',

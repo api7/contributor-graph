@@ -31,6 +31,21 @@
   opacity: 0.8;
 }
 
+.cardImgBox {
+  display: flex;
+  width: 430px;
+  height: 150px;
+  justify-content: space-between;
+  align-content: center;
+  border: 1px solid;
+  border-radius: 4px;
+  overflow: hidden;
+  padding: 0 10px;
+  background: url(https://pbs.twimg.com/profile_banners/1471361948562628608/1646228410/1500x500);
+  background-size: cover;
+  background-position: bottom;
+}
+
 .linkBox ul {
   display: flex;
   list-style: none;
@@ -53,5 +68,11 @@
   .footbox {
     min-width: 90%;
     flex-direction: column
+  }
+
+  .cardImgBox {
+    width: 95%;
+    box-sizing: border-box;
+    margin: 0 auto;
   }
 }
