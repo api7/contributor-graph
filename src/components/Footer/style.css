@@ -43,7 +43,7 @@
   padding: 0 10px;
   background: url(https://pbs.twimg.com/profile_banners/1471361948562628608/1646228410/1500x500);
   background-size: cover;
-  background-position: bottom;
+  background-position: 80% 100%;
 }
 
 .linkBox ul {

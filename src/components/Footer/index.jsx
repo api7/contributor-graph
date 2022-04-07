@@ -106,12 +106,12 @@ const App = () => {
           >
             <span
               style={{
-                fontSize: '14px',
+                fontSize: '12px',
                 color: '#4B5563',
                 fontWeight: 500,
               }}
             >
-              The GitHub Contributor Histroy Graph
+              The GitHub Contributor History Graph
             </span>
             {
               footerLinks.map((item) => {

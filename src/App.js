@@ -225,7 +225,7 @@ const App = () => {
             display: "block",
           }}
         >
-          <h1 style={{ fontSize: '2em', textAlign: 'center' }}>Contributor Over Time</h1>
+          <h1 style={{ fontSize: '1.8em', textAlign: 'center', margin: '0' }}>Contributor Over Time</h1>
         </div>}
         <div style={searchStyle}>
           <Paper className={classes.root} elevation={0}>
