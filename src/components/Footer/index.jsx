@@ -60,7 +60,17 @@ const App = () => {
               alignItems: 'flex-end',
             }}
           >
-            <p style={{ color: '#4B5563', margin: '20px 0 13px 0', fontSize: '14px', lineHeight: '1.4' }}>Full Traffic Management: API Gateway & Kubernetes Ingress Controller & Service Mesh</p>
+            <p
+              style={{
+                color: '#4B5563',
+                margin: '20px 0 13px 0',
+                fontSize: '14px',
+                lineHeight: '1.4',
+              }}
+            >
+              Full Traffic Management:
+              <p style={{ margin: '3px 0 0' }}>API Gateway & Kubernetes Ingress Controller & Service Mesh</p>
+            </p>
           </div>
         </div>
       </a>
