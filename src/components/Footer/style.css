@@ -1,9 +1,52 @@
+* {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+
+* a {
+  text-decoration: none;
+}
+
 .leftbottomtext:hover {
   opacity: 0.8;
 }
 
 .rightbottomtext:hover {
   opacity: 0.8;
+}
+
+.cardBoxTitle {
+  margin: 30px 0 20px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cardBoxTitle span {
+  font-weight: 700;
+  color: rgb(59, 130, 246);
+  text-decoration: none;
+  padding: 0px 4px;
+}
+
+.cardBoxTitle a:hover {
+  opacity: 0.8;
+}
+
+.linkBox ul {
+  display: flex;
+  list-style: none;
+  padding: 0;
+}
+
+.linkBox ul li {
+  margin: 0 10px;
+  text-decoration: underline;
+  color: #4B5563;
+  font-size: 14px;
+}
+
+.linkBox ul li:hover {
+  color: rgb(59, 130, 246);
+  text-decoration: none;
 }
 
 @media only screen and (max-width:768px) {
