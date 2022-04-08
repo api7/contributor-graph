@@ -35,7 +35,7 @@ const styles = (theme) => ({
 
 const SHARE_BASE_URL = "https://git-contributor.com";
 const IMG_BASE_URL =
-  "https://contributor-overtime-api.apiseven.com/contributors-svg";
+  "https://contributor-overtime-api.git-contributor.com/contributors-svg";
 
 const ShareLink = ({ params = "" }) => {
   return (
