@@ -76,10 +76,10 @@ const App = () => {
       </a>
       <div className='linkBox'>
         <ul>
-          <a href="https://api7.ai/blog"><li>Blog</li></a>
-          <a href="https://api7.ai/usercases"><li>Success Stories</li></a>
-          <a href="https://api7.ai/about"><li>About</li></a>
-          <a href="https://handbook.api7.ai/story"><li>Story</li></a>
+          <a href="https://api7.ai/blog" target='_blank'><li>Blog</li></a>
+          <a href="https://api7.ai/usercases" target='_blank'><li>Success Stories</li></a>
+          <a href="https://api7.ai/about" target='_blank'><li>About</li></a>
+          <a href="https://handbook.api7.ai/story" target='_blank'><li>Story</li></a>
         </ul>
       </div>
     </>
