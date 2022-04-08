@@ -114,7 +114,9 @@ function ShareModal({ params = "" }) {
             style={{ cursor: "pointer" }}
             onClick={() => {
               if (!inIframe()) {
-                window.open(`https://twitter.com/share?text=Amazing tools to view your repo ${shareText}!&url=${shareUrl}`, '_blank');
+                const text = `Amazing tools to view your repo ${shareText}`;
+                const newUrl = encodeURIComponent(shareUrl);
+                window.open(`https://twitter.com/intent/tweet?text=${text}&url=${newUrl}`, '_blank');
               }
               window.parent.postMessage(
                 {
@@ -210,7 +212,7 @@ export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
 
 [![${title}](${IMG_BASE_URL + params})](${SHARE_BASE_URL + params})`;
 
-  const [isCopied, setCopied] = useClipboard(value, {successDuration: 3000});
+  const [isCopied, setCopied] = useClipboard(value, { successDuration: 3000 });
 
   return (
     <div>
@@ -247,7 +249,7 @@ export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
 
 export default function CustomizedDialogs({
   open = false,
-  onChange = () => {},
+  onChange = () => { },
   params = "",
 }) {
   const handleClose = () => {

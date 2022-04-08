@@ -35,3 +35,25 @@ export const inIframe = () => {
     return true;
   }
 };
+
+export const handleShareToTwitterClick = (params) => {
+  const shareUrl = `https://git-contributor.com${params}`;
+  const shareText = params.includes("contributorMonthlyActivity")
+    ? "monthly active contributor"
+    : "contributor over time";
+
+  if (!inIframe()) {
+    const text = `Amazing tools to view your repo ${shareText}`;
+    const newUrl = encodeURIComponent(shareUrl);
+    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${newUrl}`, '_blank');
+  }
+  window.parent.postMessage(
+    {
+      share: {
+        to: "twitter",
+        url: shareUrl,
+      },
+    },
+    "*"
+  );
+}

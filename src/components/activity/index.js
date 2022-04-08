@@ -7,6 +7,7 @@ import omit from "lodash.omit";
 
 import CustomizedDialogs, { MarkdownLink } from "../shareDialog";
 import { DEFAULT_COLOR, generateMonthlyActivityOption } from "../../constants";
+import { handleShareToTwitterClick } from "../../utils";
 
 const ActivityChart = ({
   repoList = ["apache/apisix"],
@@ -18,10 +19,14 @@ const ActivityChart = ({
   const [dataSource, setDataSource] = React.useState({});
   const [xAxis] = React.useState(["1970-01-01"]);
   const [shareModalVisible, setShareModalVisible] = React.useState(false);
+  const getShareParams = () =>
+  `?chart=contributorMonthlyActivity&repo=${repoList.join(",")}`;
+
   const [option, setOption] = React.useState(
     generateMonthlyActivityOption({
       handleShareClick: () => {
-        setShareModalVisible(true);
+        const params = getShareParams();
+        handleShareToTwitterClick(params);
       },
     })
   );
@@ -42,7 +47,8 @@ const ActivityChart = ({
     const newClonedOption = cloneDeep(
       generateMonthlyActivityOption({
         handleShareClick: () => {
-          setShareModalVisible(true);
+          const params = getShareParams();
+          handleShareToTwitterClick(params);
         },
       })
     );
@@ -171,6 +177,8 @@ const ActivityChart = ({
   React.useEffect(() => {
     updateSeries(xAxis);
     window.parent.postMessage({ legend: Object.keys(dataSource) }, "*");
+
+    window.history.pushState(null, null, getShareParams());
   }, [dataSource, xAxis]);
 
   React.useEffect(() => {
@@ -219,9 +227,6 @@ const ActivityChart = ({
         setLoading(false);
       });
   }, [repoList]);
-
-  const getShareParams = () =>
-    `?chart=contributorMonthlyActivity&repo=${repoList.join(",")}`;
 
   return (
     <>
