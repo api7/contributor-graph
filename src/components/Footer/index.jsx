@@ -25,7 +25,7 @@ const App = () => {
 
   const CardBox = () => (
     <>
-      <div className='cardBoxTitle'>Sponsored by
+      <div className='cardBoxTitle'>Powered by
         <a href="https://api7.ai" target='_blank'>
           <span>API7.ai</span>
         </a>
@@ -34,7 +34,7 @@ const App = () => {
         href='https://api7.ai/'
         target='_blank'
         style={{
-          color: '#ffffff',
+          color: '#0000003b',
           textDecoration: 'none',
           borderRadius: '4px',
         }}
@@ -123,6 +123,17 @@ const App = () => {
             >
               The GitHub Contributor History Graph
             </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <span
+              style={{
+                fontSize: '12px',
+                color: '#4b5563',
+              }}
+            >
+              Follow us on
+            </span>
             {
               footerLinks.map((item) => {
                 return (
@@ -140,27 +151,6 @@ const App = () => {
                 )
               })
             }
-          </div>
-          <div style={{ display: 'flex' }}>
-            <span
-              style={{
-                fontSize: '12px',
-                color: '#4b5563',
-              }}
-            >
-              Sponsored by
-              <a
-                className='rightbottomtext'
-                target='_blank'
-                href='https://api7.ai'
-                style={{
-                  fontWeight: '700',
-                  color: 'rgb(59 130 246)',
-                  textDecoration: 'none',
-                  padding: '0 4px'
-                }}
-              >API7.ai</a>
-            </span>
           </div>
         </div>
       </div>
