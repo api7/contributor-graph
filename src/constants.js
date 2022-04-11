@@ -18,6 +18,15 @@ export const generateDefaultOption = ({ handleShareClick = () => {} }) => {
             handleShareClick();
           },
         },
+        myCopyLink: {
+          show: true,
+          title: "Copy Link",
+          icon: "path://M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71",
+          onclick: function () {
+            handleShareClick();
+          },
+        },
+        saveAsImage: {}
       },
       left: "210px",
       top: "3px",
@@ -27,7 +36,7 @@ export const generateDefaultOption = ({ handleShareClick = () => {} }) => {
       },
       emphasis: {
         iconStyle: {
-          textPosition: "right"
+          textPosition: "bottom"
         }
       }
     },
