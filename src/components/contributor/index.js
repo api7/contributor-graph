@@ -4,6 +4,7 @@ import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts";
 import omit from "lodash.omit";
 import { Button, ButtonGroup } from "@material-ui/core";
+import useClipboard from "react-use-clipboard";
 
 import { getMonths, getParameterByName, handleShareToTwitterClick, inIframe } from "../../utils";
 import { generateDefaultOption } from "../../constants";
@@ -41,12 +42,17 @@ const ContributorLineChart = ({
     }
     return `?chart=contributorOverTime&repo=${repoList.join(",")}`;
   };
+  const [, setCopied] = useClipboard(`https://git-contributor.com/${getShareParams()}`, { successDuration: 3000 });
+
 
   const [option, setOption] = React.useState(
     generateDefaultOption({
       handleShareClick: () => {
         const params = getShareParams();
         handleShareToTwitterClick(params);
+      },
+      handleCopyClick: () => {
+        setCopied();
       },
     })
   );
@@ -82,6 +88,9 @@ const ContributorLineChart = ({
         handleShareClick: () => {
           const params = getShareParams();
           handleShareToTwitterClick(params);
+        },
+        handleCopyClick: () => {
+          setCopied();
         },
       })
     );
