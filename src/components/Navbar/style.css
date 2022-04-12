@@ -1,0 +1,114 @@
+.leftcontent:hover {
+  background-color: rgb(39 39 42);
+}
+
+.rightcontent:hover {
+  background-color: rgb(39 39 42);
+}
+
+.switchbtn:hover {
+  background-color: rgb(39 39 42);
+}
+
+.openbox:hover {
+  background-color: rgb(247, 249, 255);
+}
+
+.leftcontent {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  text-decoration: none;
+  color: RGB(245, 245, 245);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 0 16px;
+  height: 100%,
+}
+
+@media only screen and (max-width:430px) {
+  div.navcontent {
+    min-width: 100%;
+  }
+
+  .leftcontent {
+    padding: 0 0.75em;
+  }
+}
+
+@media only screen and (max-width:1024px) {
+  .navcontent {
+    min-width: 90%;
+  }
+}
+
+@media only screen and (min-width:777px) {
+  div.switchbtn {
+    display: none;
+  }
+
+  div.rightnav {
+    display: flex;
+  }
+
+  div.openbox {
+    display: none;
+  }
+}
+
+.rightnav {
+  display: none;
+  height: 100%;
+  align-items: center;
+}
+
+.switchbtn {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0 0.75em;
+  cursor: pointer;
+  height: 100%;
+}
+
+.navMobile {
+  width: 1rem;
+  height: 1px;
+  background-color: RGB(245, 245, 245);
+  margin-bottom: 0.2rem;
+}
+
+.navDesktop {
+  width: 1rem;
+  height: 1px;
+  background-color: RGB(245, 245, 245);
+  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+  -moz-transform: rotate(45deg);
+  -ms-transform: rotate(45deg);
+  -o-transform: rotate(45deg);
+}
+
+.navDesktoprotate {
+  width: 1rem;
+  height: 1px;
+  background-color: RGB(245, 245, 245);
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+  -moz-transform: rotate(-45deg);
+  -ms-transform: rotate(-45deg);
+  -o-transform: rotate(-45deg);
+  margin-top: -1px;
+}
+
+.openbox {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0.5rem 0;
+  box-shadow: 0px 0px 10px 0px;
+}
+
+.closebox {
+  display: none;
+}

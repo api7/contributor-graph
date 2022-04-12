@@ -1,0 +1,75 @@
+* {
+  font-family: Verdana, Arial, Helvetica, sans-serif;
+}
+
+* a {
+  text-decoration: none;
+}
+
+.leftbottomtext:hover {
+  opacity: 0.8;
+}
+
+.rightbottomtext:hover {
+  opacity: 0.8;
+}
+
+.cardBoxTitle {
+  margin: 30px 0 20px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.cardBoxTitle span {
+  font-weight: 700;
+  color: rgb(59, 130, 246);
+  text-decoration: none;
+  padding: 0px 4px;
+}
+
+.cardBoxTitle a:hover {
+  opacity: 0.8;
+}
+
+.cardImgBox {
+  display: flex;
+  width: 430px;
+  height: 150px;
+  justify-content: space-between;
+  align-content: center;
+  border: 1px solid;
+  border-radius: 4px;
+  overflow: hidden;
+  padding: 0 10px;
+}
+
+.linkBox ul {
+  display: flex;
+  list-style: none;
+  padding: 0;
+}
+
+.linkBox ul li {
+  margin: 0 10px;
+  text-decoration: underline;
+  color: #4B5563;
+  font-size: 14px;
+}
+
+.linkBox ul li:hover {
+  color: rgb(59, 130, 246);
+  text-decoration: none;
+}
+
+@media only screen and (max-width:768px) {
+  .footbox {
+    min-width: 90%;
+    flex-direction: column
+  }
+
+  .cardImgBox {
+    width: 95%;
+    box-sizing: border-box;
+    margin: 0 auto;
+  }
+}
