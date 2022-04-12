@@ -4,6 +4,8 @@ import { Row, Col, Tab } from "react-bootstrap";
 import * as echarts from "echarts";
 import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
+import useClipboard from "react-use-clipboard";
+import { saveAs } from 'file-saver';
 
 import CustomizedDialogs, { MarkdownLink } from "../shareDialog";
 import { DEFAULT_COLOR, generateMonthlyActivityOption } from "../../constants";
@@ -21,12 +23,20 @@ const ActivityChart = ({
   const [shareModalVisible, setShareModalVisible] = React.useState(false);
   const getShareParams = () =>
   `?chart=contributorMonthlyActivity&repo=${repoList.join(",")}`;
+  const [, setCopied] = useClipboard(`https://git-contributor.com/${getShareParams()}`, { successDuration: 3000 });
 
   const [option, setOption] = React.useState(
     generateMonthlyActivityOption({
       handleShareClick: () => {
         const params = getShareParams();
         handleShareToTwitterClick(params);
+      },
+      handleCopyClick: () => {
+        setCopied();
+      },
+      handleDownloadClick: () => {
+        const params = getShareParams();
+        saveAs(`https://contributor-overtime-api.apiseven.com/contributors-svg${params}`, 'text.svg');
       },
     })
   );
@@ -49,6 +59,13 @@ const ActivityChart = ({
         handleShareClick: () => {
           const params = getShareParams();
           handleShareToTwitterClick(params);
+        },
+        handleCopyClick: () => {
+          setCopied();
+        },
+        handleDownloadClick: () => {
+          const params = getShareParams();
+          saveAs(`https://contributor-overtime-api.apiseven.com/contributors-svg${params}`, 'text.svg');
         },
       })
     );

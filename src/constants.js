@@ -27,21 +27,20 @@ export const generateDefaultOption = ({ handleShareClick = () => {}, handleCopyC
             handleCopyClick();
           },
         },
-        saveAsImage: {
+        mySaveAsImage: {
           show: true,
+          title: "Save Image",
           icon: "image://https://static.apiseven.com/202108/1649673632197-35d7c888-1fd6-463c-ac38-2c7179a4a168.png",
           type: "jpg",
+          onclick: function () {
+            handleDownloadClick();
+          },
         },
       },
       left: "210px",
-      iconStyle: {
-        color: "#1d9bf0",
-        borderColor: "#1d9bf0"
-      },
       emphasis: {
         iconStyle: {
           textPosition: "bottom",
-          color: "#1d9bf0",
         }
       }
     },
@@ -85,6 +84,8 @@ export const generateDefaultOption = ({ handleShareClick = () => {}, handleCopyC
 
 export const generateMonthlyActivityOption = ({
   handleShareClick = () => {},
+  handleCopyClick = () => {},
+  handleDownloadClick = () => {},
 }) => {
   return {
     toolbox: {
@@ -98,15 +99,25 @@ export const generateMonthlyActivityOption = ({
             handleShareClick();
           },
         },
-        saveAsImage: {
+        myCopyLink: {
+          show: true,
+          title: "Copy Link",
+          icon: "image://https://static.apiseven.com/202108/1649675145286-bf75cd63-519a-442e-9928-ac51534dfd97.png",
+          onclick: function () {
+            handleCopyClick();
+          },
+        },
+        mySaveAsImage: {
+          show: true,
+          title: "Save Image",
           icon: "image://https://static.apiseven.com/202108/1649673632197-35d7c888-1fd6-463c-ac38-2c7179a4a168.png",
-        }
+          type: "jpg",
+          onclick: function () {
+            handleDownloadClick();
+          },
+        },
       },
       left: "260px",
-      iconStyle: {
-        color: "#1d9bf0",
-        borderColor: "#1d9bf0"
-      },
       emphasis: {
         iconStyle: {
           textPosition: "bottom"
@@ -138,6 +149,7 @@ export const generateMonthlyActivityOption = ({
       text: "Monthly Active Contributors",
       subtext:
         "The number of contributors who committed to main branch in each month",
+      itemGap: 16,
     },
     xAxis: {
       type: "time",

@@ -5,8 +5,9 @@ import * as echarts from "echarts";
 import omit from "lodash.omit";
 import { Button, ButtonGroup } from "@material-ui/core";
 import useClipboard from "react-use-clipboard";
+import { saveAs } from 'file-saver';
 
-import { getMonths, getParameterByName, handleShareToTwitterClick, inIframe } from "../../utils";
+import { getMonths, getParameterByName, handleShareToTwitterClick } from "../../utils";
 import { generateDefaultOption } from "../../constants";
 import { fetchData, fetchMergeContributor } from "./service";
 import CustomizedDialogs, { MarkdownLink } from "../shareDialog";
@@ -54,6 +55,10 @@ const ContributorLineChart = ({
       handleCopyClick: () => {
         setCopied();
       },
+      handleDownloadClick: () => {
+        const params = getShareParams();
+        saveAs(`https://contributor-overtime-api.apiseven.com/contributors-svg${params}`, 'text.svg');
+      },
     })
   );
 
@@ -92,6 +97,10 @@ const ContributorLineChart = ({
         handleCopyClick: () => {
           setCopied();
         },
+        handleDownloadClick: () => {
+          const params = getShareParams();
+          saveAs(`https://contributor-overtime-api.apiseven.com/contributors-svg${params}`, 'text.svg');
+        }
       })
     );
     const datasetWithFilters = [
