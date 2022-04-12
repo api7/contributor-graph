@@ -1,6 +1,8 @@
 import React from "react";
 import cloneDeep from "lodash.clonedeep";
 import ReactECharts from "echarts-for-react";
+import MuiAlert from "@material-ui/lab/Alert";
+import { Snackbar } from "@material-ui/core";
 import * as echarts from "echarts";
 import omit from "lodash.omit";
 import { Button, ButtonGroup } from "@material-ui/core";
@@ -36,6 +38,7 @@ const ContributorLineChart = ({
   const [viewMerge, setViewMerge] = React.useState(false);
   const [mergeRepo, setMergerRepo] = React.useState("");
   const [showMergeButton, setShowMergeButton] = React.useState(false);
+  const [openAlert, setOpenAlert] = React.useState(false);
 
   const getShareParams = () => {
     if (viewMerge) {
@@ -44,7 +47,9 @@ const ContributorLineChart = ({
     return `?chart=contributorOverTime&repo=${repoList.join(",")}`;
   };
   const [, setCopied] = useClipboard(`https://git-contributor.com/${getShareParams()}`, { successDuration: 3000 });
-
+  const Alert = (props) => {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+  };
 
   const [option, setOption] = React.useState(
     generateDefaultOption({
@@ -54,6 +59,7 @@ const ContributorLineChart = ({
       },
       handleCopyClick: () => {
         setCopied();
+        setOpenAlert(true);
       },
       handleDownloadClick: () => {
         const params = getShareParams();
@@ -96,6 +102,7 @@ const ContributorLineChart = ({
         },
         handleCopyClick: () => {
           setCopied();
+          setOpenAlert(true);
         },
         handleDownloadClick: () => {
           const params = getShareParams();
@@ -307,6 +314,17 @@ const ContributorLineChart = ({
         }}
       >
         <Dialog />
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          autoHideDuration={6000}
+          open={openAlert}
+          onClose={() => setOpenAlert(false)}
+          key={"topcenter"}
+        >
+          <Alert severity='success' onClose={() => setOpenAlert(false)}>
+            Copy link successfully
+          </Alert>
+        </Snackbar>
         <div className="right" style={{ width: "90%" }}>
           <div
             id="chart"

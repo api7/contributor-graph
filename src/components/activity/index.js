@@ -1,6 +1,8 @@
 import React from "react";
 import cloneDeep from "lodash.clonedeep";
 import { Row, Col, Tab } from "react-bootstrap";
+import { Snackbar } from "@material-ui/core";
+import MuiAlert from "@material-ui/lab/Alert";
 import * as echarts from "echarts";
 import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
@@ -21,9 +23,13 @@ const ActivityChart = ({
   const [dataSource, setDataSource] = React.useState({});
   const [xAxis] = React.useState(["1970-01-01"]);
   const [shareModalVisible, setShareModalVisible] = React.useState(false);
+  const [openAlert, setOpenAlert] = React.useState(false);
   const getShareParams = () =>
-  `?chart=contributorMonthlyActivity&repo=${repoList.join(",")}`;
+    `?chart=contributorMonthlyActivity&repo=${repoList.join(",")}`;
   const [, setCopied] = useClipboard(`https://git-contributor.com/${getShareParams()}`, { successDuration: 3000 });
+  const Alert = (props) => {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+  };
 
   const [option, setOption] = React.useState(
     generateMonthlyActivityOption({
@@ -33,6 +39,7 @@ const ActivityChart = ({
       },
       handleCopyClick: () => {
         setCopied();
+        setOpenAlert(true);
       },
       handleDownloadClick: () => {
         const params = getShareParams();
@@ -62,6 +69,7 @@ const ActivityChart = ({
         },
         handleCopyClick: () => {
           setCopied();
+          setOpenAlert(true);
         },
         handleDownloadClick: () => {
           const params = getShareParams();
@@ -255,6 +263,17 @@ const ActivityChart = ({
         }}
       >
         <Dialog />
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          autoHideDuration={6000}
+          open={openAlert}
+          onClose={() => setOpenAlert(false)}
+          key={"topcenter"}
+        >
+          <Alert severity='success' onClose={() => setOpenAlert(false)}>
+            Copy link successfully
+          </Alert>
+        </Snackbar>
         <div className="right" style={{ width: "90%", marginTop: "10px" }}>
           <div id="chart">
             <Tab.Container defaultActiveKey="contributor">

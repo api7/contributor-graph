@@ -2,7 +2,7 @@ export const generateDefaultOption = ({ handleShareClick = () => {}, handleCopyC
   return {
     color: ["#39a85a", "#4385ee", "#fabc37", "#2dc1dd", "#f972cf", "#8331c8"],
     legend: {
-      top: "5%",
+      top: "7%",
       data: [],
       textStyle: {
         fontSize: 14,
