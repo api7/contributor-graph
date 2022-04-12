@@ -55,7 +55,7 @@ const ContributorLineChart = ({
     generateDefaultOption({
       handleShareClick: () => {
         const params = getShareParams();
-        handleShareToTwitterClick(params);
+        handleShareToTwitterClick(params, repoList);
       },
       handleCopyClick: () => {
         setCopied();
@@ -98,7 +98,7 @@ const ContributorLineChart = ({
       generateDefaultOption({
         handleShareClick: () => {
           const params = getShareParams();
-          handleShareToTwitterClick(params);
+          handleShareToTwitterClick(params, repoList);
         },
         handleCopyClick: () => {
           setCopied();

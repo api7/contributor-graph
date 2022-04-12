@@ -35,7 +35,7 @@ const ActivityChart = ({
     generateMonthlyActivityOption({
       handleShareClick: () => {
         const params = getShareParams();
-        handleShareToTwitterClick(params);
+        handleShareToTwitterClick(params, repoList);
       },
       handleCopyClick: () => {
         setCopied();
@@ -65,7 +65,7 @@ const ActivityChart = ({
       generateMonthlyActivityOption({
         handleShareClick: () => {
           const params = getShareParams();
-          handleShareToTwitterClick(params);
+          handleShareToTwitterClick(params, repoList);
         },
         handleCopyClick: () => {
           setCopied();
