@@ -1,12 +1,17 @@
 import React from "react";
 import cloneDeep from "lodash.clonedeep";
 import { Row, Col, Tab } from "react-bootstrap";
+import { Snackbar } from "@material-ui/core";
+import MuiAlert from "@material-ui/lab/Alert";
 import * as echarts from "echarts";
 import ReactECharts from "echarts-for-react";
 import omit from "lodash.omit";
+import useClipboard from "react-use-clipboard";
+import { saveAs } from 'file-saver';
 
 import CustomizedDialogs, { MarkdownLink } from "../shareDialog";
 import { DEFAULT_COLOR, generateMonthlyActivityOption } from "../../constants";
+import { handleShareToTwitterClick } from "../../utils";
 
 const ActivityChart = ({
   repoList = ["apache/apisix"],
@@ -18,10 +23,27 @@ const ActivityChart = ({
   const [dataSource, setDataSource] = React.useState({});
   const [xAxis] = React.useState(["1970-01-01"]);
   const [shareModalVisible, setShareModalVisible] = React.useState(false);
+  const [openAlert, setOpenAlert] = React.useState(false);
+  const getShareParams = () =>
+    `?chart=contributorMonthlyActivity&repo=${repoList.join(",")}`;
+  const [, setCopied] = useClipboard(`https://git-contributor.com/${getShareParams()}`, { successDuration: 3000 });
+  const Alert = (props) => {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+  };
+
   const [option, setOption] = React.useState(
     generateMonthlyActivityOption({
       handleShareClick: () => {
-        setShareModalVisible(true);
+        const params = getShareParams();
+        handleShareToTwitterClick(params, repoList);
+      },
+      handleCopyClick: () => {
+        setCopied();
+        setOpenAlert(true);
+      },
+      handleDownloadClick: () => {
+        const params = getShareParams();
+        saveAs(`https://contributor-overtime-api.apiseven.com/contributors-svg${params}`, 'text.svg');
       },
     })
   );
@@ -42,7 +64,16 @@ const ActivityChart = ({
     const newClonedOption = cloneDeep(
       generateMonthlyActivityOption({
         handleShareClick: () => {
-          setShareModalVisible(true);
+          const params = getShareParams();
+          handleShareToTwitterClick(params, repoList);
+        },
+        handleCopyClick: () => {
+          setCopied();
+          setOpenAlert(true);
+        },
+        handleDownloadClick: () => {
+          const params = getShareParams();
+          saveAs(`https://contributor-overtime-api.apiseven.com/contributors-svg${params}`, 'text.svg');
         },
       })
     );
@@ -171,6 +202,8 @@ const ActivityChart = ({
   React.useEffect(() => {
     updateSeries(xAxis);
     window.parent.postMessage({ legend: Object.keys(dataSource) }, "*");
+
+    window.history.pushState(null, null, getShareParams());
   }, [dataSource, xAxis]);
 
   React.useEffect(() => {
@@ -220,9 +253,6 @@ const ActivityChart = ({
       });
   }, [repoList]);
 
-  const getShareParams = () =>
-    `?chart=contributorMonthlyActivity&repo=${repoList.join(",")}`;
-
   return (
     <>
       <div
@@ -233,6 +263,17 @@ const ActivityChart = ({
         }}
       >
         <Dialog />
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          autoHideDuration={6000}
+          open={openAlert}
+          onClose={() => setOpenAlert(false)}
+          key={"topcenter"}
+        >
+          <Alert severity='success' onClose={() => setOpenAlert(false)}>
+            Copy link successfully
+          </Alert>
+        </Snackbar>
         <div className="right" style={{ width: "90%", marginTop: "10px" }}>
           <div id="chart">
             <Tab.Container defaultActiveKey="contributor">

@@ -1,11 +1,15 @@
 import React from "react";
 import cloneDeep from "lodash.clonedeep";
 import ReactECharts from "echarts-for-react";
+import MuiAlert from "@material-ui/lab/Alert";
+import { Snackbar } from "@material-ui/core";
 import * as echarts from "echarts";
 import omit from "lodash.omit";
 import { Button, ButtonGroup } from "@material-ui/core";
+import useClipboard from "react-use-clipboard";
+import { saveAs } from 'file-saver';
 
-import { getMonths, getParameterByName } from "../../utils";
+import { getMonths, getParameterByName, handleShareToTwitterClick } from "../../utils";
 import { generateDefaultOption } from "../../constants";
 import { fetchData, fetchMergeContributor } from "./service";
 import CustomizedDialogs, { MarkdownLink } from "../shareDialog";
@@ -30,17 +34,39 @@ const ContributorLineChart = ({
   const [activeDate, setActiveDate] = React.useState("max");
   const [xAxis, setXAxis] = React.useState([]);
   const [shareModalVisible, setShareModalVisible] = React.useState(false);
-  const [option, setOption] = React.useState(
-    generateDefaultOption({
-      handleShareClick: () => {
-        setShareModalVisible(true);
-      },
-    })
-  );
 
   const [viewMerge, setViewMerge] = React.useState(false);
   const [mergeRepo, setMergerRepo] = React.useState("");
   const [showMergeButton, setShowMergeButton] = React.useState(false);
+  const [openAlert, setOpenAlert] = React.useState(false);
+
+  const getShareParams = () => {
+    if (viewMerge) {
+      return `?chart=contributorOverTime&repo=${mergeRepo}&merge=true`;
+    }
+    return `?chart=contributorOverTime&repo=${repoList.join(",")}`;
+  };
+  const [, setCopied] = useClipboard(`https://git-contributor.com/${getShareParams()}`, { successDuration: 3000 });
+  const Alert = (props) => {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+  };
+
+  const [option, setOption] = React.useState(
+    generateDefaultOption({
+      handleShareClick: () => {
+        const params = getShareParams();
+        handleShareToTwitterClick(params);
+      },
+      handleCopyClick: () => {
+        setCopied();
+        setOpenAlert(true);
+      },
+      handleDownloadClick: () => {
+        const params = getShareParams();
+        saveAs(`https://contributor-overtime-api.apiseven.com/contributors-svg${params}`, 'text.svg');
+      },
+    })
+  );
 
   React.useEffect(() => {
     if (repoList.length > 1) {
@@ -51,14 +77,9 @@ const ContributorLineChart = ({
     const lastItem = repoList[repoList.length - 1];
     const showMerge = mergeRepoList.includes(lastItem);
     setShowMergeButton(showMerge);
-  }, [repoList]);
 
-  const getShareParams = () => {
-    if (viewMerge) {
-      return `?chart=contributorOverTime&repo=${mergeRepo}&merge=true`;
-    }
-    return `?chart=contributorOverTime&repo=${repoList.join(",")}`;
-  };
+    window.history.pushState(null, null, getShareParams());
+  }, [repoList]);
 
   const Dialog = React.useCallback(() => {
     return (
@@ -76,8 +97,17 @@ const ContributorLineChart = ({
     const newClonedOption = cloneDeep(
       generateDefaultOption({
         handleShareClick: () => {
-          setShareModalVisible(true);
+          const params = getShareParams();
+          handleShareToTwitterClick(params);
         },
+        handleCopyClick: () => {
+          setCopied();
+          setOpenAlert(true);
+        },
+        handleDownloadClick: () => {
+          const params = getShareParams();
+          saveAs(`https://contributor-overtime-api.apiseven.com/contributors-svg${params}`, 'text.svg');
+        }
       })
     );
     const datasetWithFilters = [
@@ -284,6 +314,17 @@ const ContributorLineChart = ({
         }}
       >
         <Dialog />
+        <Snackbar
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          autoHideDuration={6000}
+          open={openAlert}
+          onClose={() => setOpenAlert(false)}
+          key={"topcenter"}
+        >
+          <Alert severity='success' onClose={() => setOpenAlert(false)}>
+            Copy link successfully
+          </Alert>
+        </Snackbar>
         <div className="right" style={{ width: "90%" }}>
           <div
             id="chart"
