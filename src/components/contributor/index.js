@@ -78,7 +78,9 @@ const ContributorLineChart = ({
     const showMerge = mergeRepoList.includes(lastItem);
     setShowMergeButton(showMerge);
 
-    window.history.pushState(null, null, getShareParams());
+    if (repoList.length) {
+      window.history.pushState(null, null, getShareParams());
+    }
   }, [repoList]);
 
   const Dialog = React.useCallback(() => {
