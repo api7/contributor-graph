@@ -6,7 +6,7 @@ This tool is used to generate contributor graphs across repositories. We use Git
 
 ### Contributor Over Time for single repo
 
-
+[![Contributor over time](https://contributor-overtime-api.git-contributor.com/contributors-svg?chart=contributorOverTime&repo=apache/apisix)](https://git-contributor.com?chart=contributorOverTime&repo=apache/apisix)
 
 ### Contributor Over Time across related repo
 
