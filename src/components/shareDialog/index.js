@@ -204,7 +204,7 @@ const DialogContent = withStyles((theme) => ({
 export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
   const title =
     type === "contributorOverTime"
-      ? "Contributor over time"
+      ? "Contributor Over Time"
       : "Monthly Active Contributors";
 
   const value = `
