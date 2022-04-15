@@ -13,9 +13,10 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import SearchIcon from "@material-ui/icons/Search";
 import cloneDeep from "lodash.clonedeep";
 
+import Footer from './components/Footer';
 import ContirbutorLineChart from "./components/contributor";
 import ActivityChart from "./components/activity";
-import { getParameterByName } from "./utils";
+import { getParameterByName, inIframe } from "./utils";
 import CompareComponent from "./components/compare";
 import { DEFAULT_CONTAINER_STYLE, DEFAULT_SEARCHBAR_STYLE } from "./constants";
 
@@ -216,6 +217,16 @@ const App = () => {
           alignItems: "center",
         }}
       >
+        {!inIframe() &&
+          <div
+          className="titleBox"
+          style={{
+            margin: '30px 0',
+            display: "block",
+          }}
+        >
+          <h1 style={{ fontSize: '1.8em', textAlign: 'center', margin: '0' }}>Contributor Over Time</h1>
+        </div>}
         <div style={searchStyle}>
           <Paper className={classes.root} elevation={0}>
             <Autocomplete
@@ -356,6 +367,7 @@ const App = () => {
             </TabPanel>
           </div>
         </div>
+        { !inIframe() && <Footer />}
       </div>
     </>
   );
