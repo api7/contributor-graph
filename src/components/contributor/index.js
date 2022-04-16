@@ -6,14 +6,18 @@ import { Snackbar } from "@material-ui/core";
 import * as echarts from "echarts";
 import omit from "lodash.omit";
 import { Button, ButtonGroup } from "@material-ui/core";
+import GetAppIcon from '@material-ui/icons/GetApp';
+import FilterNoneOutlinedIcon from '@material-ui/icons/FilterNoneOutlined';
 import useClipboard from "react-use-clipboard";
 import { saveAs } from 'file-saver';
 
+import {DialogBox} from '../dialogBox'
 import { getMonths, getParameterByName, handleShareToTwitterClick } from "../../utils";
 import { generateDefaultOption } from "../../constants";
 import { fetchData, fetchMergeContributor } from "./service";
 import CustomizedDialogs, { MarkdownLink } from "../shareDialog";
 import { DEFAULT_COLOR } from "../../constants";
+
 
 const ContributorLineChart = ({
   repoList = [],
@@ -305,6 +309,7 @@ const ContributorLineChart = ({
       setViewMerge(true);
     }
   }, []);
+  
 
   return (
     <>
@@ -397,7 +402,7 @@ const ContributorLineChart = ({
 
               {showMergeButton && (
                 <Button
-                  color="primary"
+                  color="secondary"
                   variant="outlined"
                   size="small"
                   onClick={() => {
@@ -428,6 +433,9 @@ const ContributorLineChart = ({
               showLoading={loading}
               notMerge
             />
+            
+              <DialogBox  />
+              
             <MarkdownLink
               params={getShareParams()}
               type="contributorOverTime"

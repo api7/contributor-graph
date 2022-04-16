@@ -318,8 +318,6 @@ const App = () => {
                   onChange={handleChange}
                   variant="scrollable"
                   scrollButtons="on"
-                  indicatorColor="primary"
-                  textColor="primary"
                   aria-label="scrollable force tabs example"
                 >
                   <Tab

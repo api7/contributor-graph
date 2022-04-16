@@ -16,6 +16,8 @@ import copy from "copy-to-clipboard";
 import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/default-highlight";
 import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import useClipboard from "react-use-clipboard";
+import FilterNoneOutlinedIcon from '@material-ui/icons/FilterNoneOutlined';
+
 
 import { inIframe } from "../../utils";
 import "./index.css";
@@ -216,32 +218,24 @@ export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
 
   return (
     <div>
-      <p>
+      <p style={{textAlign:'center'}}>
         You can include the chart on your repository's README.md as follows:
       </p>
-      <div style={{ display: "flex" }}>
-        <SyntaxHighlighter language="markdown" style={a11yDark}>
-          {`
-### ${title}
-
-[![${title}](${IMG_BASE_URL + params})](${SHARE_BASE_URL + params})`}
-        </SyntaxHighlighter>
+      <div style={{ display: "flex",backgroundColor:'#F3F4F5',marginBottom:'30px',borderRadius:'5px'}}>
+        <div style={{padding:'10px',overflowY:' scroll',}}>
+          <div ><span>### ${title}</span></div>
+          <div style={{margin:'10px',overflowY:'scroll'}}><span>[![{title}]({IMG_BASE_URL + params})]({SHARE_BASE_URL + params})`</span></div>
+        </div>
         <div
           style={{
-            margin: "16px 0 16px 0",
-            backgroundColor: "#2b2b2b",
             cursor: "pointer",
           }}
           onClick={setCopied}
         >
-          {isCopied ? (
-            <Tooltip title="Copied!" placement="top" arrow>
-              <img width="28px" height="28px" src="/icon/copy-done.svg" />
-            </Tooltip>
-          ) : (
-            <img width="28px" height="28px" src="/icon/copy.svg" />
-          )}
+          <FilterNoneOutlinedIcon />
         </div>
+     
+
       </div>
     </div>
   );

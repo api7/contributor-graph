@@ -25,7 +25,7 @@ export default function OutlinedChips({ list = [], onDelete }) {
           key={item}
           size="small"
           onDelete={() => onDelete(item)}
-          color="primary"
+          color="secondary"
           variant="outlined"
         />
       ))}
