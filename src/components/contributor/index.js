@@ -359,6 +359,7 @@ const ContributorLineChart = ({
                   onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
+                  style={{border:'1px solid #E53E3E'}}
                 >
                   1 Month
                 </Button>
@@ -368,6 +369,7 @@ const ContributorLineChart = ({
                   onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
+                  style={{border:'1px solid #E53E3E'}}
                 >
                   3 Months
                 </Button>
@@ -377,6 +379,7 @@ const ContributorLineChart = ({
                   onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
+                  style={{border:'1px solid #E53E3E'}}
                 >
                   6 Months
                 </Button>
@@ -386,15 +389,17 @@ const ContributorLineChart = ({
                   onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
+                  style={{border:'1px solid #E53E3E'}}
                 >
                   1 Year
                 </Button>
                 <Button
-                  variant={activeDate === "max" ? "contained" : "outlined"}
+                  variant="contained" 
                   value="max"
                   onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
+                  style={{backgroundColor:'#E53E3E'}}
                 >
                   Max
                 </Button>
@@ -402,7 +407,7 @@ const ContributorLineChart = ({
 
               {showMergeButton && (
                 <Button
-                  color="secondary"
+                  color="primary"
                   variant="outlined"
                   size="small"
                   onClick={() => {
@@ -412,6 +417,8 @@ const ContributorLineChart = ({
                     width: document.body.clientWidth < 670 ? "100%" : "unset",
                     marginTop:
                       document.body.clientWidth < 670 ? "2px" : "unset",
+                      border:'1px solid #E53E3E',
+                      color:' #E53E3E' 
                   }}
                 >
                   {!viewMerge

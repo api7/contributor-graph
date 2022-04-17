@@ -12,6 +12,7 @@ import { saveAs } from 'file-saver';
 import CustomizedDialogs, { MarkdownLink } from "../shareDialog";
 import { DEFAULT_COLOR, generateMonthlyActivityOption } from "../../constants";
 import { handleShareToTwitterClick } from "../../utils";
+import {DialogBox} from '../dialogBox'
 
 const ActivityChart = ({
   repoList = ["apache/apisix"],
@@ -26,7 +27,7 @@ const ActivityChart = ({
   const [openAlert, setOpenAlert] = React.useState(false);
   const getShareParams = () =>
     `?chart=contributorMonthlyActivity&repo=${repoList.join(",")}`;
-  const [, setCopied] = useClipboard(`https://git-contributor.com/${getShareParams()}`, { successDuration: 3000 });
+  const [, setCopied] = useClipboard(`https://git-contributor.com/${getShareParams()}`,);
   const Alert = (props) => {
     return <MuiAlert elevation={6} variant="filled" {...props} />;
   };
@@ -252,7 +253,7 @@ const ActivityChart = ({
         setLoading(false);
       });
   }, [repoList]);
-
+ 
   return (
     <>
       <div
@@ -294,6 +295,7 @@ const ActivityChart = ({
                         showLoading={loading}
                         notMerge
                       />
+                       <DialogBox  />
                       <MarkdownLink
                         params={getShareParams()}
                         type="contributorMonthlyActivity"

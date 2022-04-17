@@ -17,7 +17,7 @@ import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/default-highlig
 import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import useClipboard from "react-use-clipboard";
 import FilterNoneOutlinedIcon from '@material-ui/icons/FilterNoneOutlined';
-
+import DoneAllIcon from '@material-ui/icons/DoneAll';
 
 import { inIframe } from "../../utils";
 import "./index.css";
@@ -221,21 +221,28 @@ export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
       <p style={{textAlign:'center'}}>
         You can include the chart on your repository's README.md as follows:
       </p>
-      <div style={{ display: "flex",backgroundColor:'#F3F4F5',marginBottom:'30px',borderRadius:'5px'}}>
-        <div style={{padding:'10px',overflowY:' scroll',}}>
-          <div ><span>### ${title}</span></div>
+      <div style={{position:'relative', backgroundColor:'#F3F4F5',marginBottom:'30px',borderRadius:'5px'}}>
+        <div style={{padding:'10px',overflow:' scroll',}}>
+          <div ><span>### {title}</span></div>
           <div style={{margin:'10px',overflowY:'scroll'}}><span>[![{title}]({IMG_BASE_URL + params})]({SHARE_BASE_URL + params})`</span></div>
         </div>
         <div
           style={{
             cursor: "pointer",
+            position:'absolute',
+            right:'5px',
+            top:'5px' 
           }}
           onClick={setCopied}
         >
-          <FilterNoneOutlinedIcon />
+          {
+            isCopied 
+            ? 
+              <DoneAllIcon />
+            :
+              <FilterNoneOutlinedIcon />
+          }
         </div>
-     
-
       </div>
     </div>
   );
