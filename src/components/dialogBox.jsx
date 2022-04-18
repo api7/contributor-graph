@@ -14,34 +14,31 @@ import { Snackbar } from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import DialogContentText from '@material-ui/core/DialogContentText';
 
-export const DialogBox = ({ repoList = ["apache/apisix"],}) => {
-  
+export const DialogBox = ({ repoList = ["apache/apisix"], }) => {
+
   const title = window.location.href.includes("contributorOverTime")
     ? "contributor over time"
     : "monthly active contributor"
-    console.log('shareText:',title)
   const Url = window.location.href.split('repo=apache/apisix')
   const Tail = Url[1]
-  const OverTimegetShareParams = () => `?chart=contributorOverTime&repo=${repoList.join(",")}${Tail}`
-  const MonthlyActivegetShareParams = () => `?chart=contributorMonthlyActivity&repo=${repoList.join(",")}${Tail}`;
-  const OverTimevalue = `<iframe style={{ width: "100%", height: "auto" , minWidth: "600px", minHeight: "1000px" }} src="https://git-contributor.com/${OverTimegetShareParams()}" frameBorder="0"></iframe>`
-  const MonthlyActivevalue = `<iframe style={{ width: "100%", height: "auto" , minWidth: "600px", minHeight: "1000px" }} src="https://git-contributor.com/${MonthlyActivegetShareParams()}" frameBorder="0"></iframe>`
-  const [, setEmOverTimecopy] = useClipboard(OverTimevalue, { successDuration: 3000 })
-  const [, setEmMonthlyActivecopy] = useClipboard(MonthlyActivevalue, { successDuration: 3000 })
-  const [, setMonthlyActiveCopied] = useClipboard(`https://git-contributor.com/${MonthlyActivegetShareParams()}`, { successDuration: 3000 });
-  const [, setOverTimeCopied] = useClipboard(`https://git-contributor.com/${OverTimegetShareParams()}`, { successDuration: 3000 });
+  const overTimegetShareParams = () => `?chart=contributorOverTime&repo=${repoList.join(",")}${Tail}`
+  const monthlyActivegetShareParams = () => `?chart=contributorMonthlyActivity&repo=${repoList.join(",")}${Tail}`;
+  const overTimevalue = `<iframe style={{ width: "100%", height: "auto" , minWidth: "600px", minHeight: "1000px" }} src="https://git-contributor.com/${overTimegetShareParams()}" frameBorder="0"></iframe>`
+  const monthlyActivevalue = `<iframe style={{ width: "100%", height: "auto" , minWidth: "600px", minHeight: "1000px" }} src="https://git-contributor.com/${monthlyActivegetShareParams()}" frameBorder="0"></iframe>`
+  const [, setEmOverTimecopy] = useClipboard(overTimevalue, { successDuration: 3000 })
+  const [, setEmMonthlyActivecopy] = useClipboard(monthlyActivevalue, { successDuration: 3000 })
+  const [, setMonthlyActiveCopied] = useClipboard(`https://git-contributor.com/${monthlyActivegetShareParams()}`, { successDuration: 3000 });
+  const [, setOverTimeCopied] = useClipboard(`https://git-contributor.com/${overTimegetShareParams()}`, { successDuration: 3000 });
   const [openAlert, setOpenAlert] = React.useState(false);
   const [open, setOpen] = React.useState(false);
-  const [fullWidth, ] = React.useState(true);
-  const [maxWidth, ] = React.useState('sm');
+  const [fullWidth,] = React.useState(true);
 
   const SearchButton = () => (
-
     <Button
       color="secondary"
       variant="contained"
       value="Copy"
-      style={{ padding: '5px 20px', textTransform: 'none', position: 'absolute', bottom: '10px', right: '20px',backgroundColor:' #E53E3E'}}
+      style={{ padding: '5px 20px', textTransform: 'none', position: 'absolute', bottom: '10px', right: '20px', backgroundColor: ' #E53E3E' }}
       onClick={handleiframeiframe}
     >
       Copy
@@ -49,68 +46,41 @@ export const DialogBox = ({ repoList = ["apache/apisix"],}) => {
   );
   const handleShareClick = () => {
     if (title === "contributor over time") {
-      const params = OverTimegetShareParams();
+      const params = overTimegetShareParams();
       handleShareToTwitterClick(params, repoList);
     } else {
-      const params = MonthlyActivegetShareParams();
+      const params = monthlyActivegetShareParams();
       handleShareToTwitterClick(params, repoList);
     }
   }
 
-   const  handleCopyClick = () => {
-     if(title === "contributor over time"){
+  const handleCopyClick = () => {
+    if (title === "contributor over time") {
       setOverTimeCopied()
       setOpenAlert(true);
-     }else{
+    } else {
       setMonthlyActiveCopied();
       setOpenAlert(true);
-     }
     }
+  }
   const handleDownloadClick = () => {
     if (title === "contributor over time") {
-      const params = OverTimegetShareParams();
+      const params = overTimegetShareParams();
       saveAs(`https://contributor-overtime-api.apiseven.com/contributors-svg${params}`, 'text.svg');
     } else {
-      const params = MonthlyActivegetShareParams();
+      const params = monthlyActivegetShareParams();
       saveAs(`https://contributor-overtime-api.apiseven.com/contributors-svg${params}`, 'text.svg');
     }
   }
   const handleiframeiframe = () => {
-    if (title === "contributor over time"){
+    if (title === "contributor over time") {
       setEmOverTimecopy();
       setOpenAlert(true);
-    }else{
+    } else {
       setEmMonthlyActivecopy();
       setOpenAlert(true);
     }
   }
-  
-  // const datasetWithFilters = [
-  //   ["ContributorNum", "Repo", "Date", "DateValue"],
-  // ];
-  // const legend = [];
-  // const limitDate = new Date(passXAxis[0]).getTime();
-  // console.log('limitDate:',limitDate)
-
-  // Object.entries(dataSource).forEach(([key, value]) => {
-  //   legend.push(key);
-  //   value.forEach((item) => {
-  //     datasetWithFilters.push([
-  //       item.contributorNum,
-  //       item.repo,
-  //       item.date,
-  //       new Date(item.date).getTime(),
-  //     ]);
-  //   });
-  // });
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
 
   return (
     <div>
@@ -138,7 +108,7 @@ export const DialogBox = ({ repoList = ["apache/apisix"],}) => {
           size="small"
           value="image"
           startIcon={<GetAppIcon />}
-          style={{ marginRight: '10px', textTransform: 'none',}}
+          style={{ marginRight: '10px', textTransform: 'none', }}
           onClick={handleDownloadClick}
         >
           Image
@@ -149,8 +119,8 @@ export const DialogBox = ({ repoList = ["apache/apisix"],}) => {
           size="small"
           value="Embed"
           startIcon={<CodeIcon />}
-          style={{ textTransform: 'none',marginRight: '10px'}}
-          onClick={handleClickOpen}
+          style={{ textTransform: 'none', marginRight: '10px' }}
+          onClick={() => setOpen(true)}
         >
           Embed
         </Button>
@@ -160,7 +130,7 @@ export const DialogBox = ({ repoList = ["apache/apisix"],}) => {
           size="small"
           value="Link"
           startIcon={<FilterNoneOutlinedIcon />}
-          style={{ marginRight: '10px ', textTransform: 'none'}}
+          style={{ marginRight: '10px ', textTransform: 'none' }}
           onClick={handleCopyClick}
         >
           Link
@@ -171,7 +141,7 @@ export const DialogBox = ({ repoList = ["apache/apisix"],}) => {
           size="small"
           value="Share on twtter"
           startIcon={<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 512 512" height="0.9em" width="0.9em" xmlns="http://www.w3.org/2000/svg"><path width='1.8em' height='1.8em' d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"></path></svg>}
-          style={{ textTransform: 'none', fontSize: '9px',backgroundColor:'#E53E3E'}}
+          style={{ textTransform: 'none', fontSize: '9px', backgroundColor: '#E53E3E' }}
           onClick={handleShareClick}
         >
           Share on twtter
@@ -179,23 +149,22 @@ export const DialogBox = ({ repoList = ["apache/apisix"],}) => {
       </div>
       <Dialog
         fullWidth={fullWidth}
-        maxWidth={maxWidth}
         open={open}
-        onClose={handleClose}
+        onClose={() => setOpen(false)}
         aria-labelledby="responsive-dialog-title"
       >
         <DialogActions style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #c4c4c4' }}>
-          <DialogTitle size="small" style={{ padding: '10px' }}>Emeb Chart</DialogTitle>
-          <Button onClick={handleClose} color="warning" size="small" startIcon={<CloseIcon />} autoFocus>
+          <DialogTitle size="small" style={{ padding: '5px' }}>Emeb Chart</DialogTitle>
+          <Button onClick={() => setOpen(false)} color="warning" size="small" startIcon={<CloseIcon />} autoFocus>
           </Button>
         </DialogActions>
-        <DialogContentText style={{ fontSize: '15px',margin:'15px 15px ' }}>Copy and paste the below codes into your blog or website</DialogContentText>
+        <DialogContentText style={{ fontSize: '15px', margin: '10px 15px 15px ' }}>Copy and paste the below codes into your blog or website</DialogContentText>
         <TextField
           multiline
           rows={6}
-          value={title ==="contributorOverTime" ?OverTimevalue :MonthlyActivevalue }
+          value={title === "contributorOverTime" ? overTimevalue : monthlyActivevalue}
           variant="outlined"
-          style={{ width: '95%', margin: '0 auto 10px',padding:'0',fontSize:'10px' }}
+          style={{ width: '95%', margin: '0 auto 10px', padding: '0', fontSize: '10px', wordBreak: 'break-all' }}
           InputProps={{ endAdornment: <SearchButton /> }}
         />
       </Dialog>

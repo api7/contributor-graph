@@ -2,7 +2,7 @@ import React from "react";
 import cloneDeep from "lodash.clonedeep";
 import ReactECharts from "echarts-for-react";
 import MuiAlert from "@material-ui/lab/Alert";
-import { Snackbar } from "@material-ui/core";
+import { Snackbar, makeStyles } from "@material-ui/core";
 import * as echarts from "echarts";
 import omit from "lodash.omit";
 import { Button, ButtonGroup } from "@material-ui/core";
@@ -11,7 +11,7 @@ import FilterNoneOutlinedIcon from '@material-ui/icons/FilterNoneOutlined';
 import useClipboard from "react-use-clipboard";
 import { saveAs } from 'file-saver';
 
-import {DialogBox} from '../dialogBox'
+import { DialogBox } from '../dialogBox'
 import { getMonths, getParameterByName, handleShareToTwitterClick } from "../../utils";
 import { generateDefaultOption } from "../../constants";
 import { fetchData, fetchMergeContributor } from "./service";
@@ -32,7 +32,20 @@ const ContributorLineChart = ({
     "apache/dubbo",
     "apache/pulsar",
   ];
+  const useStyles = makeStyles(() => ({
+    root: {
+      backgroundColor: '#e53e3e',
+      color: '#fff',
+      '&:hover': {
+        backgroundColor: '#c53030'
+      }
+    },
+    autocomplete: {
+      backgroundColor: 'none'
+    },
 
+  }));
+  const classes = useStyles();
   const [loading, setLoading] = React.useState(false);
   const [dataSource, setDataSource] = React.useState({});
   const [activeDate, setActiveDate] = React.useState("max");
@@ -309,7 +322,7 @@ const ContributorLineChart = ({
       setViewMerge(true);
     }
   }, []);
-  
+
 
   return (
     <>
@@ -354,52 +367,50 @@ const ContributorLineChart = ({
                 }}
               >
                 <Button
-                  variant={activeDate === "1month" ? "contained" : "outlined"}
+                  className={activeDate === "1month" ? classes.root : classes.autocomplete}
                   value="1month"
                   onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
-                  style={{border:'1px solid #E53E3E'}}
+                  style={{ border: '1px solid #E53E3E' }}
                 >
                   1 Month
                 </Button>
                 <Button
-                  variant={activeDate === "3months" ? "contained" : "outlined"}
+                  className={activeDate === "3months" ? classes.root : classes.autocomplete}
                   value="3months"
                   onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
-                  style={{border:'1px solid #E53E3E'}}
+                  style={{ border: '1px solid #E53E3E' }}
                 >
                   3 Months
                 </Button>
                 <Button
-                  variant={activeDate === "6months" ? "contained" : "outlined"}
+                  className={activeDate === "6months" ? classes.root : classes.autocomplete}
                   value="6months"
                   onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
-                  style={{border:'1px solid #E53E3E'}}
                 >
                   6 Months
                 </Button>
                 <Button
-                  variant={activeDate === "1year" ? "contained" : "outlined"}
+                  className={activeDate === "1year" ? classes.root : classes.autocomplete}
+                  disableElevation={true}
                   value="1year"
                   onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
-                  style={{border:'1px solid #E53E3E'}}
                 >
                   1 Year
                 </Button>
                 <Button
-                  variant="contained" 
+                  className={activeDate === "max" ? classes.root : classes.autocomplete}
                   value="max"
                   onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
-                  style={{backgroundColor:'#E53E3E'}}
                 >
                   Max
                 </Button>
@@ -417,8 +428,8 @@ const ContributorLineChart = ({
                     width: document.body.clientWidth < 670 ? "100%" : "unset",
                     marginTop:
                       document.body.clientWidth < 670 ? "2px" : "unset",
-                      border:'1px solid #E53E3E',
-                      color:' #E53E3E' 
+                    border: '1px solid #E53E3E',
+                    color: ' #E53E3E'
                   }}
                 >
                   {!viewMerge
@@ -440,9 +451,7 @@ const ContributorLineChart = ({
               showLoading={loading}
               notMerge
             />
-            
-              <DialogBox  />
-              
+            <DialogBox />
             <MarkdownLink
               params={getShareParams()}
               type="contributorOverTime"

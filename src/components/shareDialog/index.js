@@ -218,28 +218,28 @@ export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
 
   return (
     <div>
-      <p style={{textAlign:'center'}}>
+      <p style={{ textAlign: 'center', fontSize: '18px' }}>
         You can include the chart on your repository's README.md as follows:
       </p>
-      <div style={{position:'relative', backgroundColor:'#F3F4F5',marginBottom:'30px',borderRadius:'5px'}}>
-        <div style={{padding:'10px',overflow:' scroll',}}>
-          <div ><span>### {title}</span></div>
-          <div style={{margin:'10px',overflowY:'scroll'}}><span>[![{title}]({IMG_BASE_URL + params})]({SHARE_BASE_URL + params})`</span></div>
+      <div style={{ position: 'relative', backgroundColor: '#F3F4F5', marginBottom: '30px', borderRadius: '5px' }}>
+        <div style={{ padding: '10px', overflow: ' scroll', }}>
+          <div style={{ margin: '10px' }}><span style={{ clolor: '#363636', fontWeight: '600', fontSize: '15px' }}>### {title}</span></div>
+          <div style={{ margin: '10px' }}><span style={{ width: '100%', fontSize: '14px', fontWeight: '300', wordBreak: 'break-all' }}>[![{title}]({IMG_BASE_URL + params})]({SHARE_BASE_URL + params})</span></div>
         </div>
         <div
           style={{
             cursor: "pointer",
-            position:'absolute',
-            right:'5px',
-            top:'5px' 
+            position: 'absolute',
+            right: '5px',
+            top: '5px'
           }}
           onClick={setCopied}
         >
           {
-            isCopied 
-            ? 
+            isCopied
+              ?
               <DoneAllIcon />
-            :
+              :
               <FilterNoneOutlinedIcon />
           }
         </div>
