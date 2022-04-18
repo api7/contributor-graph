@@ -155,14 +155,15 @@ export const DialogBox = ({ repoList = ["apache/apisix"], }) => {
       >
         <DialogActions style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #c4c4c4' }}>
           <DialogTitle size="small" style={{ padding: '5px' }}>Emeb Chart</DialogTitle>
-          <Button onClick={() => setOpen(false)} color="warning" size="small" startIcon={<CloseIcon />} autoFocus>
+          <Button onClick={() => setOpen(false)} color="warning" size="large">
+            <CloseIcon />
           </Button>
         </DialogActions>
         <DialogContentText style={{ fontSize: '15px', margin: '10px 15px 15px ' }}>Copy and paste the below codes into your blog or website</DialogContentText>
         <TextField
           multiline
           rows={6}
-          value={title === "contributorOverTime" ? overTimevalue : monthlyActivevalue}
+          value={title === "contributor over time" ? overTimevalue : monthlyActivevalue}
           variant="outlined"
           style={{ width: '95%', margin: '0 auto 10px', padding: '0', fontSize: '10px', wordBreak: 'break-all' }}
           InputProps={{ endAdornment: <SearchButton /> }}

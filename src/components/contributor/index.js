@@ -41,6 +41,8 @@ const ContributorLineChart = ({
       }
     },
     autocomplete: {
+      border:'1px solid #E53E3E' ,
+      color: ' #E53E3E',
       backgroundColor: 'none'
     },
 

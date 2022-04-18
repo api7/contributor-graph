@@ -46,6 +46,7 @@ export const generateDefaultOption = ({ handleShareClick = () => {}, handleCopyC
     },
     dataset: [],
     title: {
+      left:'center',
       text: "Contributor Over Time",
     },
     tooltip: {
@@ -147,6 +148,7 @@ export const generateMonthlyActivityOption = ({
     dataset: [],
     title: {
       text: "Monthly Active Contributors",
+      left:'center',
       subtext:
         "The number of contributors who committed to main branch in each month",
       itemGap: 16,
