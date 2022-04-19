@@ -14,8 +14,6 @@ import { Snackbar, makeStyles } from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import DialogContentText from '@material-ui/core/DialogContentText';
 
-import './index.css'
-
 export const DialogBox = ({ repoList = ["apache/apisix"], }) => {
 
   const useStyles = makeStyles(() => ({
@@ -119,9 +117,9 @@ export const DialogBox = ({ repoList = ["apache/apisix"], }) => {
         </Alert>
       </Snackbar>
       <div
-        className="fourbutton"
         style={{
           display: 'flex',
+          flexWrap: 'wrap',
           justifyContent: 'flex-end',
           margin: '20px 0 40px 0',
         }}

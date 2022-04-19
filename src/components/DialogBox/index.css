@@ -1,7 +1,0 @@
-@media only screen and (max-width:600px) {
-  .fourbutton{
-    display: flex;
-    flex-wrap: wrap
-  }
-  
-}
