@@ -17,6 +17,7 @@ import { generateDefaultOption } from "../../constants";
 import { fetchData, fetchMergeContributor } from "./service";
 import CustomizedDialogs, { MarkdownLink } from "../shareDialog";
 import { DEFAULT_COLOR } from "../../constants";
+import { Opacity } from "@material-ui/icons";
 
 
 const ContributorLineChart = ({
@@ -41,11 +42,17 @@ const ContributorLineChart = ({
       }
     },
     autocomplete: {
-      border:'1px solid #E53E3E' ,
+      border: '1px solid #E53E3E',
       color: ' #E53E3E',
       backgroundColor: 'none'
     },
-
+    right: {
+      border: '1px solid #E53E3E',
+      color: ' #E53E3E',
+      '&:hover': {
+        backgroundColor: 'rgba(245, 0, 87, 0.04)',
+      }
+    }
   }));
   const classes = useStyles();
   const [loading, setLoading] = React.useState(false);
@@ -420,8 +427,7 @@ const ContributorLineChart = ({
 
               {showMergeButton && (
                 <Button
-                  color="primary"
-                  variant="outlined"
+                  className={classes.right}
                   size="small"
                   onClick={() => {
                     setViewMerge((viewMerge) => !viewMerge);
@@ -430,8 +436,6 @@ const ContributorLineChart = ({
                     width: document.body.clientWidth < 670 ? "100%" : "unset",
                     marginTop:
                       document.body.clientWidth < 670 ? "2px" : "unset",
-                    border: '1px solid #E53E3E',
-                    color: ' #E53E3E'
                   }}
                 >
                   {!viewMerge
