@@ -1,9 +1,4 @@
 .shareInput .MuiOutlinedInput-root {
   border-radius: 0px;
 }
-@media only screen and (max-width:600px) {
-  .footertext{
-    width:100%;
-    height: auto
-  }  
-}
+

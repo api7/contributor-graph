@@ -11,7 +11,7 @@ import FilterNoneOutlinedIcon from '@material-ui/icons/FilterNoneOutlined';
 import useClipboard from "react-use-clipboard";
 import { saveAs } from 'file-saver';
 
-import { DialogBox } from '../dialogBox'
+import { DialogBox } from '../DialogBox/dialogBox'
 import { getMonths, getParameterByName, handleShareToTwitterClick } from "../../utils";
 import { generateDefaultOption } from "../../constants";
 import { fetchData, fetchMergeContributor } from "./service";
@@ -381,7 +381,6 @@ const ContributorLineChart = ({
                   onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
-                  style={{ border: '1px solid #E53E3E' }}
                 >
                   1 Month
                 </Button>
@@ -391,7 +390,6 @@ const ContributorLineChart = ({
                   onClick={(e) => {
                     setActiveDate(e.currentTarget.value);
                   }}
-                  style={{ border: '1px solid #E53E3E' }}
                 >
                   3 Months
                 </Button>
@@ -453,7 +451,7 @@ const ContributorLineChart = ({
                   window.echartInstance = echartInstance;
                 }
               }}
-              style={{ height: 550, marginTop: "20px" }}
+              style={{ width: '94%', height: 550, margin: "20px auto 0" }}
               showLoading={loading}
               notMerge
             />
