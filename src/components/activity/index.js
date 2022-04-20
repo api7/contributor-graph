@@ -12,7 +12,7 @@ import { saveAs } from 'file-saver';
 import CustomizedDialogs, { MarkdownLink } from "../shareDialog";
 import { DEFAULT_COLOR, generateMonthlyActivityOption } from "../../constants";
 import { handleShareToTwitterClick } from "../../utils";
-import { DialogBox } from '../DialogBox/dialogBox'
+import { DialogBox } from '../DialogBox/DialogBox'
 
 const ActivityChart = ({
   repoList = ["apache/apisix"],
