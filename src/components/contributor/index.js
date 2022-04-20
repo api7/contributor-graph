@@ -11,7 +11,7 @@ import FilterNoneOutlinedIcon from '@material-ui/icons/FilterNoneOutlined';
 import useClipboard from "react-use-clipboard";
 import { saveAs } from 'file-saver';
 
-import { DialogBox } from '../DialogBox/DialogBox'
+import { DialogBox } from '../DialogBox'
 import { getMonths, getParameterByName, handleShareToTwitterClick } from "../../utils";
 import { generateDefaultOption } from "../../constants";
 import { fetchData, fetchMergeContributor } from "./service";
