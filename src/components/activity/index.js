@@ -294,7 +294,9 @@ const ActivityChart = ({
                         showLoading={loading}
                         notMerge
                       />
-                      <DialogBox />
+                      <DialogBox
+                        params={getShareParams()}
+                      />
                       <MarkdownLink
                         params={getShareParams()}
                         type="contributorMonthlyActivity"
