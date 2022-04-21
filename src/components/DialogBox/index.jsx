@@ -15,6 +15,9 @@ import Alert from "@material-ui/lab/Alert";
 import DialogContentText from '@material-ui/core/DialogContentText';
 
 export const DialogBox = ({ params = "" }) => {
+  const [showNotice, setShowNotice] = React.useState(false);
+  const [showEmbedModal, setShowEmbedModal] = React.useState(false);
+  const [activeDate, setActiveDate] = React.useState("Link");
   const useStyles = makeStyles(() => ({
     root: {
       backgroundColor: '#e53e3e',
@@ -37,9 +40,6 @@ export const DialogBox = ({ params = "" }) => {
     }
   }));
   const classes = useStyles();
-  const [showNotice, setShowNotice] = React.useState(false);
-  const [showEmbedModal, setShowEmbedModal] = React.useState(false);
-  const [activeDate, setActiveDate] = React.useState("Link");
   const SHARE_BASE_URL = "https://git-contributor.com/";
   const [, setCopy] = useClipboard(`${SHARE_BASE_URL}${params}`, { successDuration: 3000 });
   const embedCode = `<iframe style={{ width: "100%", height: "auto" , minWidth: "600px", minHeight: "1000px" }} src="${SHARE_BASE_URL}${params}" frameBorder="0"></iframe>`
