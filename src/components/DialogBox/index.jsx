@@ -34,7 +34,7 @@ export const DialogBox = ({ params = "" }) => {
       border: '1px solid #E0E0E0',
       textTransform: 'none',
       margin: '0 0 10px 10px'
-    }
+    },
   }));
   const classes = useStyles();
   const [showNotice, setShowNotice] = React.useState(false);
@@ -49,7 +49,7 @@ export const DialogBox = ({ params = "" }) => {
     <Button
       className={classes.root}
       value="embedCodeCopy"
-      style={{ padding: '2px 20px', textTransform: 'none', position: 'absolute', bottom: '0px', right: '10px', }}
+      style={{position: 'absolute',bottom: '0',right: '10px',lineHeight: '2.5rem',borderRadius: '0.375rem',fontSize:'15px',padding: '0 16px'}}
       onClick={(e) => {
         setEmbedcopy();
         setShowNotice(true);
