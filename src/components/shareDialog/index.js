@@ -17,7 +17,6 @@ import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/default-highlig
 import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import useClipboard from "react-use-clipboard";
 
-
 import { inIframe } from "../../utils";
 import "./index.css";
 
