@@ -15,7 +15,6 @@ import Alert from "@material-ui/lab/Alert";
 import DialogContentText from '@material-ui/core/DialogContentText';
 
 export const DialogBox = ({ params = "" }) => {
-
   const useStyles = makeStyles(() => ({
     root: {
       backgroundColor: '#e53e3e',
@@ -38,19 +37,19 @@ export const DialogBox = ({ params = "" }) => {
     }
   }));
   const classes = useStyles();
-  const SHARE_BASE_URL = "https://git-contributor.com/";
-  const value = `<iframe style={{ width: "100%", height: "auto" , minWidth: "600px", minHeight: "1000px" }} src="${SHARE_BASE_URL}${params}" frameBorder="0"></iframe>`
-  const [, setEmbedcopy] = useClipboard(value, { successDuration: 3000 })
-  const [, setMCopied] = useClipboard(`${SHARE_BASE_URL}${params}`, { successDuration: 3000 });
   const [showNotice, setShowNotice] = React.useState(false);
   const [showEmbedModal, setShowEmbedModal] = React.useState(false);
   const [activeDate, setActiveDate] = React.useState("Link");
+  const SHARE_BASE_URL = "https://git-contributor.com/";
+  const [, setCopy] = useClipboard(`${SHARE_BASE_URL}${params}`, { successDuration: 3000 });
+  const embedCode = `<iframe style={{ width: "100%", height: "auto" , minWidth: "600px", minHeight: "1000px" }} src="${SHARE_BASE_URL}${params}" frameBorder="0"></iframe>`
+  const [, setEmbedcopy] = useClipboard(embedCode, { successDuration: 3000 })
 
   const SearchButton = () => (
     <Button
       className={classes.root}
-      value="Copy"
-      style={{ padding: '5px 20px', textTransform: 'none', position: 'absolute', bottom: '10px', right: '20px', }}
+      value="embedCodeCopy"
+      style={{ padding: '2px 20px', textTransform: 'none', position: 'absolute', bottom: '0px', right: '10px', }}
       onClick={(e) => {
         setEmbedcopy();
         setShowNotice(true);
@@ -70,7 +69,7 @@ export const DialogBox = ({ params = "" }) => {
         key={"topcenter"}
       >
         <Alert severity='success' onClose={() => setShowNotice(false)}>
-          Copy {activeDate === 'Copy' ? 'Embed' : 'Link'} successfully
+          Copy {activeDate === 'embedCodeCopy' ? 'Embed' : 'Link'} successfully
         </Alert>
       </Snackbar>
       <div
@@ -109,7 +108,7 @@ export const DialogBox = ({ params = "" }) => {
           value="Link"
           startIcon={<FilterNoneOutlinedIcon />}
           onClick={(e) => {
-            setMCopied();
+            setCopy();
             setShowNotice(true);
             setActiveDate(e.currentTarget.value)
           }}
@@ -135,7 +134,7 @@ export const DialogBox = ({ params = "" }) => {
         aria-labelledby="responsive-dialog-title"
       >
         <DialogActions style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #c4c4c4' }}>
-          <DialogTitle size="small" style={{ padding: '5px' }}>Emeb Chart</DialogTitle>
+          <DialogTitle size="small" style={{ padding: '5px' }}>Embeb Chart</DialogTitle>
           <Button onClick={() => setShowEmbedModal(false)} color="warning" size="large">
             <CloseIcon />
           </Button>
@@ -144,7 +143,7 @@ export const DialogBox = ({ params = "" }) => {
         <TextField
           multiline
           rows={6}
-          value={value}
+          value={embedCode}
           variant="outlined"
           style={{ width: '95%', margin: '0 auto 10px', padding: '0', fontSize: '10px', wordBreak: 'break-all' }}
           InputProps={{ endAdornment: <SearchButton /> }}

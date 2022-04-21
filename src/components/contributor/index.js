@@ -19,7 +19,6 @@ import CustomizedDialogs, { MarkdownLink } from "../shareDialog";
 import { DEFAULT_COLOR } from "../../constants";
 import { Opacity } from "@material-ui/icons";
 
-
 const ContributorLineChart = ({
   repoList = [],
   showAlert,
