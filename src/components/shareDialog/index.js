@@ -221,7 +221,7 @@ export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
       </p>
       <div style={{ position: 'relative', backgroundColor: '#F3F4F5', marginBottom: '30px', borderRadius: '5px' }}>
         <div style={{ padding: '10px', overflow: ' scroll', }}>
-          <div style={{ margin: '10px' }}><h1 style={{ clolor: '#363636', fontWeight: '500', fontSize: '14px' }}>### {title}</h1></div>
+          <div style={{ margin: '9px' }}><h1 style={{ clolor: '#363636', fontWeight: '500', fontSize: '14px' }}>### {title}</h1></div>
           <div style={{ margin: '10px' }}><span style={{ width: '100%', fontSize: '14px', fontWeight: '300', color: '#363636', wordBreak: 'break-all' }}>[![{title}]({IMG_BASE_URL + params})]({SHARE_BASE_URL + params})</span></div>
         </div>
         <div

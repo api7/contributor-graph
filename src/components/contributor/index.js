@@ -37,13 +37,17 @@ const ContributorLineChart = ({
       backgroundColor: '#e53e3e',
       color: '#fff',
       '&:hover': {
-        backgroundColor: '#c53030'
+        backgroundColor: '#c53030',
+        border:'1px solid #E53E3E'
       }
     },
     autocomplete: {
       border: '1px solid #E53E3E',
       color: ' #E53E3E',
-      backgroundColor: 'none'
+      backgroundColor: 'none',
+      '&:hover':{
+        border:'1px solid #E53E3E'
+      }
     },
     right: {
       border: '1px solid #E53E3E',
