@@ -132,7 +132,7 @@ const App = () => {
                 color: '#4b5563',
               }}
             >
-              Follow us on
+              Contact us on
             </span>
             {
               footerLinks.map((item) => {

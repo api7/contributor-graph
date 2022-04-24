@@ -12,7 +12,7 @@ export const generateDefaultOption = ({ handleShareClick = () => {}, handleCopyC
       itemSize: 20,
       feature: {
         myShare: {
-          show: true,
+          show: false,
           title: "Share",
           icon: "image://https://static.apiseven.com/202108/1649674034262-bd663d25-bd90-43ab-8156-60035aaaa83e.png",
           onclick: function () {
@@ -20,7 +20,7 @@ export const generateDefaultOption = ({ handleShareClick = () => {}, handleCopyC
           },
         },
         myCopyLink: {
-          show: true,
+          show: false,
           title: "Copy Link",
           icon: "image://https://static.apiseven.com/202108/1649675145286-bf75cd63-519a-442e-9928-ac51534dfd97.png",
           onclick: function () {
@@ -28,7 +28,7 @@ export const generateDefaultOption = ({ handleShareClick = () => {}, handleCopyC
           },
         },
         mySaveAsImage: {
-          show: true,
+          show: false,
           title: "Save Image",
           icon: "image://https://static.apiseven.com/202108/1649673632197-35d7c888-1fd6-463c-ac38-2c7179a4a168.png",
           type: "jpg",
@@ -46,6 +46,7 @@ export const generateDefaultOption = ({ handleShareClick = () => {}, handleCopyC
     },
     dataset: [],
     title: {
+      left:'center',
       text: "Contributor Over Time",
     },
     tooltip: {
@@ -92,7 +93,7 @@ export const generateMonthlyActivityOption = ({
       itemSize: 20,
       feature: {
         myShare: {
-          show: true,
+          show: false,
           title: "Share",
           icon: "image://https://static.apiseven.com/202108/1649674034262-bd663d25-bd90-43ab-8156-60035aaaa83e.png",
           onclick: function () {
@@ -100,7 +101,7 @@ export const generateMonthlyActivityOption = ({
           },
         },
         myCopyLink: {
-          show: true,
+          show: false,
           title: "Copy Link",
           icon: "image://https://static.apiseven.com/202108/1649675145286-bf75cd63-519a-442e-9928-ac51534dfd97.png",
           onclick: function () {
@@ -108,7 +109,7 @@ export const generateMonthlyActivityOption = ({
           },
         },
         mySaveAsImage: {
-          show: true,
+          show: false,
           title: "Save Image",
           icon: "image://https://static.apiseven.com/202108/1649673632197-35d7c888-1fd6-463c-ac38-2c7179a4a168.png",
           type: "jpg",
@@ -147,6 +148,7 @@ export const generateMonthlyActivityOption = ({
     dataset: [],
     title: {
       text: "Monthly Active Contributors",
+      left:'center',
       subtext:
         "The number of contributors who committed to main branch in each month",
       itemGap: 16,

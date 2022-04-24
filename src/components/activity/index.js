@@ -12,6 +12,7 @@ import { saveAs } from 'file-saver';
 import CustomizedDialogs, { MarkdownLink } from "../shareDialog";
 import { DEFAULT_COLOR, generateMonthlyActivityOption } from "../../constants";
 import { handleShareToTwitterClick } from "../../utils";
+import { DialogBox } from '../DialogBox'
 
 const ActivityChart = ({
   repoList = ["apache/apisix"],
@@ -252,7 +253,6 @@ const ActivityChart = ({
         setLoading(false);
       });
   }, [repoList]);
-
   return (
     <>
       <div
@@ -293,6 +293,9 @@ const ActivityChart = ({
                         style={{ height: 550 }}
                         showLoading={loading}
                         notMerge
+                      />
+                      <DialogBox
+                        params={getShareParams()}
                       />
                       <MarkdownLink
                         params={getShareParams()}
