@@ -14,6 +14,7 @@ import (
 	"github.com/api7/contributor-graph/api/internal/gcpdb"
 	"github.com/api7/contributor-graph/api/internal/graph"
 	"github.com/api7/contributor-graph/api/internal/utils"
+	"github.com/rs/cors"
 )
 
 // TODO
@@ -38,21 +39,26 @@ type returnMonthlyConObj struct {
 }
 
 func main() {
-	http.HandleFunc("/contributors", getContributor)
-	http.HandleFunc("/contributors-svg", getContributorSVG)
-	http.HandleFunc("/contributors-multi", getMultiContributor)
-	http.HandleFunc("/refreshAll", refreshAll)
-	http.HandleFunc("/refreshMonthly", refreshMonthly)
-	http.HandleFunc("/refreshMultiRepo", refreshMultiRepo)
-	http.HandleFunc("/repos", getRepos)
-	http.HandleFunc("/activities", getActivities)
-	http.HandleFunc("/monthly-contributor", getMonthlyContributor)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/contributors", getContributor)
+	mux.HandleFunc("/contributors-svg", getContributorSVG)
+	mux.HandleFunc("/contributors-multi", getMultiContributor)
+	mux.HandleFunc("/refreshAll", refreshAll)
+	mux.HandleFunc("/refreshMonthly", refreshMonthly)
+	mux.HandleFunc("/refreshMultiRepo", refreshMultiRepo)
+	mux.HandleFunc("/repos", getRepos)
+	mux.HandleFunc("/activities", getActivities)
+	mux.HandleFunc("/monthly-contributor", getMonthlyContributor)
 
 	//port := os.Getenv("PORT")
 	port := "8080"
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"https://git-contributor.com"},
+		AllowCredentials: true,
+	})
 
 	log.Printf("Listening on port %s", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	if err := http.ListenAndServe(":"+port, c.Handler(mux)); err != nil {
 		log.Fatal(err)
 	}
 }
