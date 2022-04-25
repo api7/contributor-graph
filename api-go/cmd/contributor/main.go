@@ -14,6 +14,7 @@ import (
 	"github.com/api7/contributor-graph/api/internal/gcpdb"
 	"github.com/api7/contributor-graph/api/internal/graph"
 	"github.com/api7/contributor-graph/api/internal/utils"
+	"github.com/rs/cors"
 )
 
 // TODO
@@ -52,7 +53,11 @@ func main() {
 	port := "8080"
 
 	log.Printf("Listening on port %s", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"https://git-contributor.com"},
+		AllowCredentials: true,
+	})
+	if err := http.ListenAndServe(":"+port, c.Handler(nil)); err != nil {
 		log.Fatal(err)
 	}
 }
