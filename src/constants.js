@@ -47,7 +47,7 @@ export const generateDefaultOption = ({ handleShareClick = () => {}, handleCopyC
     dataset: [],
     title: {
       left:'center',
-      text: "Contributor Over Time",
+      text: "GitHub Contributor Over Time",
     },
     tooltip: {
       trigger: "axis",

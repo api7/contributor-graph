@@ -102,7 +102,7 @@ function ShareModal({ params = "" }) {
   const shareUrl = SHARE_BASE_URL + params;
   const shareText = params.includes("contributorMonthlyActivity")
     ? "monthly active contributor"
-    : "contributor over time";
+    : "GitHub contributor over time";
 
   return (
     <div className={classes.root}>
@@ -204,7 +204,7 @@ const DialogContent = withStyles((theme) => ({
 export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
   const title =
     type === "contributorOverTime"
-      ? "Contributor Over Time"
+      ? "GitHub Contributor Over Time"
       : "Monthly Active Contributors";
 
   const value = `

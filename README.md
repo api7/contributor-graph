@@ -4,11 +4,11 @@ This tool is used to generate contributor graphs across repositories. We use Git
 
 ## Demo
 
-### Contributor Over Time for single repo
+### GitHub Contributor Over Time for single repo
 
 [![Contributor over time](https://contributor-overtime-api.git-contributor.com/contributors-svg?chart=contributorOverTime&repo=apache/apisix)](https://git-contributor.com?chart=contributorOverTime&repo=apache/apisix)
 
-### Contributor Over Time across related repo
+### GitHub Contributor Over Time across related repo
 
 We maintain a [list](api-go/config/multi-repo.yaml) which you could directly add your repo list and commit a PR if needed.
 
