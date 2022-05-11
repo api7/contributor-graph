@@ -38,16 +38,15 @@ export const inIframe = () => {
 
 export const handleShareToTwitterClick = (params) => {
   const shareUrl = `https://git-contributor.com${params}`;
-  console.log(shareUrl);
   const shareText = params.includes("contributorMonthlyActivity")
     ? "monthly active contributor"
     : "contributor over time";
 
   if (!inIframe()) {
     const text = `Amazing tools to view your repo ${shareText}`;
-    const newUrl = encodeURI(shareUrl);
+    const newUrl = encodeURIComponent(`https://twitter.com/intent/tweet?text=${text}&url=${shareUrl}&via=API7ai`);
     console.log(newUrl);
-    window.open(`https://twitter.com/intent/tweet?url=${newUrl}&text=${text}&via=API7ai`, '_blank');
+    window.open(newUrl, '_blank');
   }
   window.parent.postMessage(
     {
