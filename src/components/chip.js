@@ -1,6 +1,7 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import Chip from "@material-ui/core/Chip";
+import Link from "@material-ui/core/Link";
 import GitHubIcon from "@material-ui/icons/GitHub";
 
 const useStyles = makeStyles((theme) => ({
@@ -10,6 +11,9 @@ const useStyles = makeStyles((theme) => ({
     "& > *": {
       margin: theme.spacing(0.5),
     },
+    "& > a": {
+      cursor: "pointer",
+    }
   },
 }));
 
@@ -21,7 +25,9 @@ export default function OutlinedChips({ list = [], onDelete }) {
       {list.map((item) => (
         <Chip
           icon={<GitHubIcon />}
-          label={item}
+          label={
+            <Link href={`https://github.com/${item}`} target="_blank" rel="noreferrer noopener">{item}</Link>
+          }
           key={item}
           size="small"
           onDelete={() => onDelete(item)}
