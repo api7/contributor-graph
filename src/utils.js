@@ -44,9 +44,10 @@ export const handleShareToTwitterClick = (params) => {
 
   if (!inIframe()) {
     const text = `Amazing tools to view your repo ${shareText}`;
-    const newUrl = encodeURIComponent(`https://twitter.com/intent/tweet?text=${text}&url=${shareUrl}&via=API7ai`);
+    const newUrl = encodeURIComponent(shareUrl);
+
     console.log(newUrl);
-    window.open(newUrl, '_blank');
+    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${newUrl}&via=API7ai`, '_blank');
   }
   window.parent.postMessage(
     {
