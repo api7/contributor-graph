@@ -11,6 +11,9 @@ const useStyles = makeStyles((theme) => ({
     "& > *": {
       margin: theme.spacing(0.5),
     },
+    "& > a": {
+      cursor: "pointer",
+    }
   },
 }));
 
