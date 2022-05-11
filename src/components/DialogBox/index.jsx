@@ -137,7 +137,7 @@ export const DialogBox = ({ params = "" }) => {
         aria-labelledby="responsive-dialog-title"
       >
         <DialogActions style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #c4c4c4' }}>
-          <DialogTitle size="small" style={{ padding: '5px' }}>Embeb Chart</DialogTitle>
+          <DialogTitle size="small" style={{ padding: '5px' }}>Embed Chart</DialogTitle>
           <Button onClick={() => setShowEmbedModal(false)} color="warning" size="large">
             <CloseIcon />
           </Button>
