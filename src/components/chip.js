@@ -23,17 +23,17 @@ export default function OutlinedChips({ list = [], onDelete }) {
   return (
     <div className={classes.root}>
       {list.map((item) => (
-        <Link href={`https://github.com/${item}`} target="_blank" rel="noreferrer noopener">
         <Chip
           icon={<GitHubIcon />}
-          label={item}
+          label={
+            <Link href={`https://github.com/${item}`} target="_blank" rel="noreferrer noopener">{item}</Link>
+          }
           key={item}
           size="small"
           onDelete={() => onDelete(item)}
           color="primary"
           variant="outlined"
         />
-        </Link>
       ))}
     </div>
   );
