@@ -132,6 +132,7 @@ func getContributorSVG(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Add("content-type", "image/svg+xml;charset=utf-8")
 	w.Header().Add("cache-control", "public, max-age=86400")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 
 	svg = strings.Replace(svg, "%", "%%", -1)
 	fmt.Fprintf(w, svg)
