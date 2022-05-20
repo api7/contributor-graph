@@ -1,0 +1,137 @@
+name: Auto Preview
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    if: github.event.action != 'closed'
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: Azure/docker-login@v1
+        with:
+          login-server: api7registry.azurecr.io
+          username: ${{ secrets.AZURE_REGISTRY_USERNAME }}
+          password: ${{ secrets.AZURE_REGISTRY_PASSWORD }}
+
+      - id: set-deploy-comment-body
+        name: Set deploy comment body
+        run: |
+          DATE=$(date)
+
+          echo "**The auto preview on your projects!**." >> deploy.txt
+          echo "| Name | Status | Preview | Updated|" >> deploy.txt
+          echo "| :--- | :----- | :------ | :------ |" >> deploy.txt
+          echo "| **contributor-graph** | Deploying | | $DATE |" >> deploy.txt
+
+          BODY=$(cat deploy.txt)
+          BODY="${BODY//'%'/'%25'}"
+          BODY="${BODY//$'\n'/'%0A'}"
+          BODY="${BODY//$'\r'/'%0D'}"
+
+          echo "::set-output name=body::$BODY"
+
+      - name: Find comment
+        uses: peter-evans/find-comment@v2
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: "The auto preview on your projects!"
+
+      - name: Create comment
+        if: steps.fc.outputs.comment-id == ''
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.set-deploy-comment-body.outputs.body }}
+
+      - name: Update comment
+        if: steps.fc.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          edit-mode: replace
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          body: ${{ steps.set-deploy-comment-body.outputs.body }}
+
+      - name: Build Contributor Graph Images
+        run: |
+          docker build -t api7/contributor-graph:dev .
+
+      - name: Push to Azure Registry
+        run: |
+          docker tag api7/contributor-graph:dev api7registry.azurecr.io/contributor-graph:${{ github.event.pull_request.number }}
+          docker push api7registry.azurecr.io/contributor-graph:${{ github.event.pull_request.number }}
+
+      - uses: azure/login@v1
+        with:
+          environment: AzureCloud
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Install Contributor Graph
+        run: |
+          az account set --subscription ffb9d49d-93e7-4f61-bf47-1e9b5f9e4cc0
+          az aks get-credentials --resource-group API7-Web-Preview_group --name API7-Web-Preview
+
+          export ID=${{ github.event.pull_request.number }}
+          sh ./preview/install.sh
+          kubectl rollout restart deployment/contributor-graph-${{ github.event.pull_request.number }} -n contributor-graph
+
+      - id: set-preview-comment-body
+        name: Set preview comment body
+        run: |
+          DATE=$(date)
+
+          echo "**The auto preview on your projects!**." >> preview.txt
+          echo "| Name | Status | Preview | Updated|" >> preview.txt
+          echo "| :--- | :----- | :------ | :------ |" >> preview.txt
+          echo "| **contributor-graph** | ✅ Ready | [Visit Preview](http://contributor-graph-${{ github.event.pull_request.number }}.preview.api7.ai) | $DATE |" >> preview.txt
+
+          BODY=$(cat preview.txt)
+          BODY="${BODY//'%'/'%25'}"
+          BODY="${BODY//$'\n'/'%0A'}"
+          BODY="${BODY//$'\r'/'%0D'}"
+
+          echo "::set-output name=body::$BODY"
+
+      - name: Find comment
+        uses: peter-evans/find-comment@v2
+        id: fc2
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: "The auto preview on your projects!"
+
+      - name: Update comment
+        if: steps.fc2.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          comment-id: ${{ steps.fc2.outputs.comment-id }}
+          edit-mode: replace
+          body: ${{ steps.set-preview-comment-body.outputs.body }}
+
+  clean:
+    if: github.event.action == 'closed'
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: azure/login@v1
+        with:
+          environment: AzureCloud
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Uninstall Contributor Graph
+        run: |
+          az account set --subscription ffb9d49d-93e7-4f61-bf47-1e9b5f9e4cc0
+          az aks get-credentials --resource-group API7-Web-Preview_group --name API7-Web-Preview
+
+          export ID=${{ github.event.pull_request.number }}
+          sh ./preview/uninstall.sh
+
+
