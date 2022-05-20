@@ -32,5 +32,5 @@ spec:
           service:
             name: ${SVC}
             port:
-              number: 3000" | kubectl apply -f - -n contributor-graph
+              number: 80" | kubectl apply -f - -n contributor-graph
 
