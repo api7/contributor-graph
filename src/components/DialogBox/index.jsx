@@ -13,6 +13,7 @@ import { handleShareToTwitterClick } from "../../utils";
 import { Snackbar, makeStyles } from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import DialogContentText from '@material-ui/core/DialogContentText';
+import moment from "moment";
 
 export const DialogBox = ({ params = "" }) => {
   const [showNotice, setShowNotice] = React.useState(false);
@@ -89,7 +90,8 @@ export const DialogBox = ({ params = "" }) => {
           value="image"
           startIcon={<GetAppIcon />}
           onClick={() => {
-            saveAs(`https://contributor-overtime-api.apiseven.com/contributors-svg${params}`, 'text.svg')
+            const date = moment(new Date()).format('YYYYMMDD');
+            saveAs(`https://contributor-overtime-api.apiseven.com/contributors-svg${params}`, `github-contributor-over-time-${date}.svg`)
           }}
         >
           Image
