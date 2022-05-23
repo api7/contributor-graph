@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import cloneDeep from "lodash.clonedeep";
 import ReactECharts from "echarts-for-react";
 import MuiAlert from "@material-ui/lab/Alert";
@@ -335,6 +335,18 @@ const ContributorLineChart = ({
     }
   }, []);
 
+  const [chartEl, setChartEl] = useState()
+  useEffect(() => {
+    if (!chartEl) return
+
+    const preventDefault = (e) => e.preventDefault()
+    chartEl.addEventListener('contextmenu',  preventDefault)
+
+    return () => {
+      chartEl.removeEventListener('contextmenu', preventDefault)
+    }
+  }, [chartEl])
+
 
   return (
     <>
@@ -453,6 +465,7 @@ const ContributorLineChart = ({
                   // then you can use any API of echarts.
                   window.echartInstance = echartInstance;
                 }
+                setChartEl(e)
               }}
               style={{ width: '94%', height: 550, margin: "20px auto 0" }}
               showLoading={loading}
