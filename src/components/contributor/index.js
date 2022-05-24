@@ -337,6 +337,7 @@ const ContributorLineChart = ({
 
   const [chartEl, setChartEl] = useState()
   useEffect(() => {
+    console.log(chartEl);
     if (!chartEl) return
 
     const preventDefault = (e) => e.preventDefault()
@@ -465,7 +466,7 @@ const ContributorLineChart = ({
                   const echartInstance = e.getEchartsInstance();
                   // then you can use any API of echarts.
                   window.echartInstance = echartInstance;
-                  setChartEl(echartInstance._dom)
+                  setChartEl(echartInstance._dom.querySelector('canvas'))
                 }
               }}
               style={{ width: '94%', height: 550, margin: "20px auto 0" }}
