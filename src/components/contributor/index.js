@@ -375,6 +375,7 @@ const ContributorLineChart = ({
             style={{
               marginTop: "10px",
             }}
+            ref={setChartEl}
           >
             <div
               style={{
@@ -465,7 +466,6 @@ const ContributorLineChart = ({
                   // then you can use any API of echarts.
                   window.echartInstance = echartInstance;
                 }
-                setChartEl(e)
               }}
               style={{ width: '94%', height: 550, margin: "20px auto 0" }}
               showLoading={loading}
