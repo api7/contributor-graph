@@ -340,10 +340,11 @@ const ContributorLineChart = ({
     if (!chartEl) return
 
     const preventDefault = (e) => e.preventDefault()
-    chartEl.addEventListener('contextmenu',  preventDefault)
+    const chart = chartEl.querySelector('canvas')
+    chart.addEventListener('contextmenu',  preventDefault)
 
     return () => {
-      chartEl.removeEventListener('contextmenu', preventDefault)
+      chart.removeEventListener('contextmenu', preventDefault)
     }
   }, [chartEl])
 
