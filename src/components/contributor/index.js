@@ -336,10 +336,10 @@ const ContributorLineChart = ({
   }, []);
 
   const [chartEl, setChartEl] = useState()
-  useEffect(() => {
+  useEffect(function disableChartContextMenu() {
     console.log(chartEl);
     if (!chartEl) return
-
+    console.log(chartEl);
     const preventDefault = (e) => e.preventDefault()
     chartEl.addEventListener('contextmenu',  preventDefault)
 
@@ -466,7 +466,9 @@ const ContributorLineChart = ({
                   const echartInstance = e.getEchartsInstance();
                   // then you can use any API of echarts.
                   window.echartInstance = echartInstance;
-                  setChartEl(echartInstance._dom.querySelector('canvas'))
+                  const canvas = echartInstance._dom.querySelector('canvas')
+                  console.log(canvas);
+                  setChartEl(canvas)
                 }
               }}
               style={{ width: '94%', height: 550, margin: "20px auto 0" }}
