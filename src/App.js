@@ -113,10 +113,10 @@ const App = () => {
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
-  let targetDom = document.getElementsByClassName('echarts-for-react')[0];
-  // Disable mouse right-click menu events
-  targetDom.oncontextmenu = (e) => {
-    return false;
+  const targetDom = document.getElementsByClassName('echarts-for-react');
+  if (targetDom[0]) {
+    // Disable mouse right-click menu events
+    targetDom[0].oncontextmenu = () => { return false };
   }
 
   React.useEffect(() => {
