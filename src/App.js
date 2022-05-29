@@ -113,6 +113,12 @@ const App = () => {
     return () => window.removeEventListener("resize", updateSize);
   }, []);
 
+  let targetDom = document.getElementsByClassName('echarts-for-react')[0];
+  // Disable mouse right-click menu events
+  targetDom.oncontextmenu = (e) => {
+    return false;
+  }
+
   React.useEffect(() => {
     const width = size[0];
     if (width > 996) {
@@ -219,14 +225,14 @@ const App = () => {
       >
         {!inIframe() &&
           <div
-          className="titleBox"
-          style={{
-            margin: '30px 0',
-            display: "block",
-          }}
-        >
-          <h1 style={{ fontSize: '1.8em', textAlign: 'center', margin: '0' }}>GitHub Contributor Over Time</h1>
-        </div>}
+            className="titleBox"
+            style={{
+              margin: '30px 0',
+              display: "block",
+            }}
+          >
+            <h1 style={{ fontSize: '1.8em', textAlign: 'center', margin: '0' }}>GitHub Contributor Over Time</h1>
+          </div>}
         <div style={searchStyle}>
           <Paper className={classes.root} elevation={0}>
             <Autocomplete
@@ -367,7 +373,7 @@ const App = () => {
             </TabPanel>
           </div>
         </div>
-        { !inIframe() && <Footer />}
+        {!inIframe() && <Footer />}
       </div>
     </>
   );
