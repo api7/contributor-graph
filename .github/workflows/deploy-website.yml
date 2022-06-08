@@ -24,15 +24,6 @@ jobs:
 
       - name: Build website
         run: yarn build
-        
-      # - name: Upload files to OSS
-      #   uses: fangbinwei/aliyun-oss-website-action@v1
-      #   with:
-      #       accessKeyId: ${{ secrets.ALIYUN_OSS_ACCESSKEY }}
-      #       accessKeySecret: ${{ secrets.ALIYUN_OSS_ACCESSKEYSECRET }}
-      #       bucket: "contributor-graph"
-      #       endpoint: "http://oss-accelerate.aliyuncs.com/" 
-      #       folder: "build"
 
       - name: Upload files to COS
         uses: zkqiang/tencent-cos-action@v0.1.0
