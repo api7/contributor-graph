@@ -46,6 +46,7 @@ apache/skywalking:
     - apache/skywalking-rust
     - apache/skywalking-ui
     - apache/skywalking-oal-tool
+    - apache/skywalking-rover
     - SkyAPM/SkyAPM-dotnet
     - SkyAPM/go2sky
     - SkyAPM/go2sky-plugins
