@@ -12,7 +12,7 @@ require (
 	github.com/schollz/progressbar/v3 v3.8.3
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/net v0.0.0-20210326220855-61e056675ecf // indirect
-	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
+	golang.org/x/oauth2 2104d58473e0
 	google.golang.org/api v0.41.0 // indirect
 	google.golang.org/genproto v0.0.0-20210309190941-1aeedc14537d // indirect
 	gopkg.in/yaml.v2 v2.4.0
