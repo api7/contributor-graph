@@ -116,7 +116,10 @@ function ShareModal({ params = "" }) {
               if (!inIframe()) {
                 const text = `Amazing tools to view your repo ${shareText}`;
                 const newUrl = encodeURIComponent(shareUrl);
-                window.open(`https://twitter.com/intent/tweet?text=${text}&url=${newUrl}`, '_blank');
+                window.open(
+                  `https://twitter.com/intent/tweet?text=${text}&url=${newUrl}`,
+                  "_blank"
+                );
               }
               window.parent.postMessage(
                 {
@@ -216,30 +219,69 @@ export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
 
   return (
     <div>
-      <p style={{ textAlign: 'center', fontSize: '16px', color: '#61656b' }}>
+      <p style={{ textAlign: "center", fontSize: "16px", color: "#61656b" }}>
         You can include the chart on your repository's README.md as follows:
       </p>
-      <div style={{ position: 'relative', backgroundColor: '#F3F4F5', marginBottom: '30px', borderRadius: '5px' }}>
-        <div style={{ padding: '10px', overflow: ' scroll', }}>
-          <div style={{ margin: '9px' }}><h1 style={{ clolor: '#363636', fontWeight: '500', fontSize: '14px' }}>### {title}</h1></div>
-          <div style={{ margin: '10px' }}><span style={{ width: '100%', fontSize: '14px', fontWeight: '300', color: '#363636', wordBreak: 'break-all' }}>[![{title}]({IMG_BASE_URL + params})]({SHARE_BASE_URL + params})</span></div>
+      <div
+        style={{
+          position: "relative",
+          backgroundColor: "#F3F4F5",
+          marginBottom: "30px",
+          borderRadius: "5px",
+        }}
+      >
+        <div style={{ padding: "10px", overflow: " scroll" }}>
+          <div style={{ margin: "9px" }}>
+            <h1
+              style={{ clolor: "#363636", fontWeight: "500", fontSize: "14px" }}
+            >
+              ### {title}
+            </h1>
+          </div>
+          <div style={{ margin: "10px" }}>
+            <span
+              style={{
+                width: "100%",
+                fontSize: "14px",
+                fontWeight: "300",
+                color: "#363636",
+                wordBreak: "break-all",
+              }}
+            >
+              [![{title}]({IMG_BASE_URL + params})]({SHARE_BASE_URL + params})
+            </span>
+          </div>
         </div>
         <div
           style={{
             cursor: "pointer",
-            position: 'absolute',
-            right: '15px',
-            top: '15px'
+            position: "absolute",
+            right: "15px",
+            top: "15px",
           }}
           onClick={setCopied}
         >
-          {
-            isCopied
-              ?
-              <svg class="MuiSvgIcon-root" color='#61656b' focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"></path></svg>
-              :
-              <svg class="MuiSvgIcon-root" color='#61656b' focusable="false" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5H1v16c0 1.1.9 2 2 2h16v-2H3V5zm18-4H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 16H7V3h14v14z"></path></svg>
-          }
+          {isCopied ? (
+            <svg
+              className="MuiSvgIcon-root"
+              color="#61656b"
+              focusable="false"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"></path>
+            </svg>
+          ) : (
+            <svg
+              className="MuiSvgIcon-root"
+              color="#61656b"
+              focusable="false"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M3 5H1v16c0 1.1.9 2 2 2h16v-2H3V5zm18-4H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm0 16H7V3h14v14z"></path>
+            </svg>
+          )}
         </div>
       </div>
     </div>
@@ -248,7 +290,7 @@ export const MarkdownLink = ({ params = "", type = "contributorOverTime" }) => {
 
 export default function CustomizedDialogs({
   open = false,
-  onChange = () => { },
+  onChange = () => {},
   params = "",
 }) {
   const handleClose = () => {

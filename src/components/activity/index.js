@@ -270,7 +270,7 @@ const ActivityChart = ({
           onClose={() => setOpenAlert(false)}
           key={"topcenter"}
         >
-          <Alert severity='success' onClose={() => setOpenAlert(false)}>
+          <Alert severity="success" onClose={() => setOpenAlert(false)}>
             Copy link successfully
           </Alert>
         </Snackbar>
@@ -293,10 +293,9 @@ const ActivityChart = ({
                         style={{ height: 550 }}
                         showLoading={loading}
                         notMerge
+                        opts={{ renderer: "svg" }}
                       />
-                      <DialogBox
-                        params={getShareParams()}
-                      />
+                      <DialogBox params={getShareParams()} />
                       <MarkdownLink
                         params={getShareParams()}
                         type="contributorMonthlyActivity"
