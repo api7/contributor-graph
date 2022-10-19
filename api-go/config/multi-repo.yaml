@@ -47,6 +47,7 @@ apache/skywalking:
     - apache/skywalking-ui
     - apache/skywalking-oal-tool
     - apache/skywalking-rover
+    - apache/skywalking-php
     - SkyAPM/SkyAPM-dotnet
     - SkyAPM/go2sky
     - SkyAPM/go2sky-plugins
@@ -57,6 +58,7 @@ apache/skywalking:
     - SkyAPM/java-plugin-extensions
     - SkyAPM/uranus
     - SkyAPM/transporter-plugin-for-skywalking
+    - SkyAPM/document-cn-translation-of-skywalking
 apache/openwhisk:
     - apache/openwhisk
     - apache/openwhisk-apigateway
