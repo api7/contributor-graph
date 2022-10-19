@@ -4396,7 +4396,7 @@ file-loader@^6.2.0:
     loader-utils "^2.0.0"
     schema-utils "^3.0.0"
 
-file-saver@^2.0.5:
+file-saver@2.0.5:
   version "2.0.5"
   resolved "https://registry.yarnpkg.com/file-saver/-/file-saver-2.0.5.tgz#d61cfe2ce059f414d899e9dd6d4107ee25670c38"
   integrity sha512-P9bmyZ3h/PRG+Nzga+rbdI4OEpNDzAVyy74uVO9ATgzLK6VtAsYybF/+TOCvrc0MO793d6+42lLyZTw7/ArVzA==
@@ -8112,7 +8112,7 @@ sass-loader@^12.3.0:
     klona "^2.0.4"
     neo-async "^2.6.2"
 
-save-svg-png-ext@^2.0.3:
+save-svg-png-ext@2.0.3:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/save-svg-png-ext/-/save-svg-png-ext-2.0.3.tgz#bfeb1b6fc012fd6382181de0fc711066588eaa3f"
   integrity sha512-fuIYDquUsfnGi8nKYyMExAru+3WIU4QdrK5RFB6G/W0GsFPyFpyOOuVdMEcEZxb/6MNNoTRqcEZtNWhNIStzfQ==
