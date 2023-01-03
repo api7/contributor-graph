@@ -77,7 +77,7 @@ const App = () => {
       <div className='linkBox'>
         <ul>
           <a href="https://api7.ai/blog" target='_blank'><li>Blog</li></a>
-          <a href="https://api7.ai/category/case-studies" target='_blank'><li>Success Stories</li></a>
+          <a href="https://api7.ai/category/usercase" target='_blank'><li>Success Stories</li></a>
           <a href="https://api7.ai/about" target='_blank'><li>About</li></a>
           <a href="https://handbook.api7.ai/story" target='_blank'><li>Story</li></a>
         </ul>
