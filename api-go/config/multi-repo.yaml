@@ -123,16 +123,19 @@ apache/dubbo:
     - apache/dubbo-website
 apache/pulsar:
     - apache/pulsar
-    - apache/pulsar-client-go
     - apache/pulsar-adapters
+    - apache/pulsar-client-cpp
+    - apache/pulsar-client-go
+    - apache/pulsar-client-node
+    - apache/pulsar-client-python
+    - apache/pulsar-client-reactive
+    - apache/pulsar-client-ruby
+    - apache/pulsar-connectors
+    - apache/pulsar-dotpulsar
     - apache/pulsar-helm-chart
     - apache/pulsar-manager
-    - apache/pulsar-client-node
-    - apache/pulsar-dotpulsar
+    - apache/pulsar-presto
+    - apache/pulsar-release
     - apache/pulsar-site
     - apache/pulsar-test-infra
     - apache/pulsar-translation
-    - apache/pulsar-client-ruby
-    - apache/pulsar-release
-    - apache/pulsar-connectors
-    - apache/pulsar-presto
