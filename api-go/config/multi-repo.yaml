@@ -139,3 +139,10 @@ apache/pulsar:
     - apache/pulsar-site
     - apache/pulsar-test-infra
     - apache/pulsar-translation
+apache/incubator-teaclave:
+    - apache/incubator-teaclave
+    - apache/incubator-teaclave-sgx-sdk
+    - apache/incubator-teaclave-trustzone-sdk
+    - apache/incubator-teaclave-java-tee-sdk
+    - apache/incubator-teaclave-crates
+    - apache/incubator-teaclave-verification
