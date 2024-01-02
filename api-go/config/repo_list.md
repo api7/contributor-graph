@@ -268,3 +268,8 @@ ansible/ansible
 pytorch/pytorch
 gin-gonic/gin
 Genymobile/scrcpy
+
+# Postgresql-related Database
+cloudberrydb/cloudberrydb
+postgres/postgres
+greenplum-db/gpdb
