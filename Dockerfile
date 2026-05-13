@@ -18,7 +18,7 @@ COPY . .
 RUN yarn build
 
 # Production image, copy all the files and run next
-FROM nginx:1.20-alpine AS runner
+FROM nginx:1.31-alpine AS runner
 WORKDIR /app
 
 COPY --from=builder /app/build /usr/share/nginx/html
