@@ -4,7 +4,7 @@
     "dependencies": {
       "axios": "0.26.1",
       "canvas": "2.10.0",
-      "echarts": "5.3.3",
+      "echarts": "6.1.0",
       "lodash.clonedeep": "4.5.0",
       "moment": "2.29.4",
       "jsdom": "19.0.0"
