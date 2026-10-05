@@ -6,7 +6,7 @@
       "canvas": "2.10.0",
       "echarts": "5.3.3",
       "lodash.clonedeep": "4.5.0",
-      "moment": "2.29.4",
+      "moment": "2.31.0",
       "jsdom": "19.0.0"
     }
 }
